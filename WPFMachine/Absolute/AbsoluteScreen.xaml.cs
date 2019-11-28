@@ -1,26 +1,19 @@
-﻿using System;
+﻿using Collections.Pooled;
+using Frotz;
+using Frotz.Blorb;
+using Frotz.Constants;
+using Frotz.Screen;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using WPFMachine.Support;
-using System.Globalization;
-
-using Frotz;
-using Frotz.Screen;
-using Frotz.Constants;
-using Frotz.Blorb;
-using System.Xml;
-
-using WPFMachine;
 
 namespace WPFMachine.Absolute
 {
@@ -29,28 +22,25 @@ namespace WPFMachine.Absolute
     /// </summary>
     public partial class AbsoluteScreen : ScreenBase, IZScreen
     {
-        StringBuilder _currentText = new StringBuilder();
+        private readonly StringBuilder _currentText = new StringBuilder();
+        private int _activeWindow = -1;
 
-        int _activeWindow = -1;
-
-        ScrollbackArea _scrollback;
-        public ScrollbackArea Scrollback
-        {
-            get { return _scrollback; }
-        }
+        public ScrollbackArea Scrollback { get; }
 
 
-        public AbsoluteScreen(Window Parent)
+        public AbsoluteScreen(Window parent) : base()
         {
             InitializeComponent();
 
-            _parent = Parent;
+            _parent = parent;
 
-            _scrollback = new ScrollbackArea(this);
+            Scrollback = new ScrollbackArea(this);
 
-            _cursorCanvas = new System.Windows.Controls.Canvas();
-            _cursorCanvas.Background = ZColorCheck.ZColorToBrush(1, ColorType.Foreground);
-            _cursorCanvas.Visibility = System.Windows.Visibility.Visible;
+            _cursorCanvas = new Canvas
+            {
+                Background = ZColorCheck.ZColorToBrush(1, ColorType.Foreground),
+                Visibility = Visibility.Visible
+            };
             cnvsTop.Children.Add(_cursorCanvas);
 
             _sound = new FrotzSound();
@@ -59,74 +49,68 @@ namespace WPFMachine.Absolute
 
             _substituion = new NumberSubstitution();
 
-            setFontInfo();
+            SetFontInfo();
 
             _currentInfo = new CharDisplayInfo(1, 0, 1, 1);
-            bColor = 1;
-            this.Background = ZColorCheck.ZColorToBrush(bColor, ColorType.Background);
+            _bColor = 1;
+            Background = ZColorCheck.ZColorToBrush(_bColor, ColorType.Background);
 
-            this.MouseDown += new MouseButtonEventHandler(AbsoluteScreen_MouseDown);
-            this.MouseDoubleClick += new MouseButtonEventHandler(AbsoluteScreen_MouseDoubleClick);
+            MouseDown += AbsoluteScreen_MouseDown;
+            MouseDoubleClick += AbsoluteScreen_MouseDoubleClick;
         }
 
-        void mouseMove(MouseButtonEventArgs e, ushort mouseEvent)
+        private void OnMouseMove(MouseButtonEventArgs e, ushort mouseEvent)
         {
-            Point p = e.GetPosition(this);
-            os_.mouse_moved((ushort)p.X, (ushort)p.Y);
+            var p = e.GetPosition(this);
+            OS.MouseMoved((ushort)p.X, (ushort)p.Y);
             AddInput((char)mouseEvent);
         }
-        
-        void AbsoluteScreen_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            mouseMove(e, Frotz.Constants.CharCodes.ZC_DOUBLE_CLICK);
-        }
 
-        void AbsoluteScreen_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            mouseMove(e, Frotz.Constants.CharCodes.ZC_SINGLE_CLICK);
-        }
+        private void AbsoluteScreen_MouseDoubleClick(object sender, MouseButtonEventArgs e) => OnMouseMove(e, CharCodes.ZC_DOUBLE_CLICK);
 
-        Dictionary<char, String> graphicsChars = new Dictionary<char, string>();
+        private void AbsoluteScreen_MouseDown(object sender, MouseButtonEventArgs e) => OnMouseMove(e, CharCodes.ZC_SINGLE_CLICK);
+
+        private readonly Dictionary<char, string> _graphicsChars = new Dictionary<char, string>();
 
         public void DisplayChar(char c)
         {
             if (_currentInfo.Font == ZFont.GRAPHICS_FONT)
             {
 
-                invoke(() =>
+                Invoke(() =>
                 {
 #if !TEMP
-                    String lines = null;
-                    if (graphicsChars.ContainsKey(c))
+                    string lines = null;
+                    if (_graphicsChars.ContainsKey(c))
                     {
-                        lines = graphicsChars[c];
+                        lines = _graphicsChars[c];
                     }
                     else
                     {
-                        String temp = Frotz.Other.GraphicsFont.getLines(c);
-                        StringBuilder sb = new StringBuilder();
+                        string temp = Frotz.Other.GraphicsFont.GetLines(c);
+                        var sb = new StringBuilder(@"
+    <Image xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Width=""8"" Height=""8"" Stretch=""None"">
+        <Image.Source>
+            <DrawingImage>
+                <DrawingImage.Drawing>
+                    <GeometryDrawing Geometry=""");
 
                         for (int i = 0; i < 8; i++)
                         {
-                            int x = Convert.ToInt32(temp.Substring(i * 2, 2), 16);
+                            int x = int.Parse(temp.AsSpan(i * 2, 2), NumberStyles.HexNumber);
                             for (int j = 0; j < 8; j++)
                             {
                                 int toggled = (x >> j) & 1;
                                 if (toggled == 1)
                                 {
-                                    //sb.AppendFormat("<Line X1=\"{0}\" Y1=\"{1}\" X2=\"{2}\" Y2=\"{3}\" Stroke=\"White\" StrokeThickness=\"1\" />\r\n",
+                                    //sb.AppendFormat(" <Line X1=\"{0}\" Y1=\"{1}\" X2=\"{2}\" Y2=\"{3}\" Stroke=\"White\" StrokeThickness=\"1\" />\r\n",
                                     //    j, i, j + 1, i + 1);
-                                    sb.AppendFormat("M {0} {1} L {2} {3} ",
-                                        j, i, j + 1, i);
+                                    sb.AppendFormat("M {0} {1} L {2} {3} ", j, i, j + 1, i);
                                 }
                             }
                         }
-                        lines = String.Format(@"
-    <Image xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Width=""8"" Height=""8"" Stretch=""None"">
-        <Image.Source>
-            <DrawingImage>
-                <DrawingImage.Drawing>
-                    <GeometryDrawing Geometry=""{0} "">
+
+                        sb.Append(@""">
                         <GeometryDrawing.Pen>
                             <Pen Brush=""White"" Thickness=""1"" />
                         </GeometryDrawing.Pen>
@@ -134,10 +118,10 @@ namespace WPFMachine.Absolute
                 </DrawingImage.Drawing>
             </DrawingImage>
         </Image.Source>
-    </Image>", sb.ToString());
+    </Image>");
 
-                        sb.ToString();
-                        graphicsChars.Add(c, lines);
+                        lines = sb.ToString();
+                        _graphicsChars.Add(c, lines);
 
                         //var sw = new System.IO.StreamWriter(String.Format(@"c:\temp\{0}.xaml", (byte)c));
                         //sw.Write(lines);
@@ -146,9 +130,9 @@ namespace WPFMachine.Absolute
 
                     //String temp = String.Format("<Canvas xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\">{0}</Canvas>", Frotz.Other.GraphicsFont.getLines(c));
                     //temp = temp.Replace("Black", "White");
-                    Image img = System.Windows.Markup.XamlReader.Parse(lines) as Image;
+                    var img = System.Windows.Markup.XamlReader.Parse(lines) as Image;
 
-                    Canvas cnvs = new Canvas();
+                    var cnvs = new Canvas();
                     cnvs.Children.Add(img);
 
                     img.SnapsToDevicePixels = true;
@@ -167,7 +151,7 @@ namespace WPFMachine.Absolute
 #else
 
 
-                    var bmp = Frotz.Other.GraphicsFont.getImage(c);
+                    var bmp = Frotz.Other.GraphicsFont.GetImage(c);
 
                     var ms = new System.IO.MemoryStream();
                     bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -226,25 +210,22 @@ namespace WPFMachine.Absolute
             }
         }
 
-        public void RefreshScreen()
-        {
-            FlushCurrentString(); // TODO Determine if anything else needs to be done here
-        }
+        public void RefreshScreen() => FlushCurrentString(); // TODO Determine if anything else needs to be done here
 
         public void SetCursorPosition(int x, int y)
         {
-            if (!inInputMode)
+            if (!_inInputMode)
             {
                 FlushCurrentString();
 
                 if (_activeWindow == 0 && y != _cursorY)
                 {
-                    _scrollback.AddString("\r\n", _currentInfo);
+                    Scrollback.AddString("\r\n", _currentInfo);
                 }
                 _cursorX = x;
                 _cursorY = y;
 
-                lastDrawn = Rect.Empty;
+                _lastDrawn = Rect.Empty;
             }
 
         }
@@ -253,18 +234,17 @@ namespace WPFMachine.Absolute
         {
             FlushCurrentString();
 
-            _scrollback.AddString("\r\n", _currentInfo);
+            Scrollback.AddString("\r\n", _currentInfo);
 
-            invoke(() =>
+            Invoke(() =>
             {
                 for (int i = 0; i < mainCanvas.Children.Count; i++)
                 {
                     var c = mainCanvas.Children[i];
-                    Image img = c as Image;
-                    if (img != null)
+                    if (c is Image img)
                     {
-                        double iTop = (double)img.GetValue(Canvas.TopProperty);
-                        double iLeft = (double)img.GetValue(Canvas.LeftProperty);
+                        double iTop = img.Top();
+                        double iLeft = img.Left();
 
                         double iBottom = iTop + img.ActualHeight;
                         double iRight = iLeft + img.ActualWidth;
@@ -289,48 +269,46 @@ namespace WPFMachine.Absolute
 
         private void FlushCurrentString()
         {
-            if (_currentText.Length == 0 || inInputMode) return;
+            if (_currentText.Length == 0 || _inInputMode) return;
 
-            String text = _currentText.ToString();
+            string text = _currentText.ToString();
             _currentText.Clear();
 
             if (_activeWindow == 0)
             {
-                _scrollback.AddString(text, _currentInfo);
+                Scrollback.AddString(text, _currentInfo);
             }
 
             SendStringToScreen(text, _currentInfo);
 
         }
 
-        Rect lastDrawn = Rect.Empty;
+        private Rect _lastDrawn = Rect.Empty;
 
-        private void SendStringToScreen(String text, CharDisplayInfo cdi)
+        private void SendStringToScreen(string text, CharDisplayInfo cdi)
         {
-
-            invoke(() =>
+            Invoke(() =>
             {
-                Image myImage = new Image();
+                var myImage = new Image();
 
-                DrawingVisual dv = new DrawingVisual();
-                DrawingContext dc = dv.RenderOpen();
+                var dv = new DrawingVisual();
+                var dc = dv.RenderOpen();
 
                 double x = _cursorX;
                 double y = _cursorY;
 
-                if (lastDrawn != Rect.Empty && inInputMode == false)
+                if (_lastDrawn != Rect.Empty && _inInputMode == false)
                 {
-                    x = lastDrawn.X + lastDrawn.Width;
+                    x = _lastDrawn.X + _lastDrawn.Width;
                 }
 
-
-                FontInfo fi = _regularFont;
+                var fi = _regularFont;
                 if (cdi.Font == 4)
                 {
                     fi = _fixedFont;
                 }
 
-                FormattedText ft = buildFormattedText(text, fi, cdi, dc);
+                var ft = BuildFormattedText(text, fi, cdi);
 
                 Brush b = Brushes.Transparent;
 
@@ -340,7 +318,7 @@ namespace WPFMachine.Absolute
                 }
                 else
                 {
-                    if (_currentInfo.BackgroundColor != bColor)
+                    if (_currentInfo.BackgroundColor != _bColor)
                     {
                         b = ZColorCheck.ZColorToBrush(cdi.BackgroundColor, ColorType.Background);
                     }
@@ -350,7 +328,7 @@ namespace WPFMachine.Absolute
                 dc.DrawText(ft, new Point(0, 0));
                 dc.Close();
 
-                RenderTargetBitmap bmp = new RenderTargetBitmap((int)dv.ContentBounds.Width, (int)charHeight, 96, 96, PixelFormats.Pbgra32);
+                var bmp = new RenderTargetBitmap((int)dv.ContentBounds.Width, (int)charHeight, 96, 96, PixelFormats.Pbgra32);
                 bmp.Render(dv);
 
                 myImage.Source = bmp;
@@ -359,9 +337,9 @@ namespace WPFMachine.Absolute
                 myImage.SetValue(Canvas.TopProperty, y);
                 myImage.SetValue(Canvas.LeftProperty, x);
 
-                lastDrawn = new Rect(x, y, (int)dv.ContentBounds.Width, charHeight);
+                _lastDrawn = new Rect(x, y, (int)dv.ContentBounds.Width, charHeight);
 
-                removeCoveredImages(myImage);
+                RemoveCoveredImages(myImage);
             });
         }
 
@@ -383,43 +361,39 @@ namespace WPFMachine.Absolute
             }
         }
 
-        private void invoke(Action a)
-        {
-            Dispatcher.Invoke(a);
-        }
+        private void Invoke(Action a) => Dispatcher.Invoke(a);
 
         public void Clear()
         {
-            invoke(() =>
+            Invoke(() =>
             {
                 mainCanvas.Children.Clear();
-                bColor = _currentInfo.BackgroundColor;
-                this.Background = ZColorCheck.ZColorToBrush(_currentInfo.BackgroundColor, ColorType.Background);
+                _bColor = _currentInfo.BackgroundColor;
+                Background = ZColorCheck.ZColorToBrush(_currentInfo.BackgroundColor, ColorType.Background);
             });
         }
 
         public void ClearArea(int top, int left, int bottom, int right)
         {
-            _scrollback.AddString("\r\n", _currentInfo);
-            
-            Rect r = new Rect(left, top, right - left, bottom - top);
+            Scrollback.AddString("\r\n", _currentInfo);
 
-            invoke(() =>
+            var r = new Rect(left, top, right - left, bottom - top);
+
+            Invoke(() =>
             {
                 for (int i = 0; i < mainCanvas.Children.Count; i++)
                 {
                     var c = mainCanvas.Children[i];
-                    Image img = c as Image;
-                    if (img != null)
+                    if (c is Image img)
                     {
-                        double iTop = (double)img.GetValue(Canvas.TopProperty);
-                        double iLeft = (double)img.GetValue(Canvas.LeftProperty);
+                        double iTop = img.Top();
+                        double iLeft = img.Left();
 
                         double iBottom = iTop + img.ActualHeight;
                         double iRight = iLeft + img.ActualWidth;
 
-                        Rect iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
-                        Point p = new Point(iLeft, iTop);
+                        var iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
+                        var p = new Point(iLeft, iTop);
 
                         if (r.Contains(p))
                         {
@@ -435,26 +409,25 @@ namespace WPFMachine.Absolute
         {
             FlushCurrentString();
 
-            _scrollback.AddString("\r\n", _currentInfo);
+            Scrollback.AddString("\r\n", _currentInfo);
 
-            Rect r = new Rect(left, top, right - left, bottom - top);
+            var r = new Rect(left, top, right - left, bottom - top);
 
-            invoke(() =>
+            Invoke(() =>
             {
                 for (int i = 0; i < mainCanvas.Children.Count; i++)
                 {
                     var c = mainCanvas.Children[i];
-                    Image img = c as Image;
-                    if (img != null)
+                    if (c is Image img)
                     {
-                        double iTop = (double)img.GetValue(Canvas.TopProperty);
-                        double iLeft = (double)img.GetValue(Canvas.LeftProperty);
+                        double iTop = img.Top();
+                        double iLeft = img.Top();
 
                         double iBottom = iTop + img.ActualHeight;
                         double iRight = iLeft + img.ActualWidth;
 
-                        Rect iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
-                        Point p = new Point(iLeft, iTop);
+                        var iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
+                        var p = new Point(iLeft, iTop);
 
                         if (r.Contains(p))
                         {
@@ -476,9 +449,9 @@ namespace WPFMachine.Absolute
 
         public void RemoveChars(int count)
         {
-            invoke(() =>
+            Invoke(() =>
             {
-                if (count == 1 && inInputMode)
+                if (count == 1 && _inInputMode)
                 {
                     if (_currentText.Length > 0)
                     {
@@ -489,7 +462,7 @@ namespace WPFMachine.Absolute
                         _cursorCanvas.SetValue(Canvas.LeftProperty, x);
 
                         _currentText.Remove(_currentText.Length - 1, 1);
-                        removeLastChild();
+                        RemoveLastChild();
                         if (_currentText.Length > 0)
                         {
                             SendStringToScreen(_currentText.ToString(), _currentInfo);
@@ -502,10 +475,10 @@ namespace WPFMachine.Absolute
                 }
                 else
                 {
-                    removeLastChild();
+                    RemoveLastChild();
                 }
 
-                lastDrawn = new Rect(_cursorX, _cursorY, 0, 0);
+                _lastDrawn = new Rect(_cursorX, _cursorY, 0, 0);
             });
         }
 
@@ -519,68 +492,56 @@ namespace WPFMachine.Absolute
         {
             FlushCurrentString();
 
-            long tempfg = FrotzNet.Frotz.Other.TrueColorStuff.GetColour(new_foreground);
-            long tempbg = FrotzNet.Frotz.Other.TrueColorStuff.GetColour(new_background);
+            //long tempfg = Frotz.Other.TrueColorStuff.GetColour(new_foreground);
+            //long tempbg = Frotz.Other.TrueColorStuff.GetColour(new_background);
 
             _currentInfo.ForegroundColor = new_foreground;
             _currentInfo.BackgroundColor = new_background;
         }
 
-        public ushort PeekColor()
-        {
-            return (ushort)_currentInfo.BackgroundColor;
-        }
+        public ushort PeekColor() => (ushort)_currentInfo.BackgroundColor;
 
         public void SetInputMode(bool InputMode, bool CursorVisibility)
         {
-            inInputMode = InputMode;
-            if (inInputMode == false)
+            _inInputMode = InputMode;
+            if (_inInputMode == false)
             {
                 for (int i = 0; i < 10; i++)
                 {
                     // TODO Move back to the carat
                 }
 
-                _scrollback.AddString(_currentText.ToString(), _currentInfo);
+                Scrollback.AddString(_currentText.ToString(), _currentInfo);
 
                 _currentText.Clear();
             }
             else
             {
-                if (_cursorX == lastDrawn.X)
+                if (_cursorX == _lastDrawn.X)
                 {
-                    _cursorX += (int)lastDrawn.Width;
+                    _cursorX += (int)_lastDrawn.Width;
                 }
             }
 
-            invoke(() =>
+            Invoke(() =>
             {
                 mainCanvas.Children.Add(new Image());
 
-                if (CursorVisibility)
-                {
-                    _cursorCanvas.Visibility = System.Windows.Visibility.Visible;
-                }
-                else
-                {
-                    _cursorCanvas.Visibility = System.Windows.Visibility.Hidden;
-                }
+                _cursorCanvas.Visibility = CursorVisibility ? Visibility.Visible : Visibility.Hidden;
 
-                _cursorCanvas.SetValue(Canvas.TopProperty, (double)_cursorY + charHeight - _cursorCanvas.MinHeight);
+                _cursorCanvas.SetValue(Canvas.TopProperty, _cursorY + charHeight - _cursorCanvas.MinHeight);
                 _cursorCanvas.SetValue(Canvas.LeftProperty, (double)_cursorX);
             });
         }
 
-        public void SetInputColor()
-        {
-            _currentInfo.ForegroundColor = 32;
-        }
+        public void SetInputColor() => _currentInfo.ForegroundColor = 32;
 
-        public void addInputChar(char c)
+        public void AddInputChar(char c)
         {
-            invoke(() =>
+            Invoke(() =>
             {
-                mainCanvas.Children.RemoveAt(mainCanvas.Children.Count - 1);
+                if (mainCanvas.Children.Count > 0)
+                    mainCanvas.Children.RemoveAt(mainCanvas.Children.Count - 1);
 
                 _currentText.Append(c);
 
@@ -592,14 +553,11 @@ namespace WPFMachine.Absolute
             });
         }
 
-        public ZPoint GetCursorPosition()
-        {
-            return new ZPoint(_cursorX, _cursorY);
-        }
+        public ZPoint GetCursorPosition() => new ZPoint(_cursorX, _cursorY);
 
-        bool inInputMode = false;
+        private bool _inInputMode = false;
 
-        private void removeLastChild()
+        private void RemoveLastChild()
         {
             if (mainCanvas.Children.Count > 0)
             {
@@ -607,25 +565,20 @@ namespace WPFMachine.Absolute
             }
         }
 
-
         #region Copied from TextControlScreen
 
-        int bColor; // Track the background color separately
+        private int _bColor; // Track the background color separately
 
-        FrotzSound _sound;
-
-        System.Windows.Controls.Canvas _cursorCanvas;
-
-        int _cursorX = 0;
-        int _cursorY = 0;
-
+        private readonly FrotzSound _sound;
+        private readonly Canvas _cursorCanvas;
+        private int _cursorX = 0;
+        private int _cursorY = 0;
 
         public ScreenMetrics GetScreenMetrics()
         {
-            invoke(() =>
+            Invoke(() =>
             {
                 SetCharsAndLines();
-
             });
 
             return _metrics;
@@ -637,96 +590,84 @@ namespace WPFMachine.Absolute
             {
                 case ZFont.TEXT_FONT:
                 case ZFont.FIXED_WIDTH_FONT:
+                case ZFont.GRAPHICS_FONT:
                     height = (ushort)_metrics.FontSize.Height;
                     width = (ushort)_metrics.FontSize.Width;
                     return true;
                 case ZFont.PICTURE_FONT:
-                case ZFont.GRAPHICS_FONT:
                     return false;
             }
 
             return false;
         }
 
-        public void StoryStarted(string StoryFileName, Blorb BlorbFile)
+#nullable enable
+        public void StoryStarted(string storyFileName, Blorb? blorbFile)
         {
-            invoke(() =>
+            Invoke(() =>
             {
+                _parent.Title = OS.BlorbFile != null
+                    ? $"FrotzCore - {OS.BlorbFile.StoryName}"
+                    : $"FrotzCore - {Path.GetFileName(storyFileName)}";
 
-                if (os_._blorbFile != null)
-                {
-                    _parent.Title = String.Format("FrotzNET - {0}", os_._blorbFile.StoryName);
-                }
-                else
-                {
-                    _parent.Title = String.Format("FrotzNET - {0}", StoryFileName);
-                }
-
-                OnStoryStarted(new GameSelectedEventArgs(StoryFileName, BlorbFile));
-                _scrollback.Reset();
-
+                OnStoryStarted(new GameSelectedEventArgs(storyFileName, blorbFile));
+                Scrollback.Reset();
             });
         }
+#nullable disable
 
-        public int GetStringWidth(string s, CharDisplayInfo Font)
+        public int GetStringWidth(string s, CharDisplayInfo font)
         {
-            int f = Font.Font;
+            int f = font.Font;
             if (f == -1) f = _currentInfo.Font;
-
-            FormattedText ft;
-            if (f == ZFont.FIXED_WIDTH_FONT)
+            var ft = f switch
             {
-                ft = buildFormattedText(s, _fixedFont, _currentInfo, null);
-            }
-            else if (f == ZFont.GRAPHICS_FONT)
-            {
-                ft = buildFormattedText(s, _fixedFont, _currentInfo, null);
-            }
-            else
-            {
-                ft = buildFormattedText(s, _regularFont, _currentInfo, null);
-            }
-
+                ZFont.FIXED_WIDTH_FONT => BuildFormattedText(s, _fixedFont, _currentInfo),
+                ZFont.GRAPHICS_FONT => BuildFormattedText(s, _beyZorkFont.Value, _currentInfo),
+                _ => BuildFormattedText(s, _regularFont, _currentInfo),
+            };
             return (int)ft.WidthIncludingTrailingWhitespace;
         }
 
-        public String OpenExistingFile(String defaultName, String Title, String Filter)
+        public string OpenExistingFile(string defaultName, string title, string filter)
         {
-            String name = null;
-            Dispatcher.Invoke(new Action(delegate
+            string name = null;
+            Dispatcher.Invoke(() =>
             {
-                Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();
-                ofd.Title = Title;
-                ofd.Filter = CreateFilterList(Filter);
-                ofd.DefaultExt = ".sav";
-                
+                var ofd = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = title,
+                    Filter = CreateFilterList(filter),
+                    DefaultExt = ".sav"
+                };
+
                 var fi = new System.IO.FileInfo(defaultName);
                 ofd.FileName = fi.Name;
-                
+
                 if (ofd.ShowDialog(_parent) == true)
                 {
                     name = ofd.FileName;
                 }
                 _parent.Focus(); // HACK For some reason, it won't always pick up text input after the dialog, so this refocuses
-            }));
+            });
             return name;
         }
 
-        public String OpenNewOrExistingFile(String defaultName, String Title, String Filter, String DefaultExtension)
+        public string OpenNewOrExistingFile(string defaultName, string title, string filter, string defaultExtension)
         {
-            String name = null;
-            Dispatcher.Invoke(new Action(delegate
+            string name = null;
+            Dispatcher.Invoke(() =>
             {
-                Microsoft.Win32.SaveFileDialog sfd = new Microsoft.Win32.SaveFileDialog();
+                var sfd = new Microsoft.Win32.SaveFileDialog();
 
                 var fi = new System.IO.FileInfo(defaultName);
                 sfd.FileName = fi.Name;
-                
+
                 // sfd.FileName = defaultName;
 
-                sfd.Title = Title;
-                sfd.Filter = CreateFilterList(Filter);
-                sfd.DefaultExt = DefaultExtension;
+                sfd.Title = title;
+                sfd.Filter = CreateFilterList(filter);
+                sfd.DefaultExt = defaultExtension;
 
                 if (sfd.ShowDialog(_parent) == true)
                 {
@@ -734,33 +675,35 @@ namespace WPFMachine.Absolute
                 }
 
                 _parent.Focus(); // HACK For some reason, it won't always pick up text input after the dialog, so this refocuses
-            }));
+            });
             return name;
         }
 
-        private String CreateFilterList(params String[] types)
+        private string CreateFilterList(params string[] types)
         {
-            List<String> temp = new List<string>(types);
-            temp.Add("All Files (*.*)|*.*");
+            using var temp = new PooledList<string>(types)
+            {
+                "All Files (*.*)|*.*"
+            };
 
-            return String.Join("|", temp.ToArray());
+            return string.Join("|", temp);
         }
 
         public void PrepareSample(int number)
         {
-            if (os_._blorbFile != null)
+            if (OS.BlorbFile != null)
             {
-                _sound.LoadSound(os_._blorbFile.Sounds[number]);
+                _sound.LoadSound(OS.BlorbFile.Sounds[number]);
             }
         }
 
         public void StartSample(int number, int volume, int repeats, ushort eos)
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
-                _sound.LoadSound(os_._blorbFile.Sounds[number]);
+                _sound.LoadSound(OS.BlorbFile.Sounds[number]);
                 _sound.PlaySound();
-            }));
+            });
         }
 
         public void FinishWithSample(int number)
@@ -771,47 +714,45 @@ namespace WPFMachine.Absolute
 
         public void StopSample(int number)
         {
-            invoke(() =>
+            Invoke(() =>
             {
                 _sound.StopSound();
             });
         }
 
-        private static FrotzNetDLL.Frotz.Other.PNGChunk _palatteChunk = null;
+        private static Frotz.Other.PNGChunk PalatteChunk = null;
 
-        public void DrawPicture(int picture, byte[] Image, int y, int x)
+        public void DrawPicture(int picture, byte[] image, int y, int x)
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
                 // If the image would go beyond the actual bounds of the display, don't bother drawing it.
-                if (x > this.ActualWidth || y > this.ActualHeight) return;
+                if (x > ActualWidth || y > ActualHeight) return;
 
-                byte[] buffer = Image;
+                byte[] buffer = image;
 
-                if (os_._blorbFile.AdaptivePalatte != null && os_._blorbFile.AdaptivePalatte.Count > 0)
+                if (OS.BlorbFile.AdaptivePalatte != null && OS.BlorbFile.AdaptivePalatte.Count > 0)
                 {
-
                     try
                     {
                         // Had to use the adaptive palatte for some Infocom games
-                        var ms = new System.IO.MemoryStream(Image);
-                        FrotzNetDLL.Frotz.Other.PNG p = new FrotzNetDLL.Frotz.Other.PNG(ms);
+                        using var readMS = OS.StreamManger.GetStream("AbsoluteScreen.DrawPicture", image);
+                        var p = new Frotz.Other.PNG(readMS);
 
-
-                        if (os_._blorbFile.AdaptivePalatte.Contains(picture))
+                        if (OS.BlorbFile.AdaptivePalatte.Contains(picture))
                         {
-                            if (_palatteChunk == null) throw new ArgumentException("No last palette");
-                            p.Chunks["PLTE"] = _palatteChunk;
+                            if (PalatteChunk == null) throw new ArgumentException("No last palette");
+                            p.Chunks["PLTE"] = PalatteChunk;
                         }
                         else
                         {
-                            _palatteChunk = p.Chunks["PLTE"];
+                            PalatteChunk = p.Chunks["PLTE"];
                         }
 
-                        ms = new System.IO.MemoryStream();
-                        p.Save(ms);
+                        using var writeMS = OS.StreamManger.GetStream("AbsoluteScreen.DrawPicture");
+                        p.Save(writeMS);
 
-                        buffer = ms.ToArray();
+                        buffer = writeMS.ToArray();
                     }
                     catch (ArgumentException)
                     {
@@ -819,12 +760,10 @@ namespace WPFMachine.Absolute
                     }
                 }
 
-
-                FrotzImage img = new FrotzImage();
-                BitmapImage bi = new BitmapImage();
+                var img = new FrotzImage();
+                var bi = new BitmapImage();
                 bi.BeginInit();
                 bi.StreamSource = new System.IO.MemoryStream(buffer);
-
                 bi.EndInit();
                 img.Source = bi;
 
@@ -839,8 +778,8 @@ namespace WPFMachine.Absolute
                 img.SetValue(Canvas.TopProperty, (double)newY);
                 img.SetValue(Canvas.LeftProperty, (double)newX);
 
-                img.SetValue(Canvas.HeightProperty, (double)(bi.Height * scale));
-                img.SetValue(Canvas.WidthProperty, (double)(bi.Width * scale));
+                img.SetValue(Canvas.HeightProperty, bi.Height * scale);
+                img.SetValue(Canvas.WidthProperty, bi.Width * scale);
 
                 if (picture == 1)
                 {
@@ -856,7 +795,7 @@ namespace WPFMachine.Absolute
                 mainCanvas.Children.Add(img);
 
                 // removeCoveredImages(img);
-            }));
+            });
         }
 
         private Rect GetImageBounds(Image img)
@@ -878,17 +817,17 @@ namespace WPFMachine.Absolute
         // Iterate through the images on the screen, and remove any that would be completely obscured by the new image
         // In additional to keeping the number of images on the screen down, this also allows text to be drawn on top
         // of other images (like Zork Zero status)
-        private void removeCoveredImages(Image img)
+        private void RemoveCoveredImages(Image img)
         {
-            Rect r = GetImageBounds(img);
+            var r = GetImageBounds(img);
 
             for (int i = 0; i < mainCanvas.Children.Count; i++)
             {
-                Image oldImg = mainCanvas.Children[i] as Image;
+                var oldImg = mainCanvas.Children[i] as Image;
                 if (img == oldImg) continue;
                 if (oldImg != null)
                 {
-                    Rect oldR = GetImageBounds(oldImg);
+                    var oldR = GetImageBounds(oldImg);
 
                     if (r.Contains(oldR) || r == oldR)
                     {
@@ -899,22 +838,25 @@ namespace WPFMachine.Absolute
             }
         }
 
-        public string SelectGameFile(out byte[] filedata)
+#nullable enable
+        public (string FileName, byte[] FileData)? SelectGameFile()
         {
-            String fName = null;
-            byte[] buffer = null;
-            Dispatcher.Invoke(new Action(delegate
+            string? fName = null;
+            byte[]? buffer = null;
+            Dispatcher.Invoke(() =>
             {
-                Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();
-                ofd.Title = "Open a Z-Code file";
-                ofd.DefaultExt = ".dat";
+                var ofd = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Open a Z-Code file",
+                    DefaultExt = ".dat",
 
-                ofd.Filter = CreateFilterList(
-                 "Most IF Files (*.zblorb;*.dat;*.z?;*.blorb)|*.zblorb;*.dat;*.z?;*.blorb",
-                 "Infocom Blorb File (*.zblorb)|*.zblorb",
-                 "Infocom Games (*.dat)|*.dat",
-                 "Z-Code Files (*.z?)|*.z?",
-                 "Blorb File (*.blorb)|*.blorb");
+                    Filter = CreateFilterList(
+                        "Most IF Files (*.zblorb;*.dat;*.z?;*.blorb)|*.zblorb;*.dat;*.z?;*.blorb",
+                        "Infocom Blorb File (*.zblorb)|*.zblorb",
+                        "Infocom Games (*.dat)|*.dat",
+                        "Z-Code Files (*.z?)|*.z?",
+                        "Blorb File (*.blorb)|*.blorb")
+                };
 
                 if (ofd.ShowDialog(_parent) == true)
                 {
@@ -925,32 +867,30 @@ namespace WPFMachine.Absolute
                     s.Close();
                 }
 
-            }));
-            filedata = buffer;
-            return fName;
-        }
+            });
 
-        public void DisplayMessage(string Message, string Caption)
-        {
-            MessageBox.Show(Message, Caption);
-        }
+            if (fName != null && buffer != null)
+            {
+                return (fName, buffer);
+            }
 
-        public void HandleFatalError(string Message)
+            return null;
+        }
+#nullable disable
+
+        public void DisplayMessage(string message, string caption) => MessageBox.Show(message, caption);
+
+        public void HandleFatalError(string message)
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
                 // TODO I'd like this to reference the root window for modality
-                MessageBox.Show(_parent, Message, "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-            }));
+                MessageBox.Show(_parent, message, "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            });
 
-            throw new ZMachineException(Message);
+            throw new ZMachineException(message);
         }
         #endregion
-
-        public new void Reset()
-        {
-            Clear();
-        }
 
         protected override void AfterSetCharsAndLines()
         {
@@ -958,10 +898,7 @@ namespace WPFMachine.Absolute
             _cursorCanvas.MinWidth = charWidth;
         }
 
-        protected override void DoReset()
-        {
-            Clear();
-        }
+        protected override void DoReset() => Clear();
 
         public void SetActiveWindow(int win)
         {
@@ -973,10 +910,7 @@ namespace WPFMachine.Absolute
         {
         }
 
-        public bool ShouldWrap()
-        {
-            return true;
-        }
+        public bool ShouldWrap() => true;
     }
 }
 

@@ -1,33 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿using Frotz;
+using Frotz.Constants;
+using Frotz.Screen;
+using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-
-using Frotz.Screen;
-using Frotz;
 using System.Windows.Media;
-using Frotz.Constants;
 using WPFMachine.Support;
-using System.Globalization;
 
 namespace WPFMachine
 {
-    public abstract class ScreenBase : UserControl, ZMachineScreen
+    public abstract class ScreenBase : UserControl, IZMachineScreen
     {
+        protected ScreenBase()
+        {
+            _regularLines?.Dispose();
+            _fixedWidthLines?.Dispose();
+        }
+
         #region ZMachineScreen Members
 
-        public void AddInput(char InputKeyPressed)
-        {
-            OnKeyPressed(InputKeyPressed);
-        }
+        public void AddInput(char InputKeyPressed) => OnKeyPressed(InputKeyPressed);
 
-        protected void OnKeyPressed(char key)
-        {
-            if (KeyPressed != null) KeyPressed(this, new ZKeyPressEventArgs(key));
-        }
+        protected void OnKeyPressed(char key) => KeyPressed?.Invoke(this, new ZKeyPressEventArgs(key));
 
         public event EventHandler<ZKeyPressEventArgs> KeyPressed;
 
@@ -38,11 +33,11 @@ namespace WPFMachine
 
         protected ScreenMetrics _metrics;
 
-        public ScreenMetrics Metrics { get { return _metrics; } }
+        public ScreenMetrics Metrics => _metrics;
 
         protected FontInfo _regularFont;
         protected FontInfo _fixedFont;
-        protected FontInfo _beyZorkFont;
+        protected Lazy<FontInfo> _beyZorkFont;
 
         protected CharDisplayInfo _currentInfo;
 
@@ -56,17 +51,14 @@ namespace WPFMachine
         protected ScreenLines _fixedWidthLines = null;
 
         protected NumberSubstitution _substituion = new NumberSubstitution();
-        
+
         public void SetCharsAndLines()
         {
-            double height = this.ActualHeight;
-            double width = this.ActualWidth;
+            double height = ActualHeight;
+            double width = ActualWidth;
 
-            FormattedText fixedFt = buildFormattedText("A", _fixedFont, _currentInfo, null);
-            FormattedText propFt = buildFormattedText("A", _regularFont, _currentInfo, null);
-
-            double w = fixedFt.Width;
-            double h = fixedFt.Height;
+            var fixedFt = BuildFormattedText("A", _fixedFont, _currentInfo);
+            var propFt = BuildFormattedText("A", _regularFont, _currentInfo);
 
             charHeight = Math.Max(fixedFt.Height, propFt.Height);
             charWidth = fixedFt.Width;
@@ -74,21 +66,21 @@ namespace WPFMachine
             double screenWidth = width - 20;
             double screenHeight = height - 20;
 
-            if (os_._blorbFile != null)
+            if (OS.BlorbFile != null)
             {
-                var standard = os_._blorbFile.StandardSize;
+                var standard = OS.BlorbFile.StandardSize;
                 if (standard.Height > 0 && standard.Width > 0)
                 {
-                    int maxW = (int)Math.Floor(width / os_._blorbFile.StandardSize.Width);
-                    int maxH = (int)Math.Floor(height / os_._blorbFile.StandardSize.Height);
+                    int maxW = (int)Math.Floor(width / OS.BlorbFile.StandardSize.Width);
+                    int maxH = (int)Math.Floor(height / OS.BlorbFile.StandardSize.Height);
 
                     scale = Math.Min(maxW, maxH);
 
-                    screenWidth = os_._blorbFile.StandardSize.Width * scale;
-                    screenHeight = os_._blorbFile.StandardSize.Height * scale;
+                    screenWidth = OS.BlorbFile.StandardSize.Width * scale;
+                    screenHeight = OS.BlorbFile.StandardSize.Height * scale;
 
-                    double heightDiff = _parent.ActualHeight - this.ActualHeight;
-                    double widthDiff = _parent.ActualWidth - this.ActualWidth;
+                    double heightDiff = _parent.ActualHeight - ActualHeight;
+                    double widthDiff = _parent.ActualWidth - ActualWidth;
 
                     _parent.Height = screenHeight + heightDiff;
                     _parent.Width = screenWidth + widthDiff;
@@ -121,30 +113,30 @@ namespace WPFMachine
 
         protected abstract void AfterSetCharsAndLines();
 
-        protected FormattedText buildFormattedText(String Text, FontInfo Font, CharDisplayInfo cdi, DrawingContext dc)
+        protected FormattedText BuildFormattedText(string text, FontInfo font, CharDisplayInfo cdi)
         {
-            TextFormattingMode tfm = TextFormattingMode.Display;
-            FormattedText ft = new FormattedText(Text,
+            var tfm = TextFormattingMode.Display;
+            var ft = new FormattedText(text,
                    CultureInfo.CurrentCulture,
                    FlowDirection.LeftToRight,
-                   Font.Typeface,
-                   Font.PointSize,
+                   font.Typeface,
+                   font.PointSize,
                    ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground),
-                   _substituion, tfm);
+                   _substituion, tfm, 1.0);
 
-            setStyle(cdi, Text.Length, ft);
+            SetStyle(cdi, ft);
 
             return ft;
         }
 
-        public void setStyle(CharDisplayInfo fs, int count, FormattedText ft)
+        public void SetStyle(CharDisplayInfo fs, FormattedText ft)
         {
-            if ((fs.Style & (int)ZStyles.BOLDFACE_STYLE) > 0)
+            if ((fs.Style & ZStyles.BOLDFACE_STYLE) > 0)
             {
                 ft.SetFontWeight(FontWeights.Bold);
             }
 
-            if ((fs.Style & (int)ZStyles.REVERSE_STYLE) > 0)
+            if ((fs.Style & ZStyles.REVERSE_STYLE) > 0)
             {
                 ft.SetFontWeight(FontWeights.Bold);
                 ft.SetForegroundBrush(ZColorCheck.ZColorToBrush(fs.BackgroundColor, ColorType.Background));
@@ -154,69 +146,58 @@ namespace WPFMachine
                 ft.SetForegroundBrush(ZColorCheck.ZColorToBrush(fs.ForegroundColor, ColorType.Foreground));
             }
 
-            if ((fs.Style & (int)ZStyles.EMPHASIS_STYLE) > 0)
+            if ((fs.Style & ZStyles.EMPHASIS_STYLE) > 0)
             {
                 ft.SetFontStyle(FontStyles.Italic);
             }
 
-            if ((fs.Style & (int)ZStyles.FIXED_WIDTH_STYLE) > 0)
+            if ((fs.Style & ZStyles.FIXED_WIDTH_STYLE) > 0)
             {
                 ft.SetFontFamily(_fixedFont.Family);
             }
         }
 
-        public void setFontInfo()
+        public void SetFontInfo()
         {
             int font_size = Properties.Settings.Default.FontSize;
 
             _regularFont = new FontInfo(Properties.Settings.Default.ProportionalFont, font_size);
             _fixedFont = new FontInfo(Properties.Settings.Default.FixedWidthFont, font_size);
+            _beyZorkFont = new Lazy<FontInfo>(() => new FontInfo("BEYZORK", font_size, new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/beyzork.fon")));
         }
 
-        public new void Focus()
-        {
-            base.Focus(); // TODO Determine if this is actually necessary
-        }
+        public new void Focus() => base.Focus(); // TODO Determine if this is actually necessary
 
         public event EventHandler<GameSelectedEventArgs> GameSelected;
 
-        public void Reset()
-        {
-            DoReset();
-        }
+        public void Reset() => DoReset();
 
         protected abstract void DoReset();
 
-        protected void OnStoryStarted(GameSelectedEventArgs e)
+        protected void OnStoryStarted(GameSelectedEventArgs e) => GameSelected?.Invoke(this, e);
+
+        public ZSize GetImageInfo(Span<byte> image)
         {
-            if (GameSelected != null) GameSelected(this, e);
-        }
-
-        Dictionary<int, byte[]> images = new Dictionary<int, byte[]>();
-
-        public ZSize GetImageInfo(byte[] Image)
-        {
-            System.Drawing.Image i = System.Drawing.Image.FromStream(new System.IO.MemoryStream(Image));
-
-            return new ZSize(i.Height * scale, i.Width * scale);
+            using var ms = OS.StreamManger.GetStream("ScreenBase.GetImageInfo", image);
+            using var img = System.Drawing.Image.FromStream(ms);
+            return new ZSize(img.Height * scale, img.Width * scale);
         }
 
         // TODO This does the same thing (blurry) and doesn't retain the transparent
-        public byte[] scaleImage(int scale, byte[] Image)
+        public static byte[] ScaleImage(int scale, Span<byte> image)
         {
-            System.Drawing.Image i = System.Drawing.Image.FromStream(new System.IO.MemoryStream(Image));
-            System.Drawing.Bitmap b = new System.Drawing.Bitmap(i.Width * scale, i.Height * scale);
-            using (var g = System.Drawing.Graphics.FromImage((System.Drawing.Image)b))
-            {
-                g.DrawImage(i, 0, 0, i.Width * scale, i.Height * scale);
-            }
-            var ms = new System.IO.MemoryStream();
+            using var imgMs = OS.StreamManger.GetStream("ScreenBase.ScaleImage", image);
+            using var img = System.Drawing.Image.FromStream(imgMs);
+            using var bmp = new System.Drawing.Bitmap(img.Width * scale, img.Height * scale);
+            using var graphics = System.Drawing.Graphics.FromImage(bmp);
+            graphics.DrawImage(img, 0, 0, img.Width * scale, img.Height * scale);
+            using var ms = OS.StreamManger.GetStream("ScreenBase.ScaleImage");
 
-            b.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
 
             return ms.ToArray();
         }
-           
+
         #endregion
     }
 }

@@ -1,28 +1,23 @@
-﻿using System;
+﻿using Frotz.Constants;
+using Frotz.Screen;
+using System;
 using System.Collections.Generic;
 using System.Text;
-
 using System.Windows;
 using System.Windows.Documents;
-
-using Frotz.Screen;
-using Frotz.Constants;
-
 using WPFMachine.Support;
 
 namespace WPFMachine.Screen
 {
     internal class ZParagraph : Paragraph
     {
-        ZTextControl _parent;
-        StringBuilder _currentText = new StringBuilder();
-        int _x;
-
-        CharDisplayInfo _currentInfo;
-        CharDisplayInfo _defaultInfo;
-        CharDisplayInfo _fixedInfo;
-
-        TextFlushMode _flushMode = TextFlushMode.Normal;
+        private readonly ZTextControl _parent;
+        private readonly StringBuilder _currentText = new StringBuilder();
+        private int _x;
+        private CharDisplayInfo _currentInfo;
+        private CharDisplayInfo _defaultInfo;
+        private CharDisplayInfo _fixedInfo;
+        private TextFlushMode _flushMode = TextFlushMode.Normal;
 
         internal ZParagraph(ZTextControl Parent, CharDisplayInfo CurrentInfo)
         {
@@ -40,7 +35,7 @@ namespace WPFMachine.Screen
             get
             {
                 double w = 0;
-                foreach (Inline i in base.Inlines)
+                foreach (var i in base.Inlines)
                 {
                     if (i is ZRun)
                     {
@@ -59,26 +54,20 @@ namespace WPFMachine.Screen
         {
             if (_currentText.Length > 0)
             {
-                Dispatcher.Invoke(new Action(delegate
-                {
-                    Flush();
-                }));
+                Dispatcher.Invoke(Flush);
             }
             _currentInfo = CurrentInfo;
 
         }
 
-        internal void AddDisplayChar(char c)
-        {
-            _currentText.Append(c);
-        }
+        internal void AddDisplayChar(char c) => _currentText.Append(c);
 
         internal void Flush()
         {
             if (_currentText.Length == 0) return;
-            String text = _currentText.ToString();
+            string text = _currentText.ToString();
             _currentText.Clear();
-            int chars = _x.tcw();
+            int chars = _x.Tcw();
 
             // TODO This is an invalid state, but it still seems to get here... I need to figure out why
             //if (_flushMode == TextFlushMode.Absolute && _x == 1 && Width == 0)
@@ -90,7 +79,7 @@ namespace WPFMachine.Screen
             if (_flushMode == TextFlushMode.Absolute)
             {
                 _flushMode = TextFlushMode.Normal;
-//                Inlines.Clear();
+                //                Inlines.Clear();
                 if (Inlines.Count == 0)
                 {
                     // Add an empty inline to allow for the absolute positioning
@@ -110,8 +99,8 @@ namespace WPFMachine.Screen
                     {
                         if (IsFixedWidth(_currentInfo))
                         {
-                            setAbsolute(text, _x, _currentInfo);
-                            
+                            SetAbsolute(text, _x, _currentInfo);
+
                             return;
                         }
                         else
@@ -120,7 +109,7 @@ namespace WPFMachine.Screen
                             if (_x > 1)
                             {
                                 System.Diagnostics.Debug.WriteLine("Inserting a blank");
-                                ZBlankContainer zbc = new ZBlankContainer(_x);
+                                var zbc = new ZBlankContainer(_x);
                                 Inlines.Add(zbc);
                             }
 
@@ -138,7 +127,7 @@ namespace WPFMachine.Screen
                         if (IsOnlyFixedFont() && IsFixedWidth(_currentInfo) || Top == 1)
                         {
                             // TODO Need to make some calculations here
-                            String temp = CurrentText;
+                            string temp = CurrentText;
                             Inlines.Clear();
 
                             AddInline(ReplaceText(chars, temp, text), _fixedInfo);
@@ -149,7 +138,7 @@ namespace WPFMachine.Screen
                         {
                             if (text.Trim() != "" || _currentInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
                             {
-                                setAbsolute(text, _x, _currentInfo);
+                                SetAbsolute(text, _x, _currentInfo);
 
                                 return;
                             }
@@ -180,64 +169,55 @@ namespace WPFMachine.Screen
             }
         }
 
-        private void setAbsolute(String text, int _x, CharDisplayInfo _info)
-        {
-            _parent._adorner.AddAbsolute(text, (int)Top, _x, _info);
-        }
+        private void SetAbsolute(string text, int _x, CharDisplayInfo _info) 
+            => _parent._adorner.AddAbsolute(text, (int)Top, _x, _info);
 
-        private String ReplaceText(int pos, String CurrentString, String NewText)
+        private string ReplaceText(int pos, string currentString, string newText)
         {
-            String previous = CurrentString;
-            if (previous.Length < pos + NewText.Length)
+            string previous = currentString;
+            if (previous.Length < pos + newText.Length)
             {
-                previous = previous.PadRight(pos + NewText.Length);
+                previous = previous.PadRight(pos + newText.Length);
             }
-            StringBuilder sb = new StringBuilder(previous);
-            sb.Remove(pos, NewText.Length);
-            sb.Insert(pos, NewText);
+            var sb = new StringBuilder(previous);
+            sb.Remove(pos, newText.Length);
+            sb.Insert(pos, newText);
 
             return sb.ToString();
         }
 
-        private bool IsFixedWidth(CharDisplayInfo Info)
-        {
-            return (Info.Font == ZFont.FIXED_WIDTH_FONT || Info.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE));
-        }
+        private bool IsFixedWidth(CharDisplayInfo Info) 
+            => Info.Font == ZFont.FIXED_WIDTH_FONT || Info.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE);
 
-        private ZRun AddInline(String Text, CharDisplayInfo DisplayInfo)
+        private ZRun AddInline(string Text, CharDisplayInfo DisplayInfo)
         {
-            ZRun temp = CreateInline(Text, DisplayInfo);
+            var temp = CreateInline(Text, DisplayInfo);
             Inlines.Add(temp);
             return temp;
         }
 
-        private ZRun CreateInline(String Text, CharDisplayInfo DisplayInfo) {
-           // Add an empty inline to allow for the absolute positioning
-            ZRun temp = new ZRun(DisplayInfo);
-            temp.Text = Text;
-            if (_currentInfo.Font == 1)
+        private ZRun CreateInline(string Text, CharDisplayInfo DisplayInfo)
+        {
+            // Add an empty inline to allow for the absolute positioning
+            var temp = new ZRun(DisplayInfo)
             {
-                temp.FontFamily = _parent._regularFont.Family;
-            }
-            else
-            {
-                temp.FontFamily = _parent._fixedFont.Family;
-            }
+                Text = Text,
+                FontFamily = _currentInfo.Font == 1 
+                    ? _parent.RegularFont.Family : _parent.FixedFont.Family
+            };
 
             ImplementRunStyle(temp);
 
             return temp;
         }
 
-        private ZRun FirstInline
-        {
-            get { return (ZRun)Inlines.FirstInline; }
-        }
+        private ZRun FirstInline => (ZRun)Inlines.FirstInline;
 
         private ZRun LastInline
         {
-            get {
-                ZRun r = Inlines.LastInline as ZRun;
+            get
+            {
+                var r = Inlines.LastInline as ZRun;
                 return r;
             }
         }
@@ -266,7 +246,7 @@ namespace WPFMachine.Screen
 
             if (run.DisplayInfo.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE) || run.DisplayInfo.Font != ZFont.TEXT_FONT)
             {
-                run.FontFamily = _parent._fixedFont.Family;
+                run.FontFamily = _parent.FixedFont.Family;
             }
 
             if (run.DisplayInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
@@ -278,22 +258,21 @@ namespace WPFMachine.Screen
             {
                 run.Foreground = ZColorCheck.ZColorToBrush(run.DisplayInfo.ForegroundColor, ColorType.Foreground);
                 int color = run.DisplayInfo.BackgroundColor;
-                if (color != _parent.bColor)
+                if (color != _parent.BColor)
                 {
                     run.Background = ZColorCheck.ZColorToBrush(color, ColorType.Background);
                 }
             }
         }
 
-        public String CurrentText
+        public string CurrentText
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (Inline i in Inlines)
+                var sb = new StringBuilder();
+                foreach (var i in Inlines)
                 {
-                    Run r = i as Run;
-                    if (r != null)
+                    if (i is Run r)
                     {
                         sb.Append(r.Text);
                     }
@@ -304,10 +283,9 @@ namespace WPFMachine.Screen
 
         private bool IsOnlyFixedFont()
         {
-            foreach (Inline i in Inlines)
+            foreach (var i in Inlines)
             {
-                ZRun r = i as ZRun;
-                if (r != null)
+                if (i is ZRun r)
                 {
                     if (!IsFixedWidth(r.DisplayInfo) && r.Text != "") return false;
                 }
@@ -320,7 +298,7 @@ namespace WPFMachine.Screen
             return true;
         }
 
-        ZRun _inputRun = null;
+        private ZRun _inputRun = null;
         internal void StartInputMode()
         {
             _inputRun = new ZRun(_currentInfo);
@@ -328,10 +306,7 @@ namespace WPFMachine.Screen
             Inlines.Add(_inputRun);
         }
 
-        internal void AddInputChar(char c)
-        {
-            _inputRun.Text += c;
-        }
+        internal void AddInputChar(char c) => _inputRun.Text += c;
 
         internal void RemoveInputChars(int count)
         {
@@ -346,15 +321,9 @@ namespace WPFMachine.Screen
         }
 
 
-        internal void EndInputMode()
-        {
-            _inputRun = null;
-        }
+        internal void EndInputMode() => _inputRun = null;
 
-        private void RemoveCharsFromRun(ZRun run, int count)
-        {
-            run.Text = run.Text.Remove(run.Text.Length - count);
-        }
+        private void RemoveCharsFromRun(ZRun run, int count) => run.Text = run.Text.Remove(run.Text.Length - count);
     }
 
     internal enum TextFlushMode
@@ -366,7 +335,7 @@ namespace WPFMachine.Screen
 
     internal class CharsInLine
     {
-        List<CharInfo> _chars = new List<CharInfo>();
+        private readonly List<CharInfo> _chars = new List<CharInfo>();
 
         internal CharsInLine()
         {

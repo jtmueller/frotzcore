@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WPFMachine.Options
 {
@@ -21,7 +10,7 @@ namespace WPFMachine.Options
     {
         public event RoutedEventHandler Click;
 
-        public GameDirectory(String text)
+        public GameDirectory(string text)
         {
             InitializeComponent();
             lDir.Content = text;
@@ -29,12 +18,9 @@ namespace WPFMachine.Options
 
         private void bRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (Click != null) Click(this, new RoutedEventArgs());
+            Click?.Invoke(this, new RoutedEventArgs());
         }
 
-        public String Directory
-        {
-            get { return lDir.Content.ToString(); }
-        }
+        public string Directory => lDir.Content.ToString();
     }
 }

@@ -5,3 +5,11 @@ Color picker dialog found at: http://blogs.msdn.com/wpfsdk/archive/2006/10/26/Un
 01/13/2010:
 - Implemented completion.
 - Started working on even more accurate text alignment.
+
+
+7/19/2019: 
+- Imported from archived project https://archive.codeplex.com/?p=frotznet
+- Converted to .NET Core 3, renamed to FrotzCore
+- Reformatted, modernized code
+- Converted naming scheme closer to C# conventions
+- Made use of Span and ArrayPool to reduce allocations

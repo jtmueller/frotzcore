@@ -1,21 +1,12 @@
-﻿using System;
+﻿using Frotz.Constants;
+using Frotz.Screen;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
 using WPFMachine.Support;
-
-using Frotz.Constants;
-using Frotz.Screen;
 
 namespace WPFMachine.Screen
 {
@@ -24,23 +15,19 @@ namespace WPFMachine.Screen
     /// </summary>
     public partial class ZTextControl : UserControl
     {
-        internal ScreenMetrics _metrics;
-        internal FontInfo _regularFont;
-        internal FontInfo _fixedFont;
-        FlowDocument _fd;
+        private ScreenMetrics _metrics;
+        private FontInfo _regularFont;
+        private FontInfo _fixedFont;
+        private FlowDocument _fd;
 
-        internal int fColor;
-        internal int bColor;
-
-        int _x = 1;
-        int _y = 1;
-
-        int _cursorX = 1;
-        int _cursorY = 1;
-
-        ZParagraph _currentParagraph;
-
-        CharDisplayInfo _currentDisplay;
+        private int _fColor;
+        private int _bColor;
+        private int _x = 1;
+        private int _y = 1;
+        private int _cursorX = 1;
+        private int _cursorY = 1;
+        private ZParagraph _currentParagraph;
+        private CharDisplayInfo _currentDisplay;
 
         internal OverlayAdorner _adorner;
 
@@ -54,10 +41,16 @@ namespace WPFMachine.Screen
 
             _adorner = new OverlayAdorner(rtb);
 
-            this.Loaded += new RoutedEventHandler(ZTextControl_Loaded);
+            Loaded += new RoutedEventHandler(ZTextControl_Loaded);
         }
 
-        void ZTextControl_Loaded(object sender, RoutedEventArgs e)
+        public FontInfo RegularFont => _regularFont;
+        public FontInfo FixedFont => _fixedFont;
+
+        public int BColor => _bColor;
+        public int FColor => _fColor;
+
+        private void ZTextControl_Loaded(object sender, RoutedEventArgs e)
         {
             // TODO This may be used to simplify some of the text handling
             var layer = AdornerLayer.GetAdornerLayer(rtb);
@@ -70,22 +63,21 @@ namespace WPFMachine.Screen
 
             _adorner.FontHeight = Metrics.FontSize.Height;
 
-            addLines();
+            AddLines();
         }
 
-        private void addLines()
+        private void AddLines()
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
                 double top = (_fd.Blocks.Count * _metrics.FontSize.Height) + 1;
                 while (_fd.Blocks.Count < _metrics.Rows)
                 {
+                    var p = new ZParagraph(this, _currentDisplay)
                     {
-                        ZParagraph p = new ZParagraph(this, _currentDisplay);
-                        p.LineHeight = _metrics.FontSize.Height;
-                        _fd.Blocks.Add(p);
-
-                    }
+                        LineHeight = _metrics.FontSize.Height
+                    };
+                    _fd.Blocks.Add(p);
                 }
 
                 // Reset the top on all the lines to make sure they are correct
@@ -98,7 +90,7 @@ namespace WPFMachine.Screen
                 }
 
                 SetCurrentParagraph();
-            }));
+            });
         }
 
         internal void SetFontInfo()
@@ -110,7 +102,7 @@ namespace WPFMachine.Screen
 
             rtb.FontFamily = _regularFont.Family;
             rtb.FontSize = _regularFont.PointSize;
-            _fd = new System.Windows.Documents.FlowDocument();
+            _fd = new FlowDocument();
             rtb.Document = _fd;
             rtb.Background = Brushes.Transparent;
             rtb.Foreground = ZColorCheck.ZColorToBrush(1, ColorType.Foreground);
@@ -123,15 +115,12 @@ namespace WPFMachine.Screen
             // this.Background = ZColorCheck.ZColorToBrush(1, ColorType.Background);
         }
 
-        internal void AddDisplayChar(char c)
-        {
-            _currentParagraph.AddDisplayChar(c);
-        }
+        internal void AddDisplayChar(char c) => _currentParagraph.AddDisplayChar(c);
 
         internal void SetCursorPosition(int x, int y)
         {
-            _x = x.tcw();
-            _y = y.tch();
+            _x = x.Tcw();
+            _y = y.Tch();
 
             _cursorX = x;
             _cursorY = y;
@@ -141,7 +130,7 @@ namespace WPFMachine.Screen
 
         internal void ScrollLines(int top, int height, int numlines)
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
                 _adorner.ScrollLines(top, height, numlines);
 
@@ -149,7 +138,7 @@ namespace WPFMachine.Screen
                 _currentParagraph = null;
                 // _cursorY = -1;
 
-                List<ZParagraph> toRemove = new List<ZParagraph>();
+                var toRemove = new List<ZParagraph>();
                 foreach (ZParagraph zp in _fd.Blocks)
                 {
                     if (zp.Top >= top && zp.Top < top + numlines)
@@ -158,12 +147,12 @@ namespace WPFMachine.Screen
                     }
                 }
 
-                foreach (ZParagraph zp in toRemove)
+                foreach (var zp in toRemove)
                 {
                     _fd.Blocks.Remove(zp);
                 }
 
-                addLines();
+                AddLines();
 
                 double newTop = 1;
                 foreach (ZParagraph zp in _fd.Blocks)
@@ -172,27 +161,24 @@ namespace WPFMachine.Screen
                     newTop += _metrics.FontSize.Height;
                 }
 
-            }));
+            });
 
             SetCurrentParagraph();
 
         }
 
-        internal void Refresh()
-        {
-            _adorner.InvalidateVisual();
-        }
+        internal void Refresh() => _adorner.InvalidateVisual();
 
         internal void Clear()
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
                 _adorner.Clear();
 
                 // TODO Consider erasing the text in the existing lines rather than blowing out the whole thing
                 _fd.Blocks.Clear();
-                addLines();
-            }));
+                AddLines();
+            });
         }
 
         public void SetTextStyle(int new_style)
@@ -206,14 +192,14 @@ namespace WPFMachine.Screen
 
         public void SetColor(int new_foreground, int new_background)
         {
-            if (fColor != new_foreground || bColor != new_background)
+            if (_fColor != new_foreground || _bColor != new_background)
             {
                 _currentDisplay.ForegroundColor = new_foreground;
                 _currentDisplay.BackgroundColor = new_background;
-                
+
                 // TODO Can this be removed?
-                fColor = new_foreground;
-                bColor = new_background;
+                _fColor = new_foreground;
+                _bColor = new_background;
 
                 _currentParagraph.SetDisplayInfo(_currentDisplay);
             }
@@ -228,10 +214,7 @@ namespace WPFMachine.Screen
             }
         }
 
-        public void Flush()
-        {
-            _currentParagraph.Flush();
-        }
+        public void Flush() => _currentParagraph.Flush();
 
         public int StartInputMode()
         {
@@ -240,16 +223,15 @@ namespace WPFMachine.Screen
 
             int width = 0;
 
-            foreach (Inline il in _currentParagraph.Inlines)
+            foreach (var il in _currentParagraph.Inlines)
             {
-                if (il is ZRun)
+                if (il is ZRun r)
                 {
-                    ZRun r = il as ZRun;
-                    String text = r.Text;
-                    if (text.Contains(">"))
+                    string text = r.Text;
+                    if (text.Contains('>'))
                     {
-                        String temp = text.TrimEnd();
-                        if (temp.LastIndexOf(">") == temp.Length - 1)
+                        string temp = text.TrimEnd();
+                        if (temp.LastIndexOf('>') == temp.Length - 1)
                         {
                             width += (int)r.Width;
                             return width;
@@ -278,25 +260,16 @@ namespace WPFMachine.Screen
             return -1;
         }
 
-        public void AddInputChar(char c)
-        {
-            _currentParagraph.AddInputChar(c);
-        }
+        public void AddInputChar(char c) => _currentParagraph.AddInputChar(c);
 
-        public void RemoveInputChars(int count)
-        {
-            _currentParagraph.RemoveInputChars(count);
-        }
+        public void RemoveInputChars(int count) => _currentParagraph.RemoveInputChars(count);
 
-        public void EndInputMode()
-        {
-            _currentParagraph.EndInputMode();
-        }
+        public void EndInputMode() => _currentParagraph.EndInputMode();
 
         private void SetCurrentParagraph()
         {
             ZParagraph temp = null;
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
 
                 foreach (ZParagraph zp in _fd.Blocks)
@@ -324,10 +297,11 @@ namespace WPFMachine.Screen
                     _currentParagraph.SetDisplayInfo(_currentDisplay);
                 }
 
-            }));
+            });
             if (temp == null)
             {
-                System.Diagnostics.Debug.WriteLine("Not matching an existing paragraph:" + _cursorY + ":" + _metrics.FontSize.Height + ":" + _metrics.WindowSize.Height);
+                System.Diagnostics.Debug.WriteLine("Not matching an existing paragraph: {0}:{1}:{2}", 
+                    _cursorY, _metrics.FontSize.Height, _metrics.WindowSize.Height);
             }
         }
     }

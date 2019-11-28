@@ -1,23 +1,13 @@
-﻿using System;
+﻿using Frotz.Constants;
+using Frotz.Screen;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using System.IO;
-
-using System.Threading;
-
-using WPFMachine.Screen;
-using Frotz.Screen;
-using Frotz.Constants;
 
 namespace WPFMachine
 {
@@ -26,14 +16,12 @@ namespace WPFMachine
     /// </summary>
     public partial class MainWindow : Window
     {
-        ZMachineScreen _screen;
-        Thread _zThread;
-        List<String> LastPlayedGames = new List<string>();
-
-        bool closeOnQuit = false;
-
-        String _storyFileName;
-        Frotz.Blorb.Blorb _blorbFile;
+        private readonly IZMachineScreen _screen;
+        private Thread _zThread;
+        private readonly List<string> _lastPlayedGames = new List<string>();
+        private readonly bool _closeOnQuit = false;
+        private string _storyFileName;
+        private Frotz.Blorb.Blorb _blorbFile;
 
         public MainWindow()
         {
@@ -43,64 +31,53 @@ namespace WPFMachine
 
             Properties.Settings.Default.Upgrade();
 
-            Border b = new Border();
-            b.BorderThickness = new Thickness(1);
-            b.BorderBrush = Brushes.Black;
+            var b = new Border
+            {
+                BorderThickness = new Thickness(1),
+                BorderBrush = Brushes.Black
+            };
 
             // _screen = new Screen.TextControlScreen(this);
             _screen = new Absolute.AbsoluteScreen(this);
             pnlScreenPlaceholder.Children.Add(b);
 
             b.Child = (UIElement)_screen;
-            this.Loaded += new RoutedEventHandler(MainWindow_Loaded);
+            Loaded += new RoutedEventHandler(MainWindow_Loaded);
 
             if (Properties.Settings.Default.LastPlayedGames != null)
             {
-                var games = Properties.Settings.Default.LastPlayedGames.Split('|');
-                LastPlayedGames = new List<string>(games);
+                string[] games = Properties.Settings.Default.LastPlayedGames.Split('|');
+                _lastPlayedGames = new List<string>(games);
             }
 
-            buildMainMenu();
+            BuildMainMenu();
 
-            this.SizeChanged += new SizeChangedEventHandler(MainWindow_SizeChanged);
+            SizeChanged += new SizeChangedEventHandler(MainWindow_SizeChanged);
 
-            this.TextInput += new TextCompositionEventHandler(MainWindow_TextInput);
-            this.PreviewKeyDown += new KeyEventHandler(MainWindow_PreviewKeyDown);
+            TextInput += new TextCompositionEventHandler(MainWindow_TextInput);
+            PreviewKeyDown += new KeyEventHandler(MainWindow_PreviewKeyDown);
 
             statusBottom.Visibility = System.Windows.Visibility.Hidden;
 
-            setFrotzOptions();
+            SetFrotzOptions();
         }
 
-        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            MessageBox.Show("EX:" + e.ExceptionObject);
-        }
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e) => MessageBox.Show("EX:" + e.ExceptionObject);
 
-        void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // I can capture the arrow keys here
             if (!mnuInGame.IsFocused)
             {
-                char c = '\0';
-
-                switch (e.Key)
+                var c = e.Key switch
                 {
-                    case Key.Tab:
-                        c = '\t'; break;
-                    case Key.Up:
-                        c = (char)Frotz.Constants.CharCodes.ZC_ARROW_UP;
-                        break;
-                    case Key.Down:
-                        c = (char)Frotz.Constants.CharCodes.ZC_ARROW_DOWN;
-                        break;
-                    case Key.Left:
-                        c = (char)Frotz.Constants.CharCodes.ZC_ARROW_LEFT;
-                        break;
-                    case Key.Right:
-                        c = (char)Frotz.Constants.CharCodes.ZC_ARROW_RIGHT;
-                        break;
-                }
+                    Key.Tab   => '\t',
+                    Key.Up    => (char)CharCodes.ZC_ARROW_UP,
+                    Key.Down  => (char)CharCodes.ZC_ARROW_DOWN,
+                    Key.Left  => (char)CharCodes.ZC_ARROW_LEFT,
+                    Key.Right => (char)CharCodes.ZC_ARROW_RIGHT,
+                    _ => '\0',
+                };
 
                 if (c != 0)
                 {
@@ -111,7 +88,7 @@ namespace WPFMachine
             }
         }
 
-        void MainWindow_TextInput(object sender, TextCompositionEventArgs e)
+        private void MainWindow_TextInput(object sender, TextCompositionEventArgs e)
         {
             if (_screen != null)
             {
@@ -122,7 +99,7 @@ namespace WPFMachine
 
                 if (e.SystemText.Length > 0)
                 {
-                    ushort newKey = convertAltText(e.SystemText);
+                    ushort newKey = ConvertAltText(e.SystemText);
 
                     if (newKey != '\0')
                     {
@@ -133,68 +110,68 @@ namespace WPFMachine
         }
 
         // I'd like to make this a return char
-        private ushort convertAltText(String text)
+        private ushort ConvertAltText(string text)
         {
-            char k = text.ToLower()[0];
-            switch (k)
+            char k = char.ToLowerInvariant(text[0]);
+            return k switch
             {
-                case 'h': return CharCodes.ZC_HKEY_HELP;
-                case 'd': return CharCodes.ZC_HKEY_DEBUG;
-                case 'p': return CharCodes.ZC_HKEY_PLAYBACK;
-                case 'r': return CharCodes.ZC_HKEY_RECORD;
+                'h' => CharCodes.ZC_HKEY_HELP,
+                'd' => CharCodes.ZC_HKEY_DEBUG,
+                'p' => CharCodes.ZC_HKEY_PLAYBACK,
+                'r' => CharCodes.ZC_HKEY_RECORD,
 
-                case 's': return CharCodes.ZC_HKEY_SEED;
-                case 'u': return CharCodes.ZC_HKEY_UNDO;
-                case 'n': return CharCodes.ZC_HKEY_RESTART;
-                case 'x': return CharCodes.ZC_HKEY_QUIT;
-            }
+                's' => CharCodes.ZC_HKEY_SEED,
+                'u' => CharCodes.ZC_HKEY_UNDO,
+                'n' => CharCodes.ZC_HKEY_RESTART,
+                'x' => CharCodes.ZC_HKEY_QUIT,
 
-            return 0;
+                _ => CharCodes.ZC_BAD
+            };
         }
 
-        private void buildMainMenu()
+        private void BuildMainMenu()
         {
             miRecentGames.Items.Clear();
             miGames.Items.Clear();
 
-            foreach (String s in LastPlayedGames)
+            foreach (string s in _lastPlayedGames)
             {
-                MenuItem mi = new MenuItem();
-                mi.Header = s;
-                mi.Tag = s;
-                mi.Click += new RoutedEventHandler(miMru_Click);
+                var mi = new MenuItem
+                {
+                    Header = s,
+                    Tag = s
+                };
+                mi.Click += new RoutedEventHandler(MnuMru_Click);
                 miRecentGames.Items.Add(mi);
             }
 
-            setupGameDirectories();
+            SetupGameDirectories();
         }
 
-        private void setupGameDirectories()
+        private void SetupGameDirectories()
         {
-
-            String gameDirectories = Properties.Settings.Default.GameDirectoryList;
+            string gameDirectories = Properties.Settings.Default.GameDirectoryList;
 
             miGames.Items.Clear();
 
-            if (!String.IsNullOrWhiteSpace(gameDirectories))
+            if (!string.IsNullOrWhiteSpace(gameDirectories))
             {
-                String[] list = gameDirectories.Split(';');
+                string[] list = gameDirectories.Split(';');
                 if (list.Length == 1)
                 {
-                    addFilesInPath(list[0], miGames, true);
+                    AddFilesInPath(list[0], miGames, true);
 
                     if (miGames.Items.Count == 1)
                     {
-                        MenuItem mi = miGames.Items[0] as MenuItem;
-                        List<MenuItem> items = new List<MenuItem>();
-
+                        var mi = miGames.Items[0] as MenuItem;
+                        var items = new List<MenuItem>();
 
                         foreach (MenuItem i in mi.Items)
                         {
                             items.Add(i);
                         }
 
-                        foreach (MenuItem i in items)
+                        foreach (var i in items)
                         {
                             mi.Items.Remove(i);
                             miGames.Items.Add(i);
@@ -208,153 +185,139 @@ namespace WPFMachine
                 else
                 {
                     // TODO Make Recurse an option
-                    foreach (String dir in gameDirectories.Split(';'))
+                    foreach (string dir in gameDirectories.Split(';'))
                     {
                         try
                         {
-                            addFilesInPath(dir, miGames, true);
+                            AddFilesInPath(dir, miGames, true);
                         }
                         catch (DirectoryNotFoundException) { }
                         catch (ArgumentException) { }
                     }
                 }
-                miGames.Visibility = System.Windows.Visibility.Visible;
+                miGames.Visibility = Visibility.Visible;
             }
             else
             {
-                miGames.Visibility = System.Windows.Visibility.Collapsed;
+                miGames.Visibility = Visibility.Collapsed;
             }
         }
 
-        private void addFilesInPath(String Path, MenuItem Parent, bool Recurse)
+        private readonly HashSet<string> _validExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            DirectoryInfo di = new DirectoryInfo(Path);
-            MenuItem miRoot = new MenuItem();
-            miRoot.Header = di.Name;
+            ".z1", ".z2", ".z3", ".z4", ".z5", ".z6", ".z7", ".z8", ".zblorb", ".dat"
+        };
 
-            if (Recurse == true)
+        private void AddFilesInPath(string path, MenuItem parent, bool recurse = true)
+            => AddFilesInPath(new DirectoryInfo(path), parent, recurse);
+
+        private void AddFilesInPath(DirectoryInfo di, MenuItem parent, bool recurse = true)
+        {
+            var miRoot = new MenuItem
             {
-                foreach (var sub in di.GetDirectories())
+                Header = di.Name
+            };
+
+            if (recurse)
+            {
+                foreach (var sub in di.EnumerateDirectories())
                 {
-                    addFilesInPath(sub.FullName, miRoot, Recurse);
+                    AddFilesInPath(sub, miRoot, recurse);
                 }
             }
 
-            foreach (var fi in di.GetFiles())
+            foreach (var fi in di.EnumerateFiles())
             {
-                switch (fi.Extension.ToLower())
+                if (_validExtensions.Contains(fi.Extension))
                 {
-                    case ".z1":
-                    case ".z2":
-                    case ".z3":
-                    case ".z4":
-                    case ".z5":
-                    case ".z6":
-                    case ".z7":
-                    case ".z8":
-                    case ".zblorb":
-                    case ".dat":
-                        addGameItem(fi.FullName, miRoot);
-                        break;
+                    AddGameItem(fi, miRoot);
                 }
             }
 
             if (miRoot.Items.Count > 0)
             {
-                Parent.Items.Add(miRoot);
+                parent.Items.Add(miRoot);
             }
         }
 
-        private void addGameItem(String Path, MenuItem parent)
+        private void AddGameItem(FileInfo file, MenuItem parent)
         {
-            var fi = new System.IO.FileInfo(Path);
-            MenuItem mi = new MenuItem();
-            mi.Header = fi.Name;
-            mi.Tag = Path;
-            mi.Click += new RoutedEventHandler(miMru_Click);
+            var mi = new MenuItem
+            {
+                Header = file.Name,
+                Tag = file.FullName
+            };
+            mi.Click += MnuMru_Click;
 
             parent.Items.Add(mi);
         }
 
-        void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (this.ActualHeight > 0 && this.ActualWidth > 0)
+            if (ActualHeight > 0 && ActualWidth > 0)
             {
                 _screen.SetCharsAndLines();
-                stsItemSize.Content = String.Format("{0}x{1}", _screen.Metrics.Rows, _screen.Metrics.Columns);
+                var (rows, cols) = _screen.Metrics;
+                stsItemSize.Content = $"{rows}x{cols}";
             }
         }
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            String[] tempArgs = Environment.GetCommandLineArgs();
-            String[] args = new string[tempArgs.Length - 1];
+            var args = Environment.GetCommandLineArgs().AsMemory(1);
             if (args.Length > 0)
             {
-                Array.Copy(tempArgs, 1, args, 0, args.Length);
                 // closeOnQuit = true;
                 StartThread(args);
             }
         }
 
-        private void StartThread(String[] args)
+        private void StartThread(Memory<string> args)
         {
-            _zThread = new Thread(new ParameterizedThreadStart(ZMachineThread));
-            _zThread.IsBackground = true;
+            _zThread = new Thread(ZMachineThread)
+            {
+                IsBackground = true
+            };
             _zThread.Start(args);
         }
 
-        public void ZMachineThread(Object argsO)
+        public void ZMachineThread(object argsO)
         {
-            String[] args = (String[])argsO;
-            if (args.Length > 0 && args[0] == "last" && LastPlayedGames.Count > 0)
+            var args = ((Memory<string>)argsO).Span;
+            if (args.Length > 0 && args[0] == "last" && _lastPlayedGames.Count > 0)
             {
-                args[0] = LastPlayedGames[LastPlayedGames.Count - 1];
+                args[0] = _lastPlayedGames[_lastPlayedGames.Count - 1];
             }
 
             try
             {
-                Dispatcher.Invoke(new Action(delegate
+                Dispatcher.Invoke(() =>
                 {
-                    mnuInGame.Visibility = System.Windows.Visibility.Visible;
-                    mnuMain.Visibility = System.Windows.Visibility.Collapsed;
+                    mnuInGame.Visibility = Visibility.Visible;
+                    mnuMain.Visibility = Visibility.Collapsed;
+                    gameButtons.IsEnabled = true;
                     _screen.Focus();
 
-                    if (Properties.Settings.Default.ShowDebugMenu == true)
-                    {
-                        miDebugInfo.Visibility = System.Windows.Visibility.Visible;
-                    }
-                    else
-                    {
-                        miDebugInfo.Visibility = System.Windows.Visibility.Collapsed;
-                    }
+                    miDebugInfo.Visibility = Properties.Settings.Default.ShowDebugMenu ? Visibility.Visible : Visibility.Collapsed;
+                });
 
-                }));
-                Frotz.os_.SetScreen((IZScreen)_screen);
+                Frotz.OS.SetScreen((IZScreen)_screen);
 
-                ZColorCheck.resetDefaults();
+                ZColorCheck.ResetDefaults();
 
-                _screen.GameSelected += new EventHandler<GameSelectedEventArgs>(_screen_GameSelected);
-                Frotz.Generic.main.MainFunc((String[])args);
+                _screen.GameSelected += new EventHandler<GameSelectedEventArgs>(Screen_GameSelected);
 
-                Dispatcher.Invoke(new Action(delegate
+                Frotz.Generic.Main.MainFunc(args);
+
+                //Dispatcher.Invoke(_screen.Reset);
+
+                if (_closeOnQuit)
                 {
-                    _screen.Reset();
-                }));
-
-                if (closeOnQuit)
-                {
-                    Dispatcher.Invoke(new Action(delegate
-                    {
-                        this.Close();
-                    }));
+                    Dispatcher.Invoke(Close);
                 }
             }
             catch (ZMachineException)
             { // Noop
-            }
-            catch (ThreadAbortException)
-            { // TODO It may be wise to handle this
             }
             catch (Exception ex)
             {
@@ -362,40 +325,41 @@ namespace WPFMachine
             }
             finally
             {
-                _screen.GameSelected -= new EventHandler<GameSelectedEventArgs>(_screen_GameSelected);
-                Dispatcher.Invoke(new Action(delegate
+                _screen.GameSelected -= new EventHandler<GameSelectedEventArgs>(Screen_GameSelected);
+                Dispatcher.Invoke(() =>
                 {
-                    buildMainMenu();
+                    BuildMainMenu();
 
-                    mnuInGame.Visibility = System.Windows.Visibility.Collapsed;
-                    mnuMain.Visibility = System.Windows.Visibility.Visible;
+                    mnuInGame.Visibility = Visibility.Collapsed;
+                    mnuMain.Visibility = Visibility.Visible;
+                    gameButtons.IsEnabled = false;
 
-                    this.Title = "FrotzNET";
-                }));
+                    Title = "FrotzCore";
+                });
             }
         }
 
-        void _screen_GameSelected(object sender, GameSelectedEventArgs e)
+        private void Screen_GameSelected(object sender, GameSelectedEventArgs e)
         {
-            String s = e.StoryFileName;
+            string s = e.StoryFileName;
 
-            for (int i = 0; i < LastPlayedGames.Count; i++)
+            for (int i = 0; i < _lastPlayedGames.Count; i++)
             {
-                if (String.IsNullOrWhiteSpace(LastPlayedGames[i]) || String.Compare(LastPlayedGames[i], s, true) == 0)
+                if (string.IsNullOrWhiteSpace(_lastPlayedGames[i]) || string.Compare(_lastPlayedGames[i], s, true) == 0)
                 {
-                    LastPlayedGames.RemoveAt(i--);
+                    _lastPlayedGames.RemoveAt(i--);
                 }
             }
 
-            LastPlayedGames.Add(s);
+            _lastPlayedGames.Add(s);
 
 
-            while (LastPlayedGames.Count > Properties.Settings.Default.LastPlayedGamesCount)
+            while (_lastPlayedGames.Count > Properties.Settings.Default.LastPlayedGamesCount)
             {
-                LastPlayedGames.RemoveAt(0);
+                _lastPlayedGames.RemoveAt(0);
             }
 
-            Properties.Settings.Default.LastPlayedGames = String.Join("|", LastPlayedGames.ToArray());
+            Properties.Settings.Default.LastPlayedGames = string.Join("|", _lastPlayedGames);
             Properties.Settings.Default.Save();
 
             _storyFileName = e.StoryFileName;
@@ -404,134 +368,128 @@ namespace WPFMachine
             miGameInfo.IsEnabled = (_blorbFile != null);
         }
 
-        private void setFrotzOptions()
+        private void SetFrotzOptions()
         {
             var settings = Properties.Settings.Default;
 
+            Frotz.Generic.Main.option_context_lines = settings.FrotzContextLines;
+            Frotz.Generic.Main.option_left_margin = settings.FrotzLeftMargin;
+            Frotz.Generic.Main.option_right_margin = settings.FrotzRightMargin;
+            Frotz.Generic.Main.option_script_cols = settings.FrotzScriptColumns;
+            Frotz.Generic.Main.option_undo_slots = settings.FrotzUndoSlots;
 
-            Frotz.Generic.main.option_context_lines = settings.FrotzContextLines;
-            Frotz.Generic.main.option_left_margin = settings.FrotzLeftMargin;
-            Frotz.Generic.main.option_right_margin = settings.FrotzRightMargin;
-            Frotz.Generic.main.option_script_cols = settings.FrotzScriptColumns;
-            Frotz.Generic.main.option_undo_slots = settings.FrotzUndoSlots;
+            Frotz.Generic.Main.option_attribute_assignment = settings.FrotzAttrAssignment;
+            Frotz.Generic.Main.option_attribute_testing = settings.FrotzAttrTesting;
+            Frotz.Generic.Main.option_expand_abbreviations = settings.FrotzExpandAbbreviations;
+            Frotz.Generic.Main.option_ignore_errors = settings.FrotzIgnoreErrors;
+            Frotz.Generic.Main.option_object_locating = settings.FrotzObjLocating;
+            Frotz.Generic.Main.option_object_movement = settings.FrotzObjMovement;
+            Frotz.Generic.Main.option_piracy = settings.FrotzPiracy;
 
-            Frotz.Generic.main.option_attribute_assignment = settings.FrotzAttrAssignment;
-            Frotz.Generic.main.option_attribute_testing = settings.FrotzAttrTesting;
-            Frotz.Generic.main.option_expand_abbreviations = settings.FrotzExpandAbbreviations;
-            Frotz.Generic.main.option_ignore_errors = settings.FrotzIgnoreErrors;
-            Frotz.Generic.main.option_object_locating = settings.FrotzObjLocating;
-            Frotz.Generic.main.option_object_movement = settings.FrotzObjMovement;
-            Frotz.Generic.main.option_piracy = settings.FrotzPiracy;
-
-            Frotz.Generic.main.option_save_quetzal = settings.FrotzSaveQuetzal;
-            Frotz.Generic.main.option_sound = settings.FrotzSound;
-
-
+            Frotz.Generic.Main.option_save_quetzal = settings.FrotzSaveQuetzal;
+            Frotz.Generic.Main.option_sound = settings.FrotzSound;
 
         }
 
         #region Menu Events
-        private void mnuQuitGame_Click(object sender, RoutedEventArgs e)
+        private void MnuQuitGame_Click(object sender, RoutedEventArgs e)
         {
             if (_zThread != null)
             {
-                Frotz.Generic.main.abort_game_loop = true;
+                Frotz.Generic.Main.AbortGameLoop = true;
             }
         }
 
-        private void mnuExit_Click(object sender, RoutedEventArgs e)
+        private void MnuExit_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void MnuMru_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            var mi = sender as MenuItem;
+            string game = mi.Tag as string;
+
+            //if (_zThread != null)
+            //{
+            //    // Should never get here since the menu isn't show while a game is in progress
+            //    Frotz.Generic.Main.AbortGameLoop = true;
+            //}
+
+            StartThread(new string[] { game });
+
         }
 
-        void miMru_Click(object sender, RoutedEventArgs e)
+        private void MiOptions_Click(object sender, RoutedEventArgs e)
         {
-            MenuItem mi = sender as MenuItem;
-            String game = mi.Tag as String;
-
-            if (_zThread != null)
+            var os = new OptionsScreen
             {
-                // Should never get here since the menu isn't show while a game is in progress
-                _zThread.Abort();
-            }
-
-            StartThread(new String[] { game });
-
-        }
-
-        void miOptions_Click(object sender, RoutedEventArgs e)
-        {
-
-            OptionsScreen os = new OptionsScreen();
-            os.Owner = this;
+                Owner = this
+            };
             os.ShowDialog();
 
-            _screen.setFontInfo();
+            _screen.SetFontInfo();
             _screen.SetCharsAndLines();
 
-            setupGameDirectories();
-            setFrotzOptions();
+            SetupGameDirectories();
+            SetFrotzOptions();
         }
 
-        void miStartNewStory_Click(object sender, RoutedEventArgs e)
+        private void MiStartNewStory_Click(object sender, RoutedEventArgs e)
         {
             if (_zThread != null)
             {
-                _zThread.Abort();
+                Frotz.Generic.Main.AbortGameLoop = true;
             }
-            StartThread(new String[0]);
+            StartThread(Array.Empty<string>());
         }
 
-        void miExit_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+        private void MiExit_Click(object sender, RoutedEventArgs e) => Close();
 
-        private void miGameInfo_Click(object sender, RoutedEventArgs e)
+        private void MiGameInfo_Click(object sender, RoutedEventArgs e)
         {
-            BlorbMetadata bm = new BlorbMetadata(_blorbFile);
-            bm.Owner = this;
+            var bm = new BlorbMetadata(_blorbFile)
+            {
+                Owner = this
+            };
             bm.ShowDialog();
         }
 
-        private void miAbout_Click(object sender, RoutedEventArgs e)
+        private void MiAbout_Click(object sender, RoutedEventArgs e)
         {
-            AboutWindow aw = new AboutWindow();
-            aw.Owner = this;
+            var aw = new AboutWindow
+            {
+                Owner = this
+            };
             aw.ShowDialog();
         }
         #endregion
 
-        private void miDebugInfo_Click(object sender, RoutedEventArgs e)
+        private void MiDebugInfo_Click(object sender, RoutedEventArgs e)
         {
-
-            byte[] buffer = Frotz.os_.GetStoryFile();
+            byte[] buffer = Frotz.OS.GetStoryFile();
             if (_blorbFile != null && _blorbFile.ZCode != null)
             {
                 buffer = _blorbFile.ZCode;
             }
             else
             {
-                FileStream fs = new FileStream(_storyFileName, FileMode.Open);
+                using var fs = new FileStream(_storyFileName, FileMode.Open);
                 buffer = new byte[fs.Length];
                 fs.Read(buffer, 0, buffer.Length);
-                fs.Close();
             }
 
             try
             {
-                var info = ZTools.InfoDump.main(buffer, new String[0]);
+                var info = ZTools.InfoDump.Main(buffer, Array.Empty<string>());
 
-                Window w = new Window();
-                TabControl tc = new TabControl();
+                var w = new Window();
+                var tc = new TabControl();
 
                 foreach (var val in info)
                 {
-                    createTextBox(tc, val.Header, val.Text);
+                    CreateTextBox(tc, val.Header, val.Text);
                 }
 
-                String temp = ZTools.txd.main(buffer, new String[0]);
-                String endOfCode = "[END OF CODE]";
+                string temp = ZTools.Txd.Main(buffer, Array.Empty<string>());
+                string endOfCode = "[END OF CODE]";
 
                 int index = temp.IndexOf(endOfCode, StringComparison.OrdinalIgnoreCase);
 
@@ -540,14 +498,14 @@ namespace WPFMachine
                 {
                     info.Add(new ZTools.InfoDump.ZToolInfo("TXD", temp));
 
-                    createTextBox(tc, "TXD", temp);
+                    CreateTextBox(tc, "TXD", temp);
                 }
                 else
                 {
                     index += endOfCode.Length;
 
-                    addTabItem(tc, "TXD - Code", new Support.ZInfoTXD(temp.Substring(0, index), 0));
-                    addTabItem(tc, "TXD - Strings", new Support.ZInfoTXD(temp.Substring(index + 1), 1));
+                    AddTabItem(tc, "TXD - Code", new Support.ZInfoTXD(temp.Substring(0, index), 0));
+                    AddTabItem(tc, "TXD - Strings", new Support.ZInfoTXD(temp.Substring(index + 1), 1));
                 }
 
                 w.Content = tc;
@@ -560,34 +518,41 @@ namespace WPFMachine
             }
         }
 
-        private void createTextBox(TabControl tc, String header, String text)
+        private void CreateTextBox(TabControl tc, string header, string text)
         {
+            var tb = new TextBox
+            {
+                Text = text,
+                FontFamily = new FontFamily("Consolas")
+            };
 
-            TextBox tb = new TextBox();
-            tb.Text = text;
-            tb.FontFamily = new FontFamily("Courier New");
+            var sv = new ScrollViewer
+            {
+                Content = tb
+            };
 
-            ScrollViewer sv = new ScrollViewer();
-            sv.Content = tb;
-
-            addTabItem(tc, header, sv);
+            AddTabItem(tc, header, sv);
         }
 
-        private void addTabItem(TabControl tc, String header, Control c)
+        private void AddTabItem(TabControl tc, string header, Control c)
         {
-            TabItem ti = new TabItem();
-            ti.Header = header;
-            ti.Content = c;
+            var ti = new TabItem
+            {
+                Header = header,
+                Content = c
+            };
             tc.Items.Add(ti);
         }
 
-        private void miHistory_Click(object sender, RoutedEventArgs e)
+        private void MiHistory_Click(object sender, RoutedEventArgs e)
         {
-            DockPanel d = ((Absolute.AbsoluteScreen)_screen).Scrollback.DP;
-            
-            Window w = new Window();
-            w.Content = d;
-            w.Owner = this;
+            var d = ((Absolute.AbsoluteScreen)_screen).Scrollback.DP;
+
+            var w = new Window
+            {
+                Content = d,
+                Owner = this
+            };
 
 #if !temp
             w.ShowDialog();
@@ -595,6 +560,21 @@ namespace WPFMachine
 #else
             w.Show();
 #endif
+        }
+
+        private void BtnSaveGame_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke(Frotz.Generic.GameControl.SaveGame);
+        }
+
+        private void BtnOpenSave_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke(Frotz.Generic.GameControl.RestoreGame);
+        }
+
+        private void BtnUndo_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke(Frotz.Generic.GameControl.Undo);
         }
     }
 }

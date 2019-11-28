@@ -1,65 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using System.Windows.Media;
-using Frotz;
+﻿
 using Frotz.Constants;
-
+using Frotz.Other;
+using System.Windows.Media;
 using WPFMachine.Support;
-
-using FrotzNet.Frotz.Other;
 
 namespace WPFMachine
 {
     public class ZColorCheck
     {
-        static Color c64Blue = Color.FromRgb(66, 66, 231);
+        private static Color C64Blue = Color.FromRgb(66, 66, 231);
 
-        private int _color;
-        public int ColorCode { get { return _color; } set { _color = value; } }
-
-        private ColorType _type;
-        public ColorType Type { get { return _type; } set { _type = value; } }
+        public int ColorCode { get; set; }
+        public ColorType Type { get; set; }
 
 
         public ZColorCheck(int Color, ColorType Type)
         {
-            _color = Color;
-            _type = Type;
+            ColorCode = Color;
+            this.Type = Type;
         }
 
         public bool AreSameColor(ZColorCheck ColorToCompare)
         {
             if (ColorToCompare == null) return false;
 
-            if (ColorToCompare.ColorCode == 0 || _color == 0 && _type == ColorToCompare.Type) return true;
+            if (ColorToCompare.ColorCode == 0 || ColorCode == 0 && Type == ColorToCompare.Type) return true;
 
-            return (ColorToCompare.ColorCode == _color && ColorToCompare.Type == _type);
+            return ColorToCompare.ColorCode == ColorCode && ColorToCompare.Type == Type;
         }
 
-        internal Brush ToBrush()
-        {
-            return ZColorToBrush(_color, _type);
-        }
+        internal Brush ToBrush() => ZColorToBrush(ColorCode, Type);
 
-        internal Color ToColor()
-        {
-            return ZColorToColor(_color, _type);
-        }
+        internal Color ToColor() => ZColorToColor(ColorCode, Type);
 
         static ZColorCheck()
         {
-            resetDefaults();
+            ResetDefaults();
         }
 
-        internal static void resetDefaults() {
+        internal static void ResetDefaults()
+        {
             CurrentForeColor = Properties.Settings.Default.DefaultForeColor;
             CurrentBackColor = Properties.Settings.Default.DefaultBackColor;
         }
 
-        internal static void setDefaults(int fore_color, int back_color)
+        internal static void SetDefaults(int fore_color, int back_color)
         {
             if (fore_color > 1)
             {
@@ -75,17 +60,14 @@ namespace WPFMachine
         internal static Color CurrentForeColor { get; set; }
         internal static Color CurrentBackColor { get; set; }
 
-        internal static Brush ZColorToBrush(int color, ColorType Type)
-        {
-            return new SolidColorBrush(ZColorToColor(color, Type));
-        }
+        internal static Brush ZColorToBrush(int color, ColorType Type) => new SolidColorBrush(ZColorToColor(color, Type));
 
         internal static Color ZColorToColor(int color, ColorType Type)
         {
             if (color == 0 || color == 1)
             {
                 if (Type == ColorType.Foreground) return CurrentForeColor;
-                if (Type == ColorType.Background) return CurrentBackColor; 
+                if (Type == ColorType.Background) return CurrentBackColor;
             }
 
             switch (color)
@@ -93,7 +75,7 @@ namespace WPFMachine
                 case ZColor.BLACK_COLOUR:
                     return Colors.Black;
                 case ZColor.BLUE_COLOUR:
-                    return c64Blue;
+                    return C64Blue;
                 case ZColor.CYAN_COLOUR:
                     return Colors.Cyan;
                 case ZColor.DARKGREY_COLOUR:

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using System.Windows.Documents;
 
@@ -11,7 +8,7 @@ namespace WPFMachine.RTBSubclasses
     {
         public ZParagraph()
         {
-            
+
         }
 
         public double Top
@@ -33,25 +30,13 @@ namespace WPFMachine.RTBSubclasses
             }
         }
 
-        public new InlineCollection Inlines
-        {
-            get { throw new ArgumentException("Please use Add/Clear functions"); }
-        }
+        public new InlineCollection Inlines => throw new ArgumentException("Please use Add/Clear functions");
 
-        public void AddInline(ZRun run)
-        {
-            base.Inlines.Add(run);
-        }
+        public void AddInline(ZRun run) => base.Inlines.Add(run);
 
-        public void RemoveInline(ZRun run)
-        {
-            base.Inlines.Remove(run);
-        }
+        public void RemoveInline(ZRun run) => base.Inlines.Remove(run);
 
-        public void ClearInlines()
-        {
-            base.Inlines.Clear();
-        }
+        public void ClearInlines() => base.Inlines.Clear();
     }
 
 }

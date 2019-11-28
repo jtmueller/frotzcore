@@ -1,12 +1,13 @@
 ﻿<Window x:Class="WPFMachine.OptionsScreen"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="OptionsScreen" Height="400" Width="400"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Title="Options" Height="400" Width="400"
         xmlns:local="clr-namespace:WPFMachine.Options" SizeToContent="Height" WindowStartupLocation="CenterOwner" >
     <DockPanel PreviewKeyDown="DockPanel_PreviewKeyDown" Margin="2">
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
-            <Button Grid.Row="20" Grid.Column="0" Content="OK" Click="ok_Click" Margin="2" />
-            <Button Grid.Row="20" Grid.Column="1" Content="Cancel" Click="cancel_Click" Margin="2" />
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,3,0,0">
+            <Button Content="OK" Click="ok_Click" Width="70" Margin="0,0,5,0" />
+            <Button Content="Cancel" Click="cancel_Click" Width="70" Margin="0,0,5,0" />
         </StackPanel>
         <TabControl>
             <TabItem Header="General">
@@ -52,7 +53,8 @@
                     <CheckBox x:Name="cbShowDebug" Grid.Row="7" Grid.Column="1" />
 
                     <Label Grid.Row="8" Content="Game Directories" />
-                    <Button x:Name="btnAdd" Content="+" Margin="1" Click="btnAdd_Click" Grid.Row="8" Grid.Column="1" Width="20" />
+                    <Button x:Name="btnAdd" fa:Awesome.Content="FolderOutlinepenOutline" Margin="1" Click="btnAdd_Click" Grid.Row="8" Grid.Column="1" Width="30" >
+                    </Button>
                     <Border BorderBrush="Black" BorderThickness="1" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2">
                         <StackPanel x:Name="spGameList" />
                     </Border>
@@ -95,10 +97,10 @@
                     <CheckBox x:Name="cbPiracy" Grid.Row="5" Grid.Column="1" />
                     <Label Content="Expand Abbreviations" ToolTip="option_expand_abbreviations" Grid.Row="6" />
                     <CheckBox x:Name="cbExpandAbbreviations" Grid.Row="6" Grid.Column="1" />
-                    
+
                     <Label Content="Save Quetzal" ToolTip="Save In Quetzal Format" Grid.Row="7" />
                     <CheckBox x:Name="cbSaveQuetzal" Grid.Row="7" Grid.Column="1" />
-                    
+
                     <Label Content="Use Sound" ToolTip="Use Sound Where Available" Grid.Row="8" />
                     <CheckBox x:Name="cbSound" Grid.Row="8" Grid.Column="1" />
 

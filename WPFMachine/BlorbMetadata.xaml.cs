@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Frotz;
+using System;
+using System.IO;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-
 using System.Xml;
-using System.IO;
 
 namespace WPFMachine
 {
@@ -21,7 +15,7 @@ namespace WPFMachine
     /// </summary>
     public partial class BlorbMetadata : Window
     {
-        private Frotz.Blorb.Blorb _blorb;
+        private readonly Frotz.Blorb.Blorb _blorb;
 
         public BlorbMetadata(Frotz.Blorb.Blorb BlorbFile)
         {
@@ -32,7 +26,7 @@ namespace WPFMachine
 
             _blorb = BlorbFile;
 
-            XmlDocument xml = new XmlDocument();
+            var xml = new XmlDocument();
             xml.LoadXml(_blorb.MetaData);
 
             int row = 0;
@@ -46,17 +40,16 @@ namespace WPFMachine
                 {
                     int id = Convert.ToInt32(nodes[0].InnerText);
 
-                    BitmapImage bi = new BitmapImage();
+                    var bi = new BitmapImage();
                     bi.BeginInit();
-                    bi.StreamSource = new MemoryStream(BlorbFile.Pictures[id].Image);
+                    bi.CacheOption = BitmapCacheOption.OnLoad;
+                    using var ms = OS.StreamManger.GetStream("BlorbMetadata", BlorbFile.Pictures[id].Image);
+                    bi.StreamSource = ms;
                     bi.EndInit();
                     imgCover.Source = bi;
                 }
-                
+
             }
-
-
-
 
             nodes = xml.GetElementsByTagName("bibliographic");
             if (nodes.Count == 1)
@@ -69,14 +62,14 @@ namespace WPFMachine
                     }
                     else
                     {
-                        String text = "";
-                        String key = node.Name;
+                        string text = "";
+                        string key = node.Name;
                         switch (key)
                         {
                             case "title":
                                 {
                                     text = "Title";
-                                    this.Title = node.InnerText;
+                                    Title = node.InnerText;
                                 }
                                 break;
                             case "author":
@@ -99,12 +92,12 @@ namespace WPFMachine
 
                         if (text == "Language") continue; // Temporary measure, since I don't want to see the language
 
-                        TableRow tr = new TableRow();
-                        TableCell tc = new TableCell(new Paragraph(new Run(text)));
+                        var tr = new TableRow();
+                        var tc = new TableCell(new Paragraph(new Run(text)));
                         tr.Cells.Add(tc);
 
-                        Paragraph p = new Paragraph();
-                        Run r = new Run(node.InnerText);
+                        var p = new Paragraph();
+                        var r = new Run(node.InnerText);
                         p.TextAlignment = TextAlignment.Right;
                         p.Inlines.Add(r);
 
@@ -127,15 +120,17 @@ namespace WPFMachine
                 if (n.FirstChild.Name == "url")
                 {
 
-                    TableRow tr = new TableRow();
-                    TableCell tc = new TableCell(new Paragraph(new Run("More Info")));
+                    var tr = new TableRow();
+                    var tc = new TableCell(new Paragraph(new Run("More Info")));
                     tr.Cells.Add(tc);
 
-                    Paragraph p = new Paragraph();
-                    Hyperlink h = new Hyperlink(new Run(n.FirstChild.InnerText));
-                    h.Focusable = false;
-                    h.Foreground = Brushes.Blue;
-                    h.IsEnabled = true;
+                    var p = new Paragraph();
+                    var h = new Hyperlink(new Run(n.FirstChild.InnerText))
+                    {
+                        Focusable = false,
+                        Foreground = Brushes.Blue,
+                        IsEnabled = true
+                    };
                     p.TextAlignment = TextAlignment.Right;
                     h.MouseDown += new MouseButtonEventHandler(h_MouseDown);
                     h.NavigateUri = new Uri(n.FirstChild.InnerText);
@@ -150,30 +145,22 @@ namespace WPFMachine
             }
         }
 
-        void h_MouseDown(object sender, MouseButtonEventArgs e)
+        private void h_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Hyperlink hl = sender as Hyperlink;
+            var hl = sender as Hyperlink;
             wbInfo.Navigate(hl.NavigateUri.ToString(), "_blank", null, null);
         }
 
-        void imgCover_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            checkSize();
-        }
+        private void imgCover_SizeChanged(object sender, SizeChangedEventArgs e) => CheckSize();
 
-        void rtb_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            checkSize();
-        }
-        
+        private void rtb_SizeChanged(object sender, SizeChangedEventArgs e) => CheckSize();
 
-        bool resized = false;
-        private void checkSize()
+        private bool resized = false;
+        private void CheckSize()
         {
             if (resized == false && rtb.ActualHeight > 0 && imgCover.ActualHeight > 0)
             {
-                this.Height = rtb.ActualHeight + imgCover.ActualHeight + 50 + (this.ActualHeight - LayoutRoot.ActualHeight);
-
+                Height = rtb.ActualHeight + imgCover.ActualHeight + 50 + (ActualHeight - LayoutRoot.ActualHeight);
                 resized = true;
             }
         }
@@ -182,13 +169,10 @@ namespace WPFMachine
         {
             if (e.Key == Key.Escape)
             {
-                this.Close();
+                Close();
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+        private void Button_Click(object sender, RoutedEventArgs e) => Close();
     }
 }

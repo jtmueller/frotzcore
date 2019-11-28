@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+using System.Globalization;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-
-using System.Globalization;
 
 namespace WPFMachine.RTBSubclasses
 {
@@ -17,13 +12,12 @@ namespace WPFMachine.RTBSubclasses
             : this(Family, "")
         { }
 
-        public ZRun(FontFamily Family, String Text)
+        public ZRun(FontFamily Family, string Text)
             : base(Text)
         {
-            this.FontStyle = System.Windows.FontStyles.Normal;
-            this.FontWeight = System.Windows.FontWeights.Normal;
-            this.FontFamily = Family;
-
+            FontStyle = FontStyles.Normal;
+            FontWeight = FontWeights.Normal;
+            FontFamily = Family;
         }
 
         private double? _width = null;
@@ -43,16 +37,14 @@ namespace WPFMachine.RTBSubclasses
         protected void OnWidthChanged()
         {
             _width = null;
-            if (WidthChanged != null)
-            {
-                WidthChanged(this, EventArgs.Empty);
-            }
+            WidthChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public new FontStyle FontStyle
         {
-            get { return base.FontStyle; }
-            set {
+            get => base.FontStyle;
+            set
+            {
                 if (base.FontStyle != value)
                 {
                     OnWidthChanged();
@@ -63,8 +55,9 @@ namespace WPFMachine.RTBSubclasses
 
         public new FontWeight FontWeight
         {
-            get { return base.FontWeight; }
-            set {
+            get => base.FontWeight;
+            set
+            {
                 if (base.FontWeight != value)
                 {
                     OnWidthChanged();
@@ -73,10 +66,11 @@ namespace WPFMachine.RTBSubclasses
             }
         }
 
-        public new String Text
+        public new string Text
         {
-            get { return base.Text; }
-            set {
+            get => base.Text;
+            set
+            {
                 if (base.Text != value)
                 {
                     OnWidthChanged();
@@ -87,13 +81,12 @@ namespace WPFMachine.RTBSubclasses
 
         private double DetermineWidth()
         {
-            NumberSubstitution ns = new NumberSubstitution();
-            FormattedText ft = new FormattedText(Text,
-            CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight,
-            new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch),
-            this.FontSize,
-            this.Foreground, ns, TextFormattingMode.Display);
+            var ns = new NumberSubstitution();
+            var ft = new FormattedText(Text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize, Foreground, ns, TextFormattingMode.Display, 1.0);
 
             return ft.Width;
         }

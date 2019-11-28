@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Frotz.Screen;
 using System.Globalization;
-
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-
-using Frotz.Constants;
-using Frotz.Screen;
 
 namespace WPFMachine.Screen
 {
@@ -23,32 +16,18 @@ namespace WPFMachine.Screen
         }
 
         private double? _width = null;
-        public double Width
-        {
-            get
-            {
-                if (_width == null)
-                {
-                    _width = DetermineWidth();
-                }
-                return (double)_width;
-            }
-        }
+        public double Width => _width ?? (double)(_width = DetermineWidth());
 
-        internal double DetermineWidth()
-        {
-            return DetermineWidth(this.Text);
-        }
+        internal double DetermineWidth() => DetermineWidth(Text);
 
-        internal double DetermineWidth(String Text)
+        internal double DetermineWidth(string text)
         {
-            NumberSubstitution ns = new NumberSubstitution();
-            FormattedText ft = new FormattedText(Text,
-            CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight,
-            new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch),
-            this.FontSize,
-            this.Foreground, ns, TextFormattingMode.Display);
+            var ns = new NumberSubstitution();
+            var ft = new FormattedText(text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize, Foreground, ns, TextFormattingMode.Display, 1.0);
 
             return ft.Width;
         }

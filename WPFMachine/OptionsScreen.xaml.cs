@@ -1,28 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using WPFMachine.Support;
 
-namespace WPFMachine {
+namespace WPFMachine
+{
     /// <summary>
     /// Interaction logic for OptionsScreen.xaml
     /// </summary>
-    public partial class OptionsScreen : Window, IComparer<FontFamily> {
-        public OptionsScreen() {
+    public partial class OptionsScreen : Window, IComparer<FontFamily>
+    {
+        public OptionsScreen()
+        {
             InitializeComponent();
 
             var settings = Properties.Settings.Default;
 
-            List<FontFamily> fixedWidthFonts = new List<System.Windows.Media.FontFamily>();
-            List<FontFamily> otherWidthFonts = new List<System.Windows.Media.FontFamily>();
+            var fixedWidthFonts = new List<FontFamily>();
+            var otherWidthFonts = new List<FontFamily>();
 
             double maxFixedHeight = -1;
             double maxPropHeight = -1;
@@ -36,13 +34,13 @@ namespace WPFMachine {
             {
                 count++;
 
-                FormattedText ft = new FormattedText("i", System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black);
+                var ft = new FormattedText("i", System.Globalization.CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, 1.0);
 
                 var s = new Size(ft.Width, ft.Height);
 
                 ft = new FormattedText("w", System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black);
+                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, 1.0);
 
                 if (ft.Width == s.Width)
                 {
@@ -54,7 +52,7 @@ namespace WPFMachine {
                         fixedWidthCurrent = ff;
                     }
                 }
-             
+
                 otherWidthFonts.Add(ff);
                 maxPropHeight = Math.Max(maxPropHeight, ft.Height);
                 if (ff.Source == settings.ProportionalFont)
@@ -84,14 +82,14 @@ namespace WPFMachine {
 
             cbShowDebug.IsChecked = settings.ShowDebugMenu;
 
-            String dirs = settings.GameDirectoryList;
+            string dirs = settings.GameDirectoryList;
 
             if (dirs != "")
             {
-                String[] temp = dirs.Split(';');
+                string[] temp = dirs.Split(';');
                 for (int i = 0; i < temp.Length; i++)
                 {
-                    addDirectory(temp[i]);
+                    AddDirectory(temp[i]);
                 }
             }
 
@@ -113,38 +111,37 @@ namespace WPFMachine {
             cbSound.IsChecked = settings.FrotzSound;
         }
 
-        void addDirectory(String dir)
+        private void AddDirectory(string dir)
         {
-            Options.GameDirectory gd = new Options.GameDirectory(dir);
+            var gd = new Options.GameDirectory(dir);
             gd.Click += new RoutedEventHandler(gd_Click);
             spGameList.Children.Add(gd);
 
             gdListRow.Height = new GridLength(spGameList.Children.Count * 30);
         }
 
-        void gd_Click(object sender, RoutedEventArgs e)
+        private void gd_Click(object sender, RoutedEventArgs e)
         {
-            Options.GameDirectory gd = sender as Options.GameDirectory;
+            var gd = sender as Options.GameDirectory;
             spGameList.Children.Remove(gd);
 
             gdListRow.Height = new GridLength(spGameList.Children.Count * 30);
         }
 
-        public int Compare(FontFamily x, FontFamily y) {
-            return String.Compare(x.Source, y.Source);
-        }
+        public int Compare(FontFamily x, FontFamily y) => string.Compare(x.Source, y.Source);
 
-        private void ok_Click(object sender, RoutedEventArgs e) {
+        private void ok_Click(object sender, RoutedEventArgs e)
+        {
             var settings = Properties.Settings.Default;
 
-            FontFamily ff = fddFixedWidth.SelectedItem as FontFamily;
-            if (ff != null) {
+            if (fddFixedWidth.SelectedItem is FontFamily ff)
+            {
                 Properties.Settings.Default.FixedWidthFont = ff.Source;
             }
 
-            ff = fddProportional.SelectedItem as FontFamily;
-            if (ff != null) {
-                Properties.Settings.Default.ProportionalFont = ff.Source;
+            if (fddProportional.SelectedItem is FontFamily fp)
+            {
+                Properties.Settings.Default.ProportionalFont = fp.Source;
             }
 
             Properties.Settings.Default.FontSize = Convert.ToInt32(tbFontSize.Text);
@@ -156,16 +153,16 @@ namespace WPFMachine {
             Properties.Settings.Default.LastPlayedGamesCount = Convert.ToInt32(tbLastPlayedCount.Text);
 
             settings.ShowDebugMenu = cbShowDebug.IsChecked ?? false;
-            
 
-            List<String> dirs = new List<string>();
+
+            var dirs = new List<string>();
             foreach (Options.GameDirectory gd in spGameList.Children)
             {
                 dirs.Add(gd.Directory);
             }
 
-            Properties.Settings.Default.GameDirectoryList = 
-            String.Join(";", dirs.ToArray());
+            Properties.Settings.Default.GameDirectoryList =
+            string.Join(";", dirs);
 
             settings.FrotzPiracy = cbPiracy.IsChecked ?? false;
             settings.FrotzExpandAbbreviations = cbExpandAbbreviations.IsChecked ?? false;
@@ -179,18 +176,16 @@ namespace WPFMachine {
 
             settings.FrotzLeftMargin = Convert.ToUInt16(tbLeftMargin.Text);
             settings.FrotzRightMargin = Convert.ToUInt16(tbRightMargin.Text);
-            settings.FrotzContextLines= Convert.ToUInt16(tbContextLines.Text);
+            settings.FrotzContextLines = Convert.ToUInt16(tbContextLines.Text);
             settings.FrotzUndoSlots = Convert.ToInt32(tbUndoSlots.Text);
             settings.FrotzScriptColumns = Convert.ToInt32(tbScriptColumns.Text);
 
             Properties.Settings.Default.Save();
 
-            this.Close();
+            Close();
         }
 
-        private void cancel_Click(object sender, RoutedEventArgs e) {
-            this.Close();
-        }
+        private void cancel_Click(object sender, RoutedEventArgs e) => Close();
 
         private void DockPanel_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -218,10 +213,14 @@ namespace WPFMachine {
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
-            if (fbd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            var fbd = new BrowseForFolder();
+            var hwnd = new WindowInteropHelper(this).Handle;
+            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string path = fbd.SelectFolder("Select a folder containing one or more game files.", docPath, hwnd);
+
+            if (!string.IsNullOrWhiteSpace(path))
             {
-                addDirectory(fbd.SelectedPath);
+                AddDirectory(path);
             }
         }
     }

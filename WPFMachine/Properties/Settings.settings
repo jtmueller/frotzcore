@@ -3,19 +3,19 @@
   <Profiles />
   <Settings>
     <Setting Name="FontSize" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">10</Value>
+      <Value Profile="(Default)">14</Value>
     </Setting>
     <Setting Name="FixedWidthFont" Type="System.String" Scope="User">
       <Value Profile="(Default)">Consolas</Value>
     </Setting>
     <Setting Name="ProportionalFont" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Arial</Value>
+      <Value Profile="(Default)">Segoe UI</Value>
     </Setting>
     <Setting Name="DefaultForeColor" Type="System.Windows.Media.Color" Scope="User">
-      <Value Profile="(Default)">#FFFFFFFF</Value>
+      <Value Profile="(Default)">#FF2AC12A</Value>
     </Setting>
     <Setting Name="DefaultBackColor" Type="System.Windows.Media.Color" Scope="User">
-      <Value Profile="(Default)">#FF000084</Value>
+      <Value Profile="(Default)">#FF000000</Value>
     </Setting>
     <Setting Name="DefaultInputColor" Type="System.Windows.Media.Color" Scope="User">
       <Value Profile="(Default)">#FF00FFFF</Value>

@@ -1,33 +1,38 @@
 ﻿// TODO This can probably be remove
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using System.IO;
+using Frotz;
 using System.Drawing;
+using System.IO;
 
 namespace WPFMachine.Absolute
 {
     internal static class ScaleImages
     {
-        internal static byte[] Scale(byte[] img, int scale)
+        internal static byte[] Scale(byte[] imgData, int scale)
         {
-            var ms = new MemoryStream(img);
-            Image i = Image.FromStream(ms);
-            Bitmap b = new Bitmap(i.Width * scale, i.Height * scale);
+            var ms = OS.StreamManger.GetStream("ScaleImages.Scale", imgData);
 
-            Graphics g = Graphics.FromImage(b);
+            using var img = Image.FromStream(ms);
+            using var bmp = new Bitmap(img.Width * scale, img.Height * scale);
+
+            var g = Graphics.FromImage(bmp);
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            g.DrawImage(i, new Rectangle(0, 0, b.Width, b.Height),
-                new Rectangle(0, 0, i.Width, i.Height),
+            g.DrawImage(img, new Rectangle(0, 0, bmp.Width, bmp.Height),
+                new Rectangle(0, 0, img.Width, img.Height),
                 GraphicsUnit.Pixel);
 
-            ms = new MemoryStream();
-            b.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            ms.Dispose();
+            ms = OS.StreamManger.GetStream("ScaleImages.Scale");
 
-            return ms.ToArray();
+            try
+            {
+                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                return ms.ToArray();
+            }
+            finally
+            {
+                ms.Dispose();
+            }
         }
     }
 }

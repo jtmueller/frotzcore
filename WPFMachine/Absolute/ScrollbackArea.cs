@@ -1,67 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Frotz.Constants;
+using Frotz.Screen;
+using Microsoft.Win32;
 using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Threading;
-
-using Frotz.Constants;
-using Frotz.Screen;
-using System.Windows;
 using System.Windows.Media;
-using Microsoft.Win32;
 
 namespace WPFMachine.Absolute
 {
     public class ScrollbackArea
     {
-        private DockPanel _dock;
-        public DockPanel DP
-        {
-            get { return _dock; }
-        }
+        private readonly DockPanel _dock;
+        public DockPanel DP => _dock;
 
         public RichTextBox _RTB;
-
-        FlowDocument _doc;
-        Paragraph _p;
-
-        Run _currentRun = null;
-
-        UserControl _parent;
+        private readonly FlowDocument _doc;
+        private Paragraph _p;
+        private Run _currentRun = null;
+        private readonly UserControl _parent;
 
         public ScrollbackArea(UserControl Parent)
         {
             _dock = new DockPanel();
 
-            StackPanel sp = new StackPanel();
-            sp.Orientation = Orientation.Horizontal;
+            var sp = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
             _dock.Children.Add(sp);
 
             sp.SetValue(DockPanel.DockProperty, Dock.Top);
 
-            Button bCopyText = new Button();
-            bCopyText.Content = "Copy Text To Clipboard";
+            var bCopyText = new Button
+            {
+                Content = "Copy Text To Clipboard"
+            };
             bCopyText.Click += new RoutedEventHandler(bCopyText_Click);
             sp.Children.Add(bCopyText);
 
-            Button bSaveRtf = new Button();
-            bSaveRtf.Content = "Save RTF";
+            var bSaveRtf = new Button
+            {
+                Content = "Save RTF"
+            };
             bSaveRtf.Click += new RoutedEventHandler(bSaveRtf_Click);
             sp.Children.Add(bSaveRtf);
 
-            Button bSaveText = new Button();
-            bSaveText.Content = "Save Text";
+            var bSaveText = new Button
+            {
+                Content = "Save Text"
+            };
             bSaveText.Click += new RoutedEventHandler(bSaveText_Click);
             sp.Children.Add(bSaveText);
 
-            ScrollViewer sv = new ScrollViewer();
+            var sv = new ScrollViewer();
             _dock.Children.Add(sv);
 
-            _RTB = new RichTextBox();
-            _RTB.IsReadOnly = true;
-            _RTB.IsReadOnlyCaretVisible = true;
+            _RTB = new RichTextBox
+            {
+                IsReadOnly = true,
+                IsReadOnlyCaretVisible = true
+            };
 
             _doc = new FlowDocument();
             _RTB.Document = _doc;
@@ -70,20 +69,22 @@ namespace WPFMachine.Absolute
 
             Reset();
 
-            sv.Content =_RTB;
+            sv.Content = _RTB;
         }
 
-        private void saveFile(String filter, String Format)
+        private void saveFile(string filter, string Format)
         {
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = filter;
+            var sfd = new SaveFileDialog
+            {
+                Filter = filter
+            };
 
             if (sfd.ShowDialog() == false)
             {
-               return;
+                return;
             }
 
-            String fileName = sfd.FileName;
+            string fileName = sfd.FileName;
 
             var fs = new System.IO.FileStream(fileName, System.IO.FileMode.Create);
 
@@ -92,17 +93,11 @@ namespace WPFMachine.Absolute
             fs.Close();
         }
 
-        void bSaveText_Click(object sender, RoutedEventArgs e)
-        {
-            saveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
-        }
+        private void bSaveText_Click(object sender, RoutedEventArgs e) => saveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
 
-        void bSaveRtf_Click(object sender, RoutedEventArgs e)
-        {
-            saveFile("Rich Text Format (*.rtf)|*.rtf", System.Windows.DataFormats.Rtf);
-        }
+        private void bSaveRtf_Click(object sender, RoutedEventArgs e) => saveFile("Rich Text Format (*.rtf)|*.rtf", System.Windows.DataFormats.Rtf);
 
-        void bCopyText_Click(object sender, RoutedEventArgs e)
+        private void bCopyText_Click(object sender, RoutedEventArgs e)
         {
             var range = new TextRange(_RTB.Document.ContentStart, _RTB.Document.ContentEnd);
             Clipboard.SetText(range.Text);
@@ -110,10 +105,12 @@ namespace WPFMachine.Absolute
 
         public void Reset()
         {
-            _p = new Paragraph();
-            _p.FontFamily = new System.Windows.Media.FontFamily(Properties.Settings.Default.ProportionalFont);
+            _p = new Paragraph
+            {
+                FontFamily = new System.Windows.Media.FontFamily(Properties.Settings.Default.ProportionalFont)
+            };
 
-            double PointSize = Properties.Settings.Default.FontSize  * (96.0 / 72.0);
+            double PointSize = Properties.Settings.Default.FontSize * (96.0 / 72.0);
             _p.FontSize = PointSize;
 
             _doc.Blocks.Clear();
@@ -125,25 +122,27 @@ namespace WPFMachine.Absolute
             currentStyle = -1;
         }
 
-        String threeNewLines = "\r\n\r\n\r\n";
-        int currentStyle = -1;
+        private readonly string threeNewLines = "\r\n\r\n\r\n";
+        private int currentStyle = -1;
 
-        public void AddString(String text, CharDisplayInfo cdi)
+        public void AddString(string text, CharDisplayInfo cdi)
         {
             if (text == "") return;
-            _parent.Dispatcher.Invoke(new Action(delegate
+            _parent.Dispatcher.Invoke(() =>
             {
-               if (text == "\r\n") {
+                if (text == "\r\n")
+                {
 
-                  if (_p.Inlines.LastInline is LineBreak && _p.Inlines.LastInline.PreviousInline is LineBreak) {
-                     return;
-                  }
-                  LineBreak lb = new LineBreak();
-                  _p.Inlines.Add(lb);
+                    if (_p.Inlines.LastInline is LineBreak && _p.Inlines.LastInline.PreviousInline is LineBreak)
+                    {
+                        return;
+                    }
+                    var lb = new LineBreak();
+                    _p.Inlines.Add(lb);
 
-                  _currentRun = null;
-                  return;
-               }
+                    _currentRun = null;
+                    return;
+                }
 
 
                 if (currentStyle != cdi.Style)
@@ -159,17 +158,17 @@ namespace WPFMachine.Absolute
                     {
                         _currentRun.FontStyle = FontStyles.Italic;
                     }
-                    if ( (cdi.Style & ZStyles.REVERSE_STYLE) != 0)
+                    if ((cdi.Style & ZStyles.REVERSE_STYLE) != 0)
                     {
                         _currentRun.Background = Brushes.Black;
                         _currentRun.Foreground = Brushes.White;
                     }
-                    if ( (cdi.Style & ZStyles.FIXED_WIDTH_STYLE) != 0)
+                    if ((cdi.Style & ZStyles.FIXED_WIDTH_STYLE) != 0)
                     {
                         _currentRun.FontFamily = new System.Windows.Media.FontFamily(Properties.Settings.Default.FixedWidthFont);
                     }
                 }
-                
+
                 if (_currentRun == null)
                 {
                     _currentRun = new Run(text);
@@ -181,20 +180,23 @@ namespace WPFMachine.Absolute
 
                     if (_currentRun.Text.EndsWith(threeNewLines))
                     {
-                        StringBuilder sb = new StringBuilder(_currentRun.Text);
+                        var sb = new StringBuilder(_currentRun.Text);
 
-                        while (sb.ToString().EndsWith(threeNewLines))
+                        while (sb[^6] == '\r' && sb[^5] == '\n' &&
+                               sb[^4] == '\r' && sb[^3] == '\n' &&
+                               sb[^2] == '\r' && sb[^1] == '\n')
                         {
                             sb.Remove(sb.Length - 2, 2);
                         }
+
                         _currentRun.Text = sb.ToString();
 
-//                        
+                        //                        
                     }
                 }
                 _RTB.CaretPosition = _RTB.CaretPosition.DocumentEnd;
 
-            }));
+            });
         }
     }
 }

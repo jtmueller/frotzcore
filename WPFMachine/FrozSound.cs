@@ -1,41 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-
-using System.Windows;
-using System.Windows.Media;
+using System.IO;
 using System.Windows.Controls;
 
-using System.IO;
+namespace WPFMachine
+{
+    public class FrotzSound : UserControl
+    {
+        private readonly MediaElement _element;
 
-namespace WPFMachine {
-    public class FrotzSound : UserControl {
-        MediaElement _element;
-
-        public FrotzSound() {
-            _element = new MediaElement();
-            _element.LoadedBehavior = MediaState.Manual;
-            this.Content = _element;
+        public FrotzSound()
+        {
+            _element = new MediaElement
+            {
+                LoadedBehavior = MediaState.Manual
+            };
+            Content = _element;
         }
 
-        public void LoadSound(byte[] Sound) {
+        public void LoadSound(Span<byte> sound)
+        {
             _element.Source = null;
 
-            String temp = null;
+            string temp = null;
 
+            // TODO: Really? There must be a better way.
             for (int i = 0; i < 1000 && temp == null; i++)
             {
                 try
                 {
-                    temp = String.Format("{0}\\{1}.aiff", Path.GetTempPath(), i);
+                    temp = $"{Path.GetTempPath()}\\{i}.aiff";
 
-                    FileStream fs = new FileStream(temp, FileMode.Create);
-                    fs.Write(Sound, 0, Sound.Length);
+                    var fs = new FileStream(temp, FileMode.Create);
+                    fs.Write(sound);
                     fs.Close();
                 }
                 catch (System.IO.IOException)
                 {
                     i++;
-
                     temp = null;
                 }
             }
@@ -46,13 +47,8 @@ namespace WPFMachine {
             }
         }
 
-        public void PlaySound() {
-            _element.Play();
-        }
+        public void PlaySound() => _element.Play();
 
-        public void StopSound()
-        {
-            _element.Stop();
-        }
+        public void StopSound() => _element.Stop();
     }
 }

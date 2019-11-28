@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Documents;
-using System.Windows;
-using System.Windows.Media;
-
-using Frotz.Constants;
+﻿using Frotz.Constants;
 using Frotz.Screen;
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace WPFMachine.Screen
 {
     // TODO This may be so I can overlay different text
     internal class OverlayAdorner : Adorner
     {
-        List<AbsoluteText> _text = new List<AbsoluteText>();
-        
+        private readonly List<AbsoluteText> _text = new List<AbsoluteText>();
+
         internal int FontHeight { get; set; }
 
         internal FontInfo RegularFont { get; set; }
@@ -37,16 +34,16 @@ namespace WPFMachine.Screen
                 foreach (var at in _text)
                 {
 
-                    FontInfo f = RegularFont;
+                    var f = RegularFont;
                     if (at.DisplayInfo.Font == ZFont.FIXED_WIDTH_FONT || at.DisplayInfo.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE))
                     {
                         f = FixedWidthFont;
                     }
-                    Brush b = ZColorCheck.ZColorToBrush(at.DisplayInfo.ForegroundColor, Support.ColorType.Foreground);
-                    FormattedText ft = new FormattedText(at.Text,
+                    var b = ZColorCheck.ZColorToBrush(at.DisplayInfo.ForegroundColor, Support.ColorType.Foreground);
+                    var ft = new FormattedText(at.Text,
                         System.Globalization.CultureInfo.CurrentCulture,
                         FlowDirection.LeftToRight, f.Typeface, f.PointSize, b,
-                        new NumberSubstitution(), TextFormattingMode.Display);
+                        new NumberSubstitution(), TextFormattingMode.Display, 1.0);
 
                     if (at.DisplayInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
                     {
@@ -60,7 +57,7 @@ namespace WPFMachine.Screen
         }
 
         // TODO Maybe just make this take the AbsoluteText object
-        internal void AddAbsolute(String text, int y, int x, CharDisplayInfo displayInfo)
+        internal void AddAbsolute(string text, int y, int x, CharDisplayInfo displayInfo)
         {
             lock (_text)
             {
@@ -101,25 +98,25 @@ namespace WPFMachine.Screen
 
         private void Refresh()
         {
-            Dispatcher.Invoke(new Action(delegate
+            Dispatcher.Invoke(() =>
             {
-                this.InvalidateVisual();
-            }));
+                InvalidateVisual();
+            });
         }
 
         internal class AbsoluteText
         {
-            internal String Text { get; set; }
+            internal string Text { get; set; }
             internal int X { get; set; }
             internal int Y { get; set; }
             internal CharDisplayInfo DisplayInfo { get; set; }
 
-            internal AbsoluteText(String text, int y, int x, CharDisplayInfo displayInfo)
+            internal AbsoluteText(string text, int y, int x, CharDisplayInfo displayInfo)
             {
-                this.Text = text;
-                this.X = x;
-                this.Y = y;
-                this.DisplayInfo = displayInfo;
+                Text = text;
+                X = x;
+                Y = y;
+                DisplayInfo = displayInfo;
             }
 
         }

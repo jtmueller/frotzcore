@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Frotz.Screen;
+﻿using Frotz.Screen;
+using System;
 
 namespace WPFMachine
 {
-    interface ZMachineScreen
+    internal interface IZMachineScreen
     {
-        void AddInput(char InputKeyPressed); // TODO This could be named better
+        void AddInput(char inputKeyPressed); // TODO This could be named better
         void SetCharsAndLines();
         ScreenMetrics Metrics { get; }
-        void setFontInfo();
+        void SetFontInfo();
         void Focus();
         event EventHandler<GameSelectedEventArgs> GameSelected;
         void Reset();
-
     }
 }

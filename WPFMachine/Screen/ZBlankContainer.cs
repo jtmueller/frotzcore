@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 using System.Windows.Documents;
 
 namespace WPFMachine.Screen
 {
     internal class ZBlankContainer : InlineUIContainer
     {
-        internal ZBlankContainer(int Width)
+        internal ZBlankContainer(int width)
         {
-            this.Width = Width;
-            var c = new System.Windows.Controls.Canvas();
-            c.Width = Width;
+            Width = width;
+            var c = new System.Windows.Controls.Canvas
+            {
+                Width = width
+            };
 
-            this.Child = c;
+            Child = c;
         }
 
         internal int Width { get; private set; }
