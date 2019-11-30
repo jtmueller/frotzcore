@@ -7,9 +7,11 @@ using Microsoft.IO;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using zbyte = System.Byte;
 using zword = System.UInt16;
 
@@ -27,7 +29,7 @@ namespace Frotz
         // TODO Rename these
         private static long MakeId(byte a, byte b, byte c, byte d) => (a << 24) | (b << 16) | (c << 8) | d;
 
-        private static long MakeId(byte[] buffer, int offset) => MakeId(buffer[offset], buffer[offset + 1], buffer[offset + 2], buffer[offset + 3]);
+        private static long MakeId(ReadOnlySpan<byte> buffer) => MakeId(buffer[0], buffer[1], buffer[2], buffer[3]);
 
         public static Blorb.Blorb? BlorbFile = null; // TODO Make this static again, or something
 
@@ -441,15 +443,10 @@ namespace Frotz
             if (args.Length == 0)
             {
                 var file = Screen?.SelectGameFile();
-                if (file.HasValue)
-                {
-                    Main.StoryName = file.Value.FileName;
-                    Main.StoryData = file.Value.FileData;
-                }
-                else
-                {
+                if (file == null)
                     return false;
-                }
+
+                (Main.StoryName, Main.StoryData) = file.Value;
             }
             else
             {
@@ -737,17 +734,16 @@ namespace Frotz
 
             Screen.SetInputMode(true, true);
 
-            if (SetCursorPositionCalled == false)
+            if (!SetCursorPositionCalled)
             {
                 SetCursor(NewCursorPosition.Y, NewCursorPosition.X);
             }
 
-            var p = Screen.GetCursorPosition();
+            var (x, y) = Screen.GetCursorPosition();
 
             try
             {
-                var sw = new System.Diagnostics.Stopwatch();
-                sw.Start();
+                var sw = Stopwatch.StartNew();
                 while (true)
                 {
                     do
@@ -759,10 +755,12 @@ namespace Frotz
 
                         lock (Entries)
                         {
-                            if (Entries.Count > 0) break;
-                            if (sw.Elapsed.TotalSeconds > timeout / 10 && timeout > 0) return CharCodes.ZC_TIME_OUT;
+                            if (Entries.Count > 0) 
+                                break;
+                            if (sw.Elapsed.TotalSeconds > timeout / 10 && timeout > 0) 
+                                return CharCodes.ZC_TIME_OUT;
                         }
-                        System.Threading.Thread.Sleep(10);
+                        Thread.Sleep(10);
 
                     } while (true);
 
@@ -773,9 +771,9 @@ namespace Frotz
 
                         int width = Screen.GetStringWidth(((char)c).ToString(),
                             new CharDisplayInfo(ZFont.FIXED_WIDTH_FONT, ZStyles.NORMAL_STYLE, 1, 1));
-                        // _screen.SetCursorPosition(p.X + width, p.Y);
+                        // _screen.SetCursorPosition(x + width, y);
 
-                        NewCursorPosition = (p.X + width, p.Y);
+                        NewCursorPosition = (x + width, y);
 
                         return c;
                     }
@@ -1063,16 +1061,15 @@ namespace Frotz
                 {
                     byte[] buffer = BlorbFile.Pictures[picture].Image;
                     if (buffer.Length == 8)
-                    { // TODO This is a bit of a hack, it would be better to handle this upfront so there is no guess work
-                        width = (int)MakeId(buffer, 0) * _metrics.Scale;
-                        height = (int)MakeId(buffer, 4) * _metrics.Scale;
+                    { 
+                        // TODO This is a bit of a hack, it would be better to handle this upfront so there is no guess work
+                        width = (int)MakeId(buffer) * _metrics.Scale;
+                        height = (int)MakeId(buffer.AsSpan(4)) * _metrics.Scale;
                     }
                     else
                     {
                         if (Screen == null) throw new InvalidOperationException("Screen has not been set.");
-                        var size = Screen.GetImageInfo(buffer);
-                        height = size.Height;
-                        width = size.Width;
+                        (height, width) = Screen.GetImageInfo(buffer);
                     }
 
                     return true;
@@ -1141,6 +1138,8 @@ namespace Frotz
             }
         }
 
+        private static ReadOnlySpan<byte> FormBytes => new byte[] { (byte)'F', (byte)'O', (byte)'R', (byte)'M' };
+
         /*
          * os_path_open
          *
@@ -1148,7 +1147,7 @@ namespace Frotz
          * -- Szurgot: Changed this to return a Memory stream, and also has Blorb Logic.. May need to refine
          * -- Changed this again to take a byte[] to allow the data to be loaded further up the chain
          */
-        public static MemoryStream PathOpen(Span<byte> story_data)
+        public static MemoryStream PathOpen(ReadOnlySpan<byte> story_data)
         {
             // System.IO.FileInfo fi = new System.IO.FileInfo(FileName);
             if (story_data.Length < 4)
@@ -1157,8 +1156,7 @@ namespace Frotz
             }
             else
             {
-                if (story_data[0] == 'F' && story_data[1] == (byte)'O' &&
-                    story_data[2] == (byte)'R' && story_data[3] == (byte)'M')
+                if (story_data[..4].SequenceEqual(FormBytes))
                 {
                     BlorbFile = Blorb.BlorbReader.ReadBlorbFile(story_data);
 
@@ -1173,17 +1171,7 @@ namespace Frotz
                     if (File.Exists(temp))
                     {
                         using var fs = File.OpenRead(temp);
-                        byte[] bytes = ArrayPool<byte>.Shared.Rent((int)fs.Length);
-                        var buffer = bytes.AsSpan(..(int)fs.Length);
-                        try
-                        {
-                            fs.Read(buffer);
-                            BlorbFile = Blorb.BlorbReader.ReadBlorbFile(buffer);
-                        }
-                        finally
-                        {
-                            ArrayPool<byte>.Shared.Return(bytes);
-                        }
+                        BlorbFile = Blorb.BlorbReader.ReadBlorbFile(fs);
                     }
 
                     var stream = StreamManger.GetStream("OS.PathOpen", story_data);
@@ -1348,8 +1336,6 @@ namespace Frotz
             Main.MouseX = (ushort)x;
             Main.MouseY = (ushort)y;
         }
-
-        public static byte[] GetStoryFile() => FastMem.StoryData;
     }
 
     internal readonly struct BufferChar : IEquatable<BufferChar>

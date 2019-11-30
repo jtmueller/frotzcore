@@ -35,7 +35,7 @@ namespace Frotz.Generic
 
         private static bool locked = false;
         private static bool playing = false;
-        private static readonly ReadOnlyMemory<zbyte> lh_repeats = new zbyte[] {
+        private static ReadOnlySpan<zbyte> LhRepeats => new zbyte[] {
             0x00, 0x00, 0x00, 0x01, 0xff,
             0x00, 0x01, 0x01, 0x01, 0x01,
             0xff, 0x01, 0x01, 0xff, 0x00,
@@ -63,7 +63,7 @@ namespace Frotz.Generic
         private static void StartSample(int number, int volume, int repeats, zword eos)
         {
             if (Main.StoryId == Story.LURKING_HORROR)
-                repeats = lh_repeats.Span[number];
+                repeats = LhRepeats[number];
 
             OS.StartSample(number, volume, repeats, eos);
 

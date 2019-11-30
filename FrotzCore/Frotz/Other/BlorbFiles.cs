@@ -77,16 +77,21 @@ namespace Frotz.Blorb
 
         private readonly struct Chunk
         {
-            public readonly string Usage;
+            public readonly BlorbUsage Usage;
             public readonly int Number;
             public readonly int Start;
 
-            public Chunk(string usage, int number, int start)
+            public Chunk(BlorbUsage usage, int number, int start)
             {
                 Usage = usage;
                 Number = number;
                 Start = start;
             }
+        }
+
+        private enum BlorbUsage : byte
+        {
+            Unknown, Exec, Pict, Snd
         }
 
         private static int _level = 0;
@@ -121,13 +126,13 @@ namespace Frotz.Blorb
                     var c = _chunks[start - 8];
                     switch (c.Usage)
                     {
-                        case "Exec":
+                        case BlorbUsage.Exec:
                             blorb.ZCode = buffer.ToArray();
                             break;
-                        case "Pict":
+                        case BlorbUsage.Pict:
                             blorb.Pictures[c.Number] = new BlorbPicture(buffer.ToArray());
                             break;
-                        case "Snd ":
+                        case BlorbUsage.Snd:
                             {
                                 if (buffer[0] == 'A' && buffer[1] == 'I' && buffer[2] == 'F' && buffer[3] == 'F')
                                 {
@@ -171,9 +176,13 @@ namespace Frotz.Blorb
                     {
                         stream.Position = start;
                         int numResources = ReadInt(stream);
+                        Span<char> chars = stackalloc char[4];
+
                         for (int i = 0; i < numResources; i++)
                         {
-                            var c = new Chunk(ReadString(stream), ReadInt(stream), ReadInt(stream));
+                            ReadChars(stream, chars);
+                            var usage = GetBlorbUsage(chars);
+                            var c = new Chunk(usage, ReadInt(stream), ReadInt(stream));
                             _chunks.Add(c.Start, c);
                         }
                     }
@@ -270,13 +279,30 @@ namespace Frotz.Blorb
             }
         }
 
+        private static BlorbUsage GetBlorbUsage(ReadOnlySpan<char> chars)
+        {
+            if (chars.SequenceEqual("Exec"))
+                return BlorbUsage.Exec;
+            if (chars.SequenceEqual("Pict"))
+                return BlorbUsage.Pict;
+            if (chars.SequenceEqual("Snd "))
+                return BlorbUsage.Snd;
+
+            OS.Fatal("Unknown usage chunk in blorb file: " + chars.ToString());
+            return BlorbUsage.Unknown;
+        }
+
         internal static Blorb ReadBlorbFile(ReadOnlySpan<byte> storyData)
+        {
+            using var stream = OS.StreamManger.GetStream("BlorbFile.ReadBlorb", storyData);
+            return ReadBlorbFile(stream);
+        }
+
+        internal static Blorb ReadBlorbFile(Stream stream)
         {
             var blorb = new Blorb();
             _chunks.Clear();
             //_resources.Clear();
-
-            using var stream = OS.StreamManger.GetStream("BlorbFile.ReadBlorb", storyData);
 
             Span<char> chars = stackalloc char[4];
 
@@ -317,17 +343,6 @@ namespace Frotz.Blorb
             }
 
             return blorb;
-        }
-
-        private static string ReadString(Stream stream)
-        {
-            Span<byte> buffer = stackalloc byte[4];
-            int read = stream.Read(buffer);
-
-            if (read < buffer.Length)
-                throw new InvalidOperationException("Not enough bytes available in stream.");
-
-            return Encoding.UTF8.GetString(buffer);
         }
 
         private static int ReadChars(Stream stream, Span<char> destination)

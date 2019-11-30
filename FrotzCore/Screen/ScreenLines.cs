@@ -113,7 +113,7 @@ namespace Frotz.Screen
             for (int i = 0; i < line; i++)
             {
                 sb.Append(_lines[i].GetChars());
-                sb.Append("\r\n");
+                sb.Append(Environment.NewLine);
 
                 // Start col needs to stay per line, and there needs to be pos offset per line
                 var tempChanges = _lines[i].GetTextWithFontInfo();

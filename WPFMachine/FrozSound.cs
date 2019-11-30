@@ -30,11 +30,10 @@ namespace WPFMachine
                 {
                     temp = $"{Path.GetTempPath()}\\{i}.aiff";
 
-                    var fs = new FileStream(temp, FileMode.Create);
+                    using var fs = new FileStream(temp, FileMode.Create);
                     fs.Write(sound);
-                    fs.Close();
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                     i++;
                     temp = null;

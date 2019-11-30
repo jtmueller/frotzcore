@@ -681,12 +681,7 @@ namespace WPFMachine.Absolute
 
         private string CreateFilterList(params string[] types)
         {
-            using var temp = new PooledList<string>(types)
-            {
-                "All Files (*.*)|*.*"
-            };
-
-            return string.Join("|", temp);
+            return string.Join("|", types) + "|All Files (*.*)|*.*";
         }
 
         public void PrepareSample(int number)
@@ -861,10 +856,9 @@ namespace WPFMachine.Absolute
                 if (ofd.ShowDialog(_parent) == true)
                 {
                     fName = ofd.FileName;
-                    var s = ofd.OpenFile();
+                    using var s = ofd.OpenFile();
                     buffer = new byte[s.Length];
                     s.Read(buffer, 0, buffer.Length);
-                    s.Close();
                 }
 
             });

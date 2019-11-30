@@ -104,7 +104,6 @@ namespace Frotz.Generic
 
         internal static zbyte[] ZMData = Array.Empty<zbyte>();
         internal static zword ZMData_checksum = 0;
-        internal static byte[] StoryData = Array.Empty<byte>();
 
         internal static long Zmp = 0;
         internal static long Pcp = 0;
@@ -330,19 +329,12 @@ namespace Frotz.Generic
             zword n;
             int i, j;
 
-            // TODO Abstract this part
-            /* Open story file */
-            // story_fp = new System.IO.FileStream(main.story_name, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             if (Main.StoryData == null || Main.StoryName == null)
                 throw new InvalidOperationException("Story not initialized.");
 
             StoryFp?.Dispose();
             StoryFp = OS.PathOpen(Main.StoryData);
             InitFpPos = StoryFp.Position;
-
-            StoryData = new byte[StoryFp.Length];
-            StoryFp.Read(StoryData, 0, StoryData.Length);
-            StoryFp.Position = 0;
 
             DebugState.Output("Starting story: {0}", Main.StoryName);
 
@@ -474,18 +466,21 @@ namespace Frotz.Generic
 
                 /* Allocate memory for story data */
                 var len = ZMData.Length;
-                byte[] temp = ArrayPool<byte>.Shared.Rent(len);
-                try
+                if (len < Main.StorySize)
                 {
-                    Array.Copy(ZMData, temp, ZMData.Length);
+                    byte[] temp = ArrayPool<byte>.Shared.Rent(len);
+                    try
+                    {
+                        Array.Copy(ZMData, temp, len);
 
-                    ZMData = new byte[Main.StorySize];
-                    //Frotz.Other.ZMath.clearArray(ZMData);
-                    Array.Copy(temp, ZMData, temp.Length);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(temp);
+                        ZMData = new byte[Main.StorySize];
+                        //Frotz.Other.ZMath.clearArray(ZMData);
+                        Array.Copy(temp, ZMData, len);
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(temp);
+                    }
                 }
 
                 /* Load story file in chunks of 32KB */

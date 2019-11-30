@@ -464,7 +464,7 @@ namespace WPFMachine
 
         private void MiDebugInfo_Click(object sender, RoutedEventArgs e)
         {
-            byte[] buffer = Frotz.OS.GetStoryFile();
+            byte[] buffer;
             if (_blorbFile != null && _blorbFile.ZCode != null)
             {
                 buffer = _blorbFile.ZCode;

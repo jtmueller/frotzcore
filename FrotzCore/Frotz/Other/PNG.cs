@@ -25,13 +25,14 @@ namespace Frotz.Other
 
     public class PNG
     {
-        private static readonly ReadOnlyMemory<byte> Header = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        // compiler optimizes this to much faster than static array field
+        private static ReadOnlySpan<byte> Header => new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
         private readonly List<string> _chunkOrder = new List<string>();
         public Dictionary<string, PNGChunk> Chunks { get; } = new Dictionary<string, PNGChunk>();
 
         public PNG(string fileName)
         {
-            var fs = new FileStream(fileName, FileMode.Open);
+            using var fs = new FileStream(fileName, FileMode.Open);
             ParsePng(fs);
         }
 
@@ -40,7 +41,7 @@ namespace Frotz.Other
             Span<byte> buffer = stackalloc byte[8];
             stream.Read(buffer);
 
-            if (!buffer.SequenceEqual(Header.Span))
+            if (!buffer.SequenceEqual(Header))
             {
                 throw new ArgumentException("Not a valid PNG file");
             }
@@ -117,7 +118,7 @@ namespace Frotz.Other
 
         public void Save(Stream stream)
         {
-            stream.Write(Header.Span);
+            stream.Write(Header);
 
             foreach (string type in _chunkOrder)
             {
