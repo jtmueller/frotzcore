@@ -128,7 +128,7 @@ namespace WPFMachine.Support
             try
             {
                 pidl = SHBrowseForFolder(ref bi);
-                if (true != SHGetPathFromIDList(pidl, bufferAddress))
+                if (!SHGetPathFromIDList(pidl, bufferAddress))
                 {
                     return null;
                 }

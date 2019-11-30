@@ -1,6 +1,7 @@
 ﻿using Frotz.Generic;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace Frotz
@@ -32,8 +33,10 @@ namespace Frotz
 
         internal static string LastCallMade = "";
 
+        [Conditional("DEBUG")]
         public static void Output(string s, params object[] data) => Output(true, s, data);
 
+        [Conditional("DEBUG")]
         public static void Output(bool log, string s, params object[] data)
         {
             if (IsActive)
