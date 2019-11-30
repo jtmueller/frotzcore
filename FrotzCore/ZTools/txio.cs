@@ -868,7 +868,7 @@ namespace ZTools
 
         }/* tx_set_width */
 
-        internal static System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        private static System.Text.StringBuilder sb = new System.Text.StringBuilder();
         internal static void StartStringBuilder() => sb.Clear();
 
         internal static string GetTextFromStringBuilder()

@@ -982,9 +982,7 @@ namespace Frotz
                 }
             }
 
-            int temp = Screen.GetStringWidth(sb.ToString(), new CharDisplayInfo(font, style, 0, 0));
-
-            return temp;
+            return Screen.GetStringWidth(sb.ToString(), new CharDisplayInfo(font, style, 0, 0));
         }
 
 
