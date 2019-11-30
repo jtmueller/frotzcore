@@ -1177,7 +1177,7 @@ namespace Frotz.Generic
             DecodeText(StringType.VOCABULARY, minaddr);
 
             // ptr = result;
-            var temp = new System.Text.StringBuilder(len);
+            var temp = new ValueStringBuilder(len);
 
             for (i = len; (c = (char)Decoded[i]) != 0; i++)
                 temp.Append(c);

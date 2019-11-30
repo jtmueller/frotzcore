@@ -680,7 +680,7 @@ namespace Frotz.Generic
             if (addr != 0)
             {
 
-                var sb = new System.Text.StringBuilder();
+                var vsb = new ValueStringBuilder();
 
                 int i;
 
@@ -689,8 +689,6 @@ namespace Frotz.Generic
 
                 for (i = 0; i < len; i++)
                 {
-
-
                     FastMem.LowByte(addr, out zbyte c);
                     addr++;
 
@@ -698,15 +696,15 @@ namespace Frotz.Generic
                         c += 'a' - 'A';
 
                     // default_name[i] = c;
-                    sb.Append((char)c);
+                    vsb.Append((char)c);
 
                 }
 
                 // default_name[i] = 0;
-                if (sb.IndexOf('.') == -1)
+                if (vsb.IndexOf('.') == -1)
                 {
-                    sb.Append(".AUX");
-                    return sb.ToString();
+                    vsb.Append(".AUX");
+                    return vsb.ToString();
                 }
                 else
                 {

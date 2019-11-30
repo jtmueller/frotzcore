@@ -87,32 +87,35 @@ namespace Frotz.Screen
 
         public IReadOnlyList<FontChanges> GetTextWithFontInfo()
         {
-            lock (_lockObj)
+            if (_changes == null)
             {
-                if (_changes == null)
+                lock (_lockObj)
                 {
-                    _changes = new PooledList<FontChanges>(_width);
-                    var chars = CurrentChars;
-
-                    var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
-                    for (int i = 0; i < _width; i++)
+                    if (_changes == null)
                     {
-                        if (!_styles[i].AreSame(fc.FontAndStyle))
+                        _changes = new PooledList<FontChanges>(_width);
+                        var chars = CurrentChars;
+
+                        var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
+                        for (int i = 0; i < _width; i++)
                         {
-                            fc = new FontChanges(i, 1, _styles[i]);
-                            fc.AddChar(chars[i]);
-                            _changes.Add(fc);
-                        }
-                        else
-                        {
-                            fc.Count++;
-                            fc.AddChar(chars[i]);
+                            if (!_styles[i].AreSame(fc.FontAndStyle))
+                            {
+                                fc = new FontChanges(i, 1, _styles[i]);
+                                fc.AddChar(chars[i]);
+                                _changes.Add(fc);
+                            }
+                            else
+                            {
+                                fc.Count++;
+                                fc.AddChar(chars[i]);
+                            }
                         }
                     }
                 }
-
-                return _changes.AsReadOnly();
             }
+
+            return _changes;
         }
 
         public ReadOnlySpan<char> GetChars() => _chars.AsSpan(0, _width);

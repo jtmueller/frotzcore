@@ -600,7 +600,7 @@ namespace Frotz
                     }
                     else if (c == CharCodes.ZC_RETURN)
                     {
-                        var sb = new System.Text.StringBuilder(buffer.Count);
+                        var sb = new ValueStringBuilder(buffer.Count);
                         foreach (var bc in buffer.Span)
                         {
                             sb.Append(bc);
@@ -948,7 +948,7 @@ namespace Frotz
         {
             if (Screen == null) throw new InvalidOperationException("Screen not initialized.");
 
-            var sb = new System.Text.StringBuilder();
+            var sb = new ValueStringBuilder();
             int font = -1;
             int style = -1;
 

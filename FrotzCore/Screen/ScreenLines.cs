@@ -109,7 +109,7 @@ namespace Frotz.Screen
             int pos = 0;
 
             changes = new List<FontChanges>();
-            var sb = new StringBuilder();
+            var sb = new ValueStringBuilder();
             for (int i = 0; i < line; i++)
             {
                 sb.Append(_lines[i].GetChars());

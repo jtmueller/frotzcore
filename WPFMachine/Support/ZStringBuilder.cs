@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace WPFMachine.Support
 {
     public class ZStringBuilder
     {
-        private StringBuilder _builder;
+        private readonly StringBuilder _builder;
 
         public ZStringBuilder()
         {
@@ -29,26 +27,20 @@ namespace WPFMachine.Support
             _currentPosition = 0;
         }
 
-        public int Length
-        {
-            get { return _builder.Length; }
-        }
-        
-        public void Remove(int startIndex, int length)
-        {
-            _builder.Remove(startIndex, length);
-        }
+        public int Length => _builder.Length;
 
-        public new String ToString()
-        {
-            return _builder.ToString();
-        }
+        public void Remove(int startIndex, int length) => _builder.Remove(startIndex, length);
+
+        public override string ToString() => _builder.ToString();
 
         public void SetCurrentPosition(int position)
         {
-            
+            if ((uint)position > (uint)_builder.Length)
+                throw new ArgumentOutOfRangeException(nameof(position));
+
+            _currentPosition = position;
         }
 
-        int _currentPosition = 0;
+        private int _currentPosition = 0;
     }
 }
