@@ -22,7 +22,7 @@ namespace Frotz.Screen
 
         (string FileName, byte[] FileData)? SelectGameFile();
 
-        ZSize GetImageInfo(Span<byte> image);
+        ZSize GetImageInfo(byte[] image);
 
         void ScrollArea(int top, int bottom, int left, int right, int units);
 

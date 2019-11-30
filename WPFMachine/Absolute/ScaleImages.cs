@@ -9,7 +9,7 @@ namespace WPFMachine.Absolute
     {
         internal static byte[] Scale(byte[] imgData, int scale)
         {
-            var ms = OS.StreamManger.GetStream("ScaleImages.Scale", imgData);
+            var ms = new MemoryStream(imgData);
 
             using var img = Image.FromStream(ms);
             using var bmp = new Bitmap(img.Width * scale, img.Height * scale);

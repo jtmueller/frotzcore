@@ -3,6 +3,7 @@ using Frotz.Constants;
 using Frotz.Screen;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -176,17 +177,17 @@ namespace WPFMachine
 
         protected void OnStoryStarted(GameSelectedEventArgs e) => GameSelected?.Invoke(this, e);
 
-        public ZSize GetImageInfo(Span<byte> image)
+        public ZSize GetImageInfo(byte[] image)
         {
-            using var ms = OS.StreamManger.GetStream("ScreenBase.GetImageInfo", image);
+            using var ms = new MemoryStream(image);
             using var img = System.Drawing.Image.FromStream(ms);
             return new ZSize(img.Height * scale, img.Width * scale);
         }
 
         // TODO This does the same thing (blurry) and doesn't retain the transparent
-        public static byte[] ScaleImage(int scale, Span<byte> image)
+        public static byte[] ScaleImage(int scale, byte[] image)
         {
-            using var imgMs = OS.StreamManger.GetStream("ScreenBase.ScaleImage", image);
+            using var imgMs = new MemoryStream(image);
             using var img = System.Drawing.Image.FromStream(imgMs);
             using var bmp = new System.Drawing.Bitmap(img.Width * scale, img.Height * scale);
             using var graphics = System.Drawing.Graphics.FromImage(bmp);

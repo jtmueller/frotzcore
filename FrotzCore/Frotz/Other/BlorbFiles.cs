@@ -292,9 +292,9 @@ namespace Frotz.Blorb
             return BlorbUsage.Unknown;
         }
 
-        internal static Blorb ReadBlorbFile(ReadOnlySpan<byte> storyData)
+        internal static Blorb ReadBlorbFile(byte[] storyData)
         {
-            using var stream = OS.StreamManger.GetStream("BlorbFile.ReadBlorb", storyData);
+            using var stream = new MemoryStream(storyData);
             return ReadBlorbFile(stream);
         }
 

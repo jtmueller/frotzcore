@@ -233,7 +233,7 @@ namespace ZTools
         internal static void OpenStory(byte[] story)
         {
             gfp?.Dispose();
-            gfp = OS.StreamManger.GetStream("txio.OpenStory", story);
+            gfp = new MemoryStream(story);
         }
 
         internal static void OpenStory(string storyname)

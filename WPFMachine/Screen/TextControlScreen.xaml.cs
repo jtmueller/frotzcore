@@ -386,9 +386,9 @@ namespace WPFMachine.Screen
         }
 
 
-        public ZSize GetImageInfo(Span<byte> image)
+        public ZSize GetImageInfo(byte[] image)
         {
-            using var ms = OS.StreamManger.GetStream("GetImageInfo", image);
+            using var ms = new MemoryStream(image);
             using var img = System.Drawing.Image.FromStream(ms);
             return new ZSize(img.Height * scale, img.Width * scale);
         }
@@ -400,8 +400,7 @@ namespace WPFMachine.Screen
                 var img = new Image();
                 var bi = new BitmapImage();
                 bi.BeginInit();
-                bi.CacheOption = BitmapCacheOption.OnLoad;
-                using var ms = OS.StreamManger.GetStream("DrawPicture", image);
+                var ms = new MemoryStream(image);
                 bi.StreamSource = ms;
                 bi.EndInit();
                 img.Source = bi;

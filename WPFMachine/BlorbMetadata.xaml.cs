@@ -42,8 +42,7 @@ namespace WPFMachine
 
                     var bi = new BitmapImage();
                     bi.BeginInit();
-                    bi.CacheOption = BitmapCacheOption.OnLoad;
-                    using var ms = OS.StreamManger.GetStream("BlorbMetadata", BlorbFile.Pictures[id].Image);
+                    var ms = new MemoryStream(BlorbFile.Pictures[id].Image);
                     bi.StreamSource = ms;
                     bi.EndInit();
                     imgCover.Source = bi;

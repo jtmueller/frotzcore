@@ -1145,7 +1145,7 @@ namespace Frotz
          * -- Szurgot: Changed this to return a Memory stream, and also has Blorb Logic.. May need to refine
          * -- Changed this again to take a byte[] to allow the data to be loaded further up the chain
          */
-        public static MemoryStream PathOpen(ReadOnlySpan<byte> story_data)
+        public static MemoryStream PathOpen(zbyte[] story_data)
         {
             // System.IO.FileInfo fi = new System.IO.FileInfo(FileName);
             if (story_data.Length < 4)
@@ -1154,11 +1154,11 @@ namespace Frotz
             }
             else
             {
-                if (story_data[..4].SequenceEqual(FormBytes))
+                if (story_data.AsSpan(..4).SequenceEqual(FormBytes))
                 {
                     BlorbFile = Blorb.BlorbReader.ReadBlorbFile(story_data);
 
-                    var stream = StreamManger.GetStream("OS.PathOpen", BlorbFile.ZCode);
+                    var stream = new MemoryStream(BlorbFile.ZCode);
                     return stream;
                 }
                 else
@@ -1172,7 +1172,7 @@ namespace Frotz
                         BlorbFile = Blorb.BlorbReader.ReadBlorbFile(fs);
                     }
 
-                    var stream = StreamManger.GetStream("OS.PathOpen", story_data);
+                    var stream = new MemoryStream(story_data);
                     return stream;
                 }
             }

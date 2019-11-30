@@ -731,7 +731,7 @@ namespace WPFMachine.Absolute
                     try
                     {
                         // Had to use the adaptive palatte for some Infocom games
-                        using var readMS = OS.StreamManger.GetStream("AbsoluteScreen.DrawPicture", image);
+                        using var readMS = new MemoryStream(image);
                         var p = new Frotz.Other.PNG(readMS);
 
                         if (OS.BlorbFile.AdaptivePalatte.Contains(picture))
