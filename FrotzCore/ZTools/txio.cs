@@ -6,11 +6,12 @@
  *
  */
 
-using Frotz;
 using System;
+using System.Diagnostics;
 using System.IO;
 using zbyte_t = System.Byte;
 using zword_t = System.UInt16;
+
 namespace ZTools
 {
     public static class txio
@@ -247,10 +248,7 @@ namespace ZTools
 
         } /* open_story */
 
-        internal static void CloseStory()
-        {
-            gfp?.Dispose();
-        }/* close_story */
+        internal static void CloseStory() => gfp?.Dispose();/* close_story */
 
         internal static void ReadPage(uint page, Span<byte> buffer)
         {
@@ -378,7 +376,7 @@ namespace ZTools
                         }
                         else
                         {
-                            lookup_table[i, j] = (uint)header.version == TxH.V1 
+                            lookup_table[i, j] = (uint)header.version == TxH.V1
                                 ? v1_lookup_table[i][j] : v3_lookup_table[i][j];
                         }
 
@@ -676,33 +674,53 @@ namespace ZTools
 
         //}/* get_story_size */
 
-        internal static void TxPrintf(string format, params object[] args)
+        internal static void TxPrintf(string format, object? arg0)
         {
-            int count, i;
-
             if (tx_screen_cols != 0)
             {
-                if (tx_line == null || tx_line.Length == 0)
-                {
-                    tx_line = new char[TX_SCREEN_COLS];
-                }
+                TxPrint(string.Format(format, arg0));
+            }
+            else
+            {
+                sb.AppendFormat(format, arg0);
+            }
+        }
 
-                string temp = string.Format(format, args);
-                count = temp.Length;
-                if (count > TX_SCREEN_COLS)
-                {
-                    throw new ArgumentException("\nFatal: buffer space overflow\n");
-                }
-                for (i = 0; i < count; i++)
-                {
-                    TxWriteChar(temp[i]);
-                }
+        internal static void TxPrintf(string format, object? arg0, object? arg1)
+        {
+            if (tx_screen_cols != 0)
+            {
+                TxPrint(string.Format(format, arg0, arg1));
+            }
+            else
+            {
+                sb.AppendFormat(format, arg0, arg1);
+            }
+        }
+
+        internal static void TxPrintf(string format, object? arg0, object? arg1, object? arg2)
+        {
+            if (tx_screen_cols != 0)
+            {
+                TxPrint(string.Format(format, arg0, arg1, arg2));
+            }
+            else
+            {
+                sb.AppendFormat(format, arg0, arg1, arg2);
+            }
+        }
+
+        internal static void TxPrintf(string format, params object?[] args)
+        {
+            if (tx_screen_cols != 0)
+            {
+                TxPrint(string.Format(format, args));
             }
             else
             {
                 sb.AppendFormat(format, args);
             }
-        }/* txio.tx_printf */
+        }
 
         internal static void TxPrint(ReadOnlySpan<char> chars)
         {
@@ -742,7 +760,7 @@ namespace ZTools
                 {
                     throw new ArgumentException("\nFatal: buffer space overflow\n");
                 }
-                
+
                 TxWriteChar(c);
             }
             else
@@ -753,6 +771,7 @@ namespace ZTools
 
         private static void WriteHighZscii(int c)
         {
+            Debug.WriteLine("WriteHighZscii", c);
             //    static zword_t unicode_table[256];
             //    static int unicode_table_loaded;
             //    int unicode_table_addr;
@@ -868,7 +887,7 @@ namespace ZTools
 
         }/* tx_set_width */
 
-        private static System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        private static readonly System.Text.StringBuilder sb = new System.Text.StringBuilder();
         internal static void StartStringBuilder() => sb.Clear();
 
         internal static string GetTextFromStringBuilder()

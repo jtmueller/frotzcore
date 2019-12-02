@@ -6,11 +6,11 @@
  *
  */
 
-using zword_t = System.UInt16;
-using zbyte_t = System.Byte;
-
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using zbyte_t = System.Byte;
+using zword_t = System.UInt16;
 
 namespace ZTools
 {
@@ -276,10 +276,7 @@ namespace ZTools
             InformGV2a
         }
 
-        internal static uint VERB_NUM(int index, uint parser_type)
-        {
-            return (parser_type >= (int)ParserTypes.InformGV2a) ? (uint)index : ((uint)(255 - index));
-        }
+        internal static uint VERB_NUM(int index, uint parser_type) => (parser_type >= (int)ParserTypes.InformGV2a) ? (uint)index : ((uint)(255 - index));
 
         // internal static int VERB_NUM(index, = parser_type) (((parser_type) >= inform_gv2a)?(index):((uint)(255-(index))));
 
@@ -312,7 +309,7 @@ namespace ZTools
             public ulong HighPc;      /* Highest PC in current subroutine */
             public ulong LowAddress;  /* Lowest subroutine address        */
             public ulong HighAddress; /* Highest code address             */
-        } ;
+        }
 
         internal class OpcodeT
         {
@@ -321,7 +318,7 @@ namespace ZTools
             public readonly int[] Par = new int[4];  /* Types of parameters */
             public int Extra;   /* Branch/store/text */
             public int Type;    /* Opcode type */
-        };
+        }
 
         internal class CRefItemT
         {
@@ -336,27 +333,20 @@ namespace ZTools
         /* Data access macros */
         internal static byte[] Datap = Array.Empty<byte>();
 
-        internal static byte GetByte(ulong offset)
-        {
-            return GetByte((int)offset);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte GetByte(ulong offset) => GetByte((int)offset);
 
-        internal static byte GetByte(int offset)
-        {
-            return Datap[offset];
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte GetByte(int offset) => Datap[offset];
 
-        internal static ushort GetWord(int offset)
-        {
-            return (ushort)((Datap[offset] << 8) + Datap[offset + 1]);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ushort GetWord(int offset) => (ushort)((Datap[offset] << 8) + Datap[offset + 1]);
 
-        internal static void SetByte(ulong offset, uint value)
-        {
-            Datap[offset] = (zbyte_t)value;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void SetByte(ulong offset, uint value) => Datap[offset] = (zbyte_t)value;
 
-        internal static void SetWord (ulong offset, uint value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void SetWord(ulong offset, uint value)
         {
             Datap[offset] = (zbyte_t)(value >> 8);
             Datap[offset + 1] = (zbyte_t)(value & 0xff);
