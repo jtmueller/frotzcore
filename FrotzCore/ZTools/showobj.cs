@@ -352,7 +352,7 @@ namespace ZTools
                     txio.TxPrint("\n              ");
                 else
                     txio.TxPrint("  ");
-                txio.TxPrintf("[%2d] ", (int)(data & txio.property_mask));
+                txio.TxPrintf("[{0,2}] ", data & txio.property_mask);
                 if ((uint)txio.header.version <= TxH.V3)
                     count = ((data & txio.property_size_mask) >> 5) + 1;
                 else if ((data & 0x80) > 0)
