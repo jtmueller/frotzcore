@@ -10,9 +10,9 @@ namespace WPFMachine.Screen
     {
         internal CharDisplayInfo DisplayInfo { get; private set; }
 
-        internal ZRun(CharDisplayInfo DisplayInfo)
+        internal ZRun(CharDisplayInfo displayInfo)
         {
-            this.DisplayInfo = DisplayInfo;
+            DisplayInfo = displayInfo;
         }
 
         private double? _width = null;
@@ -28,7 +28,7 @@ namespace WPFMachine.Screen
                 FlowDirection.LeftToRight,
                 new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
                 FontSize, Foreground, ns, TextFormattingMode.Display, 1.0);
-
+            
             return ft.Width;
         }
     }

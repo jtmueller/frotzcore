@@ -14,10 +14,10 @@ namespace WPFMachine
         public ColorType Type { get; set; }
 
 
-        public ZColorCheck(int Color, ColorType Type)
+        public ZColorCheck(int color, ColorType colorType)
         {
-            ColorCode = Color;
-            this.Type = Type;
+            ColorCode = color;
+            Type = colorType;
         }
 
         public bool AreSameColor(ZColorCheck ColorToCompare)

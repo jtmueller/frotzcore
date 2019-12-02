@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace WPFMachine
 {
     class ZMachineException : Exception
     {
-        public ZMachineException(String Message) : base(Message) { }
+        public ZMachineException() { }
+
+        public ZMachineException(string message) : base(message) { }
+
+        public ZMachineException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

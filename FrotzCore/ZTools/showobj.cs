@@ -267,7 +267,7 @@ namespace ZTools
                 }
                 if (list == 0)
                     txio.TxPrint("None");
-                txio.TxPrint("\n");
+                txio.TxPrint('\n');
 
                 /* Get object linkage information */
 
@@ -363,7 +363,7 @@ namespace ZTools
                     count = 1;
                 while (count-- > 0)
                     txio.TxPrintf("{0:X2} ", (uint)txio.ReadDataByte(ref address));
-                txio.TxPrint("\n");
+                txio.TxPrint('\n');
             }
 
         }/* print_property_list */
@@ -445,7 +445,7 @@ namespace ZTools
 
                 for (i = 0; i < depth; i++)
                     txio.TxPrint(" . ");
-                txio.TxPrintf("[{0:d3}] ", (int)obj);
+                txio.TxPrintf("[{0:d3}] ", obj);
                 PrintObjectDesc(obj);
                 txio.TxPrint("\n");
 
@@ -491,7 +491,7 @@ namespace ZTools
             if (txio.header is null)
                 throw new InvalidOperationException("txio header was not initialized");
 
-            txio.TxPrint("\"");
+            txio.TxPrint('"');
 
             /* Check for a NULL object number */
 
@@ -501,10 +501,9 @@ namespace ZTools
                 /* Get object address */
 
                 object_address = (ulong)GetObjectAddress(obj);
-                if ((uint)txio.header.version <= TxH.V3)
-                    address = object_address + TxH.O3_PROPERTY_OFFSET;
-                else
-                    address = object_address + TxH.O4_PROPERTY_OFFSET;
+                address = (uint)txio.header.version <= TxH.V3 
+                    ? object_address + TxH.O3_PROPERTY_OFFSET 
+                    : object_address + TxH.O4_PROPERTY_OFFSET;
 
                 /* Get the property address */
 
@@ -515,7 +514,7 @@ namespace ZTools
                 if ((uint)txio.ReadDataByte(ref address) > 0)
                     txio.DecodeText(ref address);
             }
-            txio.TxPrint("\"");
+            txio.TxPrint('"');
 
         }/* print_object_desc */
     }

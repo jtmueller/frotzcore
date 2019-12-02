@@ -136,7 +136,7 @@ namespace WPFMachine.Screen
                         }
                         else
                         {
-                            if (text.Trim() != "" || _currentInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
+                            if (text.AsSpan().Trim().Length > 0 || _currentInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
                             {
                                 SetAbsolute(text, _x, _currentInfo);
 
@@ -169,25 +169,23 @@ namespace WPFMachine.Screen
             }
         }
 
-        private void SetAbsolute(string text, int _x, CharDisplayInfo _info) 
-            => _parent._adorner.AddAbsolute(text, (int)Top, _x, _info);
+        private void SetAbsolute(string text, int x, CharDisplayInfo info) 
+            => _parent._adorner.AddAbsolute(text, (int)Top, x, info);
 
-        private string ReplaceText(int pos, string currentString, string newText)
+        private static string ReplaceText(int pos, string currentString, string newText)
         {
-            string previous = currentString;
-            if (previous.Length < pos + newText.Length)
-            {
-                previous = previous.PadRight(pos + newText.Length);
-            }
-            var sb = new StringBuilder(previous);
+            var sb = new StringBuilder(currentString);
+            while (sb.Length < pos + newText.Length)
+                sb.Insert(0, ' ');
+
             sb.Remove(pos, newText.Length);
             sb.Insert(pos, newText);
 
             return sb.ToString();
         }
 
-        private bool IsFixedWidth(CharDisplayInfo Info) 
-            => Info.Font == ZFont.FIXED_WIDTH_FONT || Info.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE);
+        private static bool IsFixedWidth(CharDisplayInfo info) 
+            => info.Font == ZFont.FIXED_WIDTH_FONT || info.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE);
 
         private ZRun AddInline(string Text, CharDisplayInfo DisplayInfo)
         {
