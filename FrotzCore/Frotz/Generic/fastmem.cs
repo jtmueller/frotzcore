@@ -48,7 +48,8 @@ namespace Frotz.Generic
 
     internal static class FastMem
     {
-        private static readonly RecordStruct[] Records = {
+        // compiler inlines this pattern
+        private static ReadOnlySpan<RecordStruct> Records => new[] {
             new RecordStruct(Story.SHERLOCK, 97, "871026"),
             new RecordStruct(Story.SHERLOCK,  21, "871214"),
             new RecordStruct(Story.SHERLOCK,  22, "880112"),
@@ -125,7 +126,6 @@ namespace Frotz.Generic
         {
             ZMData[addr] = Hi(v);
             ZMData[addr + 1] = Lo(v);
-
             DebugState.Output("ZMP: {0} -> {1}", addr, v);
         }
 

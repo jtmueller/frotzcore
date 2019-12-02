@@ -168,7 +168,6 @@ namespace Frotz.Generic
 
                 }
             }
-
             return (zbyte)c;
 
         }/* unicode_to_zscii */

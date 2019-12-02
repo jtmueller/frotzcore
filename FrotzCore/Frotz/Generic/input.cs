@@ -56,7 +56,7 @@ namespace Frotz.Generic
                     do
                     {
                         FastMem.LowByte(addr, out c);
-                        if (c == 255 || key == Text.TranslateFromZscii(c))
+                        if (c == 0xff || key == Text.TranslateFromZscii(c))
                             return true;
                         addr++;
                     } while (c != 0);
@@ -116,7 +116,7 @@ namespace Frotz.Generic
             }
             else
             {
-                OS.Menu(ZMachine.MENU_REMOVE, Process.zargs[0], new zword[0]);
+                OS.Menu(ZMachine.MENU_REMOVE, Process.zargs[0], Array.Empty<zword>());
             }
 
             Process.Branch(true);

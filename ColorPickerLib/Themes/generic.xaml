@@ -567,7 +567,7 @@
                      FontFamily="{TemplateBinding FontFamily}"
                      FontSize="{TemplateBinding FontSize}"
                      Foreground="{TemplateBinding Foreground}"
-                     Text="{Binding ScA, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                     Text="{Binding ScA, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:n8}}" 
                      MinWidth="75"
                        />
                   <Label Grid.Column="0" Grid.Row="2"
@@ -580,7 +580,7 @@
                      FontFamily="{TemplateBinding FontFamily}"
                      FontSize="{TemplateBinding FontSize}"
                      Foreground="{TemplateBinding Foreground}"                         
-                     Text="{Binding ScR, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                     Text="{Binding ScR, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:n8}}"
                      MinWidth="75" />
                   <Label Grid.Column="0" Grid.Row="3"
                      FontFamily="{TemplateBinding FontFamily}"
@@ -592,7 +592,7 @@
                      FontFamily="{TemplateBinding FontFamily}"
                      FontSize="{TemplateBinding FontSize}"
                      Foreground="{TemplateBinding Foreground}"                         
-                     Text="{Binding ScG, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                     Text="{Binding ScG, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:n8}}"
                      MinWidth="75" />
                   <Label Grid.Column="0" Grid.Row="4"
                      FontFamily="{TemplateBinding FontFamily}"
@@ -604,7 +604,7 @@
                      FontFamily="{TemplateBinding FontFamily}"
                      FontSize="{TemplateBinding FontSize}"
                      Foreground="{TemplateBinding Foreground}"                         
-                     Text="{Binding ScB, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                     Text="{Binding ScB, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:n8}}" 
                      MinWidth="75" />
 
                 </Grid>

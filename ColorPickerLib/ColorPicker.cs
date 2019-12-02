@@ -13,8 +13,6 @@ using System.Windows.Shapes;
 
 namespace Microsoft.Samples.CustomControls
 {
-
-
     #region ColorPicker
 
     public class ColorPicker : Control
@@ -85,9 +83,9 @@ namespace Microsoft.Samples.CustomControls
         #region Public Properties
 
         // Gets or sets the selected color.
-        public System.Windows.Media.Color SelectedColor
+        public Color SelectedColor
         {
-            get => (System.Windows.Media.Color)GetValue(SelectedColorProperty);
+            get => (Color)GetValue(SelectedColorProperty);
             set
             {
                 SetValue(SelectedColorProperty, _color);
@@ -187,76 +185,44 @@ namespace Microsoft.Samples.CustomControls
 
         #region Dependency Property Fields
         public static readonly DependencyProperty SelectedColorProperty =
-            DependencyProperty.Register
-            ("SelectedColor", typeof(System.Windows.Media.Color), typeof(ColorPicker),
-            new PropertyMetadata(System.Windows.Media.Colors.Transparent,
-                new PropertyChangedCallback(SelectedColor_Changed)
-
-            ));
+            DependencyProperty.Register("SelectedColor", typeof(Color), typeof(ColorPicker),
+                new PropertyMetadata(Colors.Transparent, SelectedColor_Changed));
 
         public static readonly DependencyProperty ScAProperty =
-
-               DependencyProperty.Register
-               ("ScA", typeof(float), typeof(ColorPicker),
-               new PropertyMetadata((float)1,
-               new PropertyChangedCallback(ScAChanged)
-             ));
+            DependencyProperty.Register("ScA", typeof(float), typeof(ColorPicker),
+                new PropertyMetadata((float)1, ScAChanged));
 
         public static readonly DependencyProperty ScRProperty =
-              DependencyProperty.Register
-              ("ScR", typeof(float), typeof(ColorPicker),
-              new PropertyMetadata((float)1,
-              new PropertyChangedCallback(ScRChanged)
-             ));
+            DependencyProperty.Register("ScR", typeof(float), typeof(ColorPicker),
+                new PropertyMetadata((float)1, ScRChanged));
 
         public static readonly DependencyProperty ScGProperty =
-              DependencyProperty.Register
-              ("ScG", typeof(float), typeof(ColorPicker),
-              new PropertyMetadata((float)1,
-              new PropertyChangedCallback(ScGChanged)
-             ));
+            DependencyProperty.Register("ScG", typeof(float), typeof(ColorPicker),
+                new PropertyMetadata((float)1, ScGChanged));
 
         public static readonly DependencyProperty ScBProperty =
-              DependencyProperty.Register
-              ("ScB", typeof(float), typeof(ColorPicker),
-              new PropertyMetadata((float)1,
-              new PropertyChangedCallback(ScBChanged)
-             ));
+            DependencyProperty.Register("ScB", typeof(float), typeof(ColorPicker),
+                new PropertyMetadata((float)1, ScBChanged));
 
         public static readonly DependencyProperty AProperty =
-              DependencyProperty.Register
-              ("A", typeof(byte), typeof(ColorPicker),
-              new PropertyMetadata((byte)255,
-              new PropertyChangedCallback(AChanged)
-             ));
+            DependencyProperty.Register("A", typeof(byte), typeof(ColorPicker),
+                new PropertyMetadata((byte)255, AChanged));
 
         public static readonly DependencyProperty RProperty =
-            DependencyProperty.Register
-            ("R", typeof(byte), typeof(ColorPicker),
-            new PropertyMetadata((byte)255,
-            new PropertyChangedCallback(RChanged)
-            ));
+            DependencyProperty.Register("R", typeof(byte), typeof(ColorPicker),
+                new PropertyMetadata((byte)255, RChanged));
 
         public static readonly DependencyProperty GProperty =
-            DependencyProperty.Register
-            ("G", typeof(byte), typeof(ColorPicker),
-            new PropertyMetadata((byte)255,
-            new PropertyChangedCallback(GChanged)
-            ));
+            DependencyProperty.Register("G", typeof(byte), typeof(ColorPicker),
+                new PropertyMetadata((byte)255, GChanged));
 
         public static readonly DependencyProperty BProperty =
-            DependencyProperty.Register
-            ("B", typeof(byte), typeof(ColorPicker),
-            new PropertyMetadata((byte)255,
-            new PropertyChangedCallback(BChanged)
-            ));
+            DependencyProperty.Register("B", typeof(byte), typeof(ColorPicker),
+                new PropertyMetadata((byte)255, BChanged));
 
         public static readonly DependencyProperty HexadecimalStringProperty =
-            DependencyProperty.Register
-            ("HexadecimalString", typeof(string), typeof(ColorPicker),
-            new PropertyMetadata("#FFFFFFFF",
-            new PropertyChangedCallback(HexadecimalStringChanged)
-         ));
+            DependencyProperty.Register("HexadecimalString", typeof(string), typeof(ColorPicker),
+                new PropertyMetadata("#FFFFFFFF", HexadecimalStringChanged));
 
         #endregion
 
@@ -274,8 +240,7 @@ namespace Microsoft.Samples.CustomControls
 
         #region Property Changed Callbacks
 
-        private static void AChanged(DependencyObject d,
-            DependencyPropertyChangedEventArgs e)
+        private static void AChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var c = (ColorPicker)d;
             c.OnAChanged((byte)e.NewValue);
@@ -283,15 +248,12 @@ namespace Microsoft.Samples.CustomControls
 
         protected virtual void OnAChanged(byte newValue)
         {
-
             _color.A = newValue;
             SetValue(ScAProperty, _color.ScA);
             SetValue(SelectedColorProperty, _color);
-
         }
 
-        private static void RChanged(DependencyObject d,
-        DependencyPropertyChangedEventArgs e)
+        private static void RChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var c = (ColorPicker)d;
             c.OnRChanged((byte)e.NewValue);
@@ -305,8 +267,7 @@ namespace Microsoft.Samples.CustomControls
         }
 
 
-        private static void GChanged(DependencyObject d,
-        DependencyPropertyChangedEventArgs e)
+        private static void GChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var c = (ColorPicker)d;
             c.OnGChanged((byte)e.NewValue);
@@ -314,15 +275,13 @@ namespace Microsoft.Samples.CustomControls
 
         protected virtual void OnGChanged(byte newValue)
         {
-
             _color.G = newValue;
             SetValue(ScGProperty, _color.ScG);
             SetValue(SelectedColorProperty, _color);
         }
 
 
-        private static void BChanged(DependencyObject d,
-        DependencyPropertyChangedEventArgs e)
+        private static void BChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var c = (ColorPicker)d;
             c.OnBChanged((byte)e.NewValue);
@@ -335,9 +294,7 @@ namespace Microsoft.Samples.CustomControls
             SetValue(SelectedColorProperty, _color);
         }
 
-
-        private static void ScAChanged(DependencyObject d,
-        DependencyPropertyChangedEventArgs e)
+        private static void ScAChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var c = (ColorPicker)d;
             c.OnScAChanged((float)e.NewValue);
@@ -356,13 +313,10 @@ namespace Microsoft.Samples.CustomControls
             _isAlphaChange = false;
         }
 
-
-        private static void ScRChanged(DependencyObject d,
-        DependencyPropertyChangedEventArgs e)
+        private static void ScRChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var c = (ColorPicker)d;
             c.OnScRChanged((float)e.NewValue);
-
         }
 
         protected virtual void OnScRChanged(float newValue)
@@ -376,7 +330,6 @@ namespace Microsoft.Samples.CustomControls
             }
         }
 
-
         private static void ScGChanged(DependencyObject d,
         DependencyPropertyChangedEventArgs e)
         {
@@ -386,7 +339,6 @@ namespace Microsoft.Samples.CustomControls
 
         protected virtual void OnScGChanged(float newValue)
         {
-
             if (_shouldFindPoint)
             {
                 _color.ScG = newValue;
@@ -395,7 +347,6 @@ namespace Microsoft.Samples.CustomControls
                 SetValue(HexadecimalStringProperty, _color.ToString());
             }
         }
-
 
         private static void ScBChanged(DependencyObject d,
         DependencyPropertyChangedEventArgs e)
@@ -424,22 +375,17 @@ namespace Microsoft.Samples.CustomControls
 
         protected virtual void OnHexadecimalStringChanged(string oldValue, string newValue)
         {
-
             try
             {
-
                 if (_shouldFindPoint)
                 {
-
                     _color = (Color)ColorConverter.ConvertFromString(newValue);
-
                 }
 
                 SetValue(AProperty, _color.A);
                 SetValue(RProperty, _color.R);
                 SetValue(GProperty, _color.G);
                 SetValue(BProperty, _color.B);
-
 
                 if (_shouldFindPoint && !_isAlphaChange && _templateApplied)
                 {
@@ -453,8 +399,7 @@ namespace Microsoft.Samples.CustomControls
 
         }
 
-        private static void SelectedColor_Changed(DependencyObject d,
-            DependencyPropertyChangedEventArgs e)
+        private static void SelectedColor_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var cPicker = (ColorPicker)d;
             cPicker.OnSelectedColorChanged((Color)e.OldValue, (Color)e.NewValue);
@@ -476,10 +421,8 @@ namespace Microsoft.Samples.CustomControls
 
         #region Template Part Event Handlers
 
-
         protected override void OnTemplateChanged(ControlTemplate oldTemplate, ControlTemplate newTemplate)
         {
-
             _templateApplied = false;
             if (oldTemplate != null)
             {
@@ -494,10 +437,7 @@ namespace Microsoft.Samples.CustomControls
             base.OnTemplateChanged(oldTemplate, newTemplate);
         }
 
-
-        private void BaseColorChanged(
-            object sender,
-            RoutedPropertyChangedEventArgs<double> e)
+        private void BaseColorChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
 
             if (_colorPosition != null)
@@ -517,8 +457,6 @@ namespace Microsoft.Samples.CustomControls
 
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
-
-
             if (e.LeftButton == MouseButtonState.Pressed)
             {
 
@@ -531,7 +469,6 @@ namespace Microsoft.Samples.CustomControls
 
         private void ColorDetailSizeChanged(object sender, SizeChangedEventArgs args)
         {
-
             if (args.PreviousSize != Size.Empty &&
                 args.PreviousSize.Width != 0 && args.PreviousSize.Height != 0)
             {
@@ -580,7 +517,7 @@ namespace Microsoft.Samples.CustomControls
         {
             _colorPosition = null;
 
-            var hsv = ColorUtilities.ConvertRgbToHsv(theColor.R, theColor.G, theColor.B);
+            var hsv = HsvColor.FromRgbColor(theColor);
 
             _colorSlider.Value = hsv.H;
 
@@ -595,8 +532,7 @@ namespace Microsoft.Samples.CustomControls
 
         private void DetermineColor(Point p)
         {
-            var hsv = new HsvColor(360 - _colorSlider.Value, p.X, 1 - p.Y);
-            _color = ColorUtilities.ConvertHsvToRgb(hsv.H, hsv.S, hsv.V);
+            _color = new HsvColor(360 - _colorSlider.Value, p.X, 1 - p.Y).ToRgbColor();
             _shouldFindPoint = false;
             _color.ScA = (float)GetValue(ScAProperty);
             SetValue(HexadecimalStringProperty, _color.ToString());

@@ -13,8 +13,8 @@
       Margin="10">
       <Button Name="OKButton"
         Click="okButtonClicked"
-        IsEnabled="False">OK</Button>
-      <Button Click="cancelButtonClicked">Cancel</Button>
+        IsEnabled="False" Width="46" Margin="0,0,10,0">OK</Button>
+      <Button Click="cancelButtonClicked" Width="46">Cancel</Button>
     </StackPanel>
 
     <customControls:ColorPicker 

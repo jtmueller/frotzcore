@@ -119,7 +119,7 @@ namespace Frotz.Generic
 
                 /* Insert the character into the buffer */
 
-                buffer_var[bufpos++] = (char)c;
+                buffer_var[bufpos++] = c;
 
                 if (bufpos == General.TEXT_BUFFER_SIZE)
                     Err.RuntimeError(ErrorCodes.ERR_TEXT_BUF_OVF);

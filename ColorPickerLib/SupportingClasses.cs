@@ -66,7 +66,7 @@ namespace Microsoft.Samples.CustomControls
         {
 
             base.OnValueChanged(oldValue, newValue);
-            var theColor = ColorUtilities.ConvertHsvToRgb(360 - newValue, 1, 1);
+            var theColor = new HsvColor(360 - newValue, 1, 1).ToRgbColor();
             SetValue(SelectedColorProperty, theColor);
         }
         #endregion
@@ -117,47 +117,67 @@ namespace Microsoft.Samples.CustomControls
 
     internal static class ColorUtilities
     {
-
-        // Converts an RGB color to an HSV color.
-        public static HsvColor ConvertRgbToHsv(int r, int b, int g)
+        /// <summary>
+        /// Generates a list of colors with hues ranging from 0 360
+        /// and a saturation and value of 1. 
+        /// </summary>
+        public static List<Color> GenerateHsvSpectrum()
         {
-            double delta, min;
-            double h = 0, s, v;
 
-            min = Math.Min(Math.Min(r, g), b);
-            v = Math.Max(Math.Max(r, g), b);
-            delta = v - min;
+            var colorsList = new List<Color>(8);
 
-            s = v == 0.0 ? 0 : delta / v;
-
-            if (s == 0)
+            for (int i = 0; i < 29; i++)
             {
-                h = 0.0;
+                colorsList.Add(new HsvColor(i * 12, 1, 1).ToRgbColor());
             }
-            else
-            {
-                if (r == v)
-                    h = (g - b) / delta;
-                else if (g == v)
-                    h = 2 + (b - r) / delta;
-                else if (b == v)
-                    h = 4 + (r - g) / delta;
+            colorsList.Add(new HsvColor(0, 1, 1).ToRgbColor());
 
-                h *= 60;
-                if (h < 0.0)
-                    h += 360;
-
-            }
-
-            var hsvColor = new HsvColor(h, s, v / 255);
-
-            return hsvColor;
+            return colorsList;
 
         }
 
-        // Converts an HSV color to an RGB color.
-        public static Color ConvertHsvToRgb(double h, double s, double v)
+    }
+
+    #endregion ColorUtilities
+
+
+    // Describes a color in terms of
+    // Hue, Saturation, and Value (brightness)
+    #region HsvColor
+    internal readonly struct HsvColor : IEquatable<HsvColor>
+    {
+        public readonly double H;
+        public readonly double S;
+        public readonly double V;
+
+        public HsvColor(double h, double s, double v)
         {
+            H = h;
+            S = s;
+            V = v;
+        }
+
+        public void Deconstruct(out double h, out double s, out double v)
+        {
+            h = H;
+            s = S;
+            v = V;
+        }
+
+        public bool Equals(HsvColor other) => other.H == H && other.S == S && other.V == V;
+
+        public override bool Equals(object obj) => obj is HsvColor other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(H, S, V);
+
+        /// <summary>
+        /// Converts an HSV color to an RGB color.
+        /// </summary>
+        public Color ToRgbColor()
+        {
+            double h = H;
+            double s = S;
+            double v = V;
             double r, g, b;
 
             if (s == 0)
@@ -221,64 +241,53 @@ namespace Microsoft.Samples.CustomControls
 
             }
 
-            return Color.FromArgb(255, (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
-
+            return Color.FromArgb(0xff, (byte)(r * 0xff), (byte)(g * 0xff), (byte)(b * 0xff));
         }
 
-        // Generates a list of colors with hues ranging from 0 360
-        // and a saturation and value of 1. 
-        public static List<Color> GenerateHsvSpectrum()
+        /// <summary>
+        /// Converts an RGB color to an HSV color.
+        /// </summary>
+        public static HsvColor FromRgbColor(Color color)
+            => FromRgb(color.R, color.G, color.B);
+
+        /// <summary>
+        /// Converts an RGB color to an HSV color.
+        /// </summary>
+        /// <param name="r">Red</param>
+        /// <param name="g">Green</param>
+        /// <param name="b">Blue</param>
+        public static HsvColor FromRgb(int r, int g, int b)
         {
+            double delta, min;
+            double h = 0, s, v;
 
-            var colorsList = new List<Color>(8);
+            min = Math.Min(Math.Min(r, g), b);
+            v = Math.Max(Math.Max(r, g), b);
+            delta = v - min;
 
+            s = v == 0.0 ? 0 : delta / v;
 
-            for (int i = 0; i < 29; i++)
+            if (s == 0)
             {
-                colorsList.Add(
-                    ColorUtilities.ConvertHsvToRgb(i * 12, 1, 1)
-                );
+                h = 0.0;
             }
-            colorsList.Add(ColorUtilities.ConvertHsvToRgb(0, 1, 1));
+            else
+            {
+                if (r == v)
+                    h = (g - b) / delta;
+                else if (g == v)
+                    h = 2 + (b - r) / delta;
+                else if (b == v)
+                    h = 4 + (r - g) / delta;
 
+                h *= 60;
+                if (h < 0.0)
+                    h += 360;
 
-            return colorsList;
+            }
 
+            return new HsvColor(h, s, v / 255);
         }
-
-    }
-
-    #endregion ColorUtilities
-
-
-    // Describes a color in terms of
-    // Hue, Saturation, and Value (brightness)
-    #region HsvColor
-    internal readonly struct HsvColor : IEquatable<HsvColor>
-    {
-        public readonly double H;
-        public readonly double S;
-        public readonly double V;
-
-        public HsvColor(double h, double s, double v)
-        {
-            H = h;
-            S = s;
-            V = v;
-        }
-
-        public void Deconstruct(out double h, out double s, out double v)
-        {
-            h = H;
-            s = S;
-            v = V;
-        }
-
-        public bool Equals(HsvColor other) => other.H == H && other.S == S && other.V == V;
-
-        public override bool Equals(object obj) => obj is HsvColor other && Equals(other);
-
-        public override int GetHashCode() => HashCode.Combine(H, S, V);
     }
     #endregion HsvColor
 
@@ -327,6 +336,5 @@ namespace Microsoft.Samples.CustomControls
 
     }
     #endregion ColorThumb
-
 
 }
