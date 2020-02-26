@@ -2,6 +2,7 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -74,10 +75,12 @@ namespace Frotz.Other
         private static ulong CalcCRC(string type, Span<byte> buffer)
         {
             int len = buffer.Length + 4;
-            byte[]? pooled = buffer.Length > 0xff ? ArrayPool<byte>.Shared.Rent(len) : null;
+            byte[]? pooled = null;
             try
             {
-                Span<byte> bytes = pooled ?? stackalloc byte[len];
+                Span<byte> bytes = buffer.Length > 0xff
+                    ? (pooled = ArrayPool<byte>.Shared.Rent(len))
+                    : stackalloc byte[len];
                 Encoding.UTF8.GetBytes(type, bytes);
                 buffer.CopyTo(bytes[4..]);
 
@@ -85,7 +88,7 @@ namespace Frotz.Other
             }
             finally
             {
-                if (pooled != null)
+                if (pooled is object)
                     ArrayPool<byte>.Shared.Return(pooled);
             }
         }
@@ -97,17 +100,12 @@ namespace Frotz.Other
             return Encoding.UTF8.GetString(buffer);
         }
 
-        private static ulong ReadInt(Stream stream)
+        private static uint ReadInt(Stream stream)
         {
             Span<byte> buffer = stackalloc byte[4];
             stream.Read(buffer);
 
-            ulong a = buffer[0];
-            ulong b = buffer[1];
-            ulong c = buffer[2];
-            ulong d = buffer[3];
-
-            return (a << 24) | (b << 16) | (c << 8) | d;
+            return BinaryPrimitives.ReadUInt32BigEndian(buffer);
         }
 
         public void Save(string fileName)

@@ -2,6 +2,7 @@
 using Frotz.Screen;
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -115,8 +116,10 @@ namespace Frotz.Blorb
 
         private static void ReadChunk(Blorb blorb, Stream stream, int start, int length, ReadOnlySpan<char> type)
         {
-            byte[]? bufferBytes = length > 0xff ? ArrayPool<byte>.Shared.Rent(length) : null;
-            Span<byte> buffer = bufferBytes ?? stackalloc byte[length];
+            byte[]? rentedFromPool = null;
+            Span<byte> buffer = length > 0xff
+                ? (rentedFromPool = ArrayPool<byte>.Shared.Rent(length))
+                : stackalloc byte[length];
             try
             {
                 int bytesRead = stream.Read(buffer[..length]);
@@ -213,13 +216,8 @@ namespace Frotz.Blorb
                         for (int i = 0; i < len; i++)
                         {
                             int pos = i * 4;
-                            byte a = buffer[pos + 0];
-                            byte b = buffer[pos + 1];
-                            byte c = buffer[pos + 2];
-                            byte d = buffer[pos + 3];
 
-                            uint result = Other.ZMath.MakeInt(a, b, c, d);
-
+                            uint result = Other.ZMath.MakeInt(buffer.Slice(pos, 4));
                             blorb.AdaptivePalatte.Add((int)result);
                         }
                     }
@@ -229,7 +227,7 @@ namespace Frotz.Blorb
                     }
                     else if (type.SequenceEqual("RelN"))
                     {
-                        blorb.ReleaseNumber = (buffer[0] << 8) + buffer[1];
+                        blorb.ReleaseNumber = BinaryPrimitives.ReadInt16BigEndian(buffer);
                     }
                     else if (type.SequenceEqual("Reso"))
                     {
@@ -274,8 +272,8 @@ namespace Frotz.Blorb
             }
             finally
             {
-                if (bufferBytes != null)
-                    ArrayPool<byte>.Shared.Return(bufferBytes);
+                if (rentedFromPool != null)
+                    ArrayPool<byte>.Shared.Return(rentedFromPool);
             }
         }
 
@@ -367,7 +365,7 @@ namespace Frotz.Blorb
             if (read < buffer.Length)
                 throw new InvalidOperationException("Not enough bytes available in stream.");
 
-            return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
+            return BinaryPrimitives.ReadInt32BigEndian(buffer);
         }
     }
 }

@@ -16,19 +16,6 @@ namespace Frotz.Constants
         FILE_SAVE_AUX = 6,
     }
 
-    public enum Story
-    {
-        BEYOND_ZORK,
-        SHERLOCK,
-        ZORK_ZERO,
-        SHOGUN,
-        ARTHUR,
-        JOURNEY,
-        LURKING_HORROR,
-        AMFV,
-        UNKNOWN
-    }
-
     public class CharCodes
     {
         /*** Character codes ***/
@@ -80,11 +67,11 @@ namespace Frotz.Constants
         public const byte MAGENTA_COLOUR = 7;
         public const byte CYAN_COLOUR = 8;
         public const byte WHITE_COLOUR = 9;
-        public const byte GREY_COLOUR = 10;		/* INTERP_MSDOS only */
+        public const byte GREY_COLOUR = 10;		    /* INTERP_MSDOS only */
         public const byte LIGHTGREY_COLOUR = 10; 	/* INTERP_AMIGA only */
         public const byte MEDIUMGREY_COLOUR = 11; 	/* INTERP_AMIGA only */
         public const byte DARKGREY_COLOUR = 12; 	/* INTERP_AMIGA only */
-        public const byte TRANSPARENT_COLOUR = 15; /* ZSpec 1.1 */
+        public const byte TRANSPARENT_COLOUR = 15;  /* ZSpec 1.1 */
     }
 
     public class ZFont

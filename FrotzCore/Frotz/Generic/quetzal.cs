@@ -19,7 +19,9 @@
  */
 using Frotz.Constants;
 using Frotz.Other;
+using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.IO;
 using zbyte = System.Byte;
 using zlong = System.UInt32;
@@ -117,32 +119,25 @@ namespace Frotz.Generic
         /* Read one word from file; return TRUE if OK. */
         private static bool ReadWord(FileStream fs, out zword result)
         {
-            int a, b;
-
             result = zword.MaxValue;
 
-            if ((a = fs.ReadByte()) == -1) return false;
-            if ((b = fs.ReadByte()) == -1) return false;
+            Span<byte> buffer = stackalloc byte[2];
+            if (fs.Read(buffer) < 2) return false;
 
-
-            result = (zword)(((zword)a << 8) | (zword)b);
+            result = BinaryPrimitives.ReadUInt16BigEndian(buffer);
             return true;
         }
 
         /* Read one long from file; return TRUE if OK. */
-        private static bool ReadLong(FileStream fs, out zlong result)
+        private static bool TryReadLong(FileStream fs, out zlong result)
         {
             result = zlong.MaxValue;
-            int a, b, c, d;
 
-            if ((a = fs.ReadByte()) == -1) return false;
-            if ((b = fs.ReadByte()) == -1) return false;
-            if ((c = fs.ReadByte()) == -1) return false;
-            if ((d = fs.ReadByte()) == -1) return false;
+            Span<byte> buffer = stackalloc byte[4];
+            if (fs.Read(buffer) < 4) return false;
 
-            // TODO Replace this in favor of zmath
-            result = ((zlong)a << 24) | ((zlong)b << 16) |
-                  ((zlong)c << 8) | (zlong)d;
+            result = BinaryPrimitives.ReadUInt32BigEndian(buffer);
+
             return true;
         }
 
@@ -162,9 +157,9 @@ namespace Frotz.Generic
             /* Check it's really an `IFZS' file. */
 
 
-            if (!ReadLong(svf, out uint tmpl) ||
-                !ReadLong(svf, out uint ifzslen) ||
-                !ReadLong(svf, out uint currlen))
+            if (!TryReadLong(svf, out zlong tmpl) ||
+                !TryReadLong(svf, out zlong ifzslen) ||
+                !TryReadLong(svf, out zlong currlen))
             {
                 return 0;
             }
@@ -182,8 +177,8 @@ namespace Frotz.Generic
             {
                 /* Read chunk header. */
                 if (ifzslen < 8) /* Couldn't contain a chunk. */	return 0;
-                if (!ReadLong(svf, out tmpl)
-                    || !ReadLong(svf, out currlen))
+                if (!TryReadLong(svf, out tmpl)
+                    || !TryReadLong(svf, out currlen))
                 {
                     return 0;
                 }
@@ -292,7 +287,7 @@ namespace Frotz.Generic
                             }
 
                             /* Read PC, procedure flag and formal param count. */
-                            if (!ReadLong(svf, out tmpl)) return fatal;
+                            if (!TryReadLong(svf, out tmpl)) return fatal;
                             y = (int)(tmpl & 0x0F);	/* Number of formals. */
                             tmpw = (zword)(y << 8);
 
@@ -472,7 +467,6 @@ namespace Frotz.Generic
 
         internal static zword SaveQuetzal(FileStream svf, MemoryStream stf)
         {
-
             zlong stkslen = 0;
             zword i, j, n;
             int nvars, nargs, nstk, p;

@@ -115,7 +115,7 @@ namespace Frotz
         }
 
         public ReadOnlySpan<char> AsSpan() => _chars.Slice(0, _pos);
-        public ReadOnlySpan<char> AsSpan(int start) => _chars.Slice(start, _pos - start);
+        public ReadOnlySpan<char> AsSpan(int start) => _chars[start.._pos];
         public ReadOnlySpan<char> AsSpan(int start, int length) => _chars.Slice(start, length);
 
         public int IndexOf(char searchChar) => AsSpan().IndexOf(searchChar);

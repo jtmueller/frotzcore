@@ -6,6 +6,7 @@ using Frotz.Screen;
 using Microsoft.IO;
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -26,10 +27,7 @@ namespace Frotz
         // TODO This really needs to get wired up when a new game is started
         private static readonly List<string> History = new List<string>();
 
-        // TODO Rename these
-        private static long MakeId(byte a, byte b, byte c, byte d) => (a << 24) | (b << 16) | (c << 8) | d;
-
-        private static long MakeId(ReadOnlySpan<byte> buffer) => MakeId(buffer[0], buffer[1], buffer[2], buffer[3]);
+        private static long ReadLong(ReadOnlySpan<byte> buffer) => BinaryPrimitives.ReadInt64BigEndian(buffer);
 
         public static Blorb.Blorb? BlorbFile = null; // TODO Make this static again, or something
 
@@ -128,16 +126,16 @@ namespace Frotz
          * Pass a string of characters to os_display_char.
          *
          */
-        public static void DisplayString(ReadOnlySpan<zword> span)
+        public static void DisplayString(ReadOnlySpan<zword> chars)
         {
             zword c;
 
-            for (int i = 0; i < span.Length && span[i] != 0; i++)
+            for (int i = 0; i < chars.Length && chars[i] != 0; i++)
             {
-                c = span[i];
+                c = chars[i];
                 if (c == CharCodes.ZC_NEW_FONT || c == CharCodes.ZC_NEW_STYLE)
                 {
-                    int arg = span[++i];
+                    int arg = chars[++i];
                     if (c == CharCodes.ZC_NEW_FONT)
                     {
                         SetFont(arg);
@@ -154,15 +152,8 @@ namespace Frotz
             }
         }
 
-        public static void DisplayString(string s)
-        {
-            Span<zword> word = s.Length <= MaxStack ? stackalloc zword[s.Length] : new zword[s.Length];
-            for (int i = 0; i < s.Length; i++)
-            {
-                word[i] = s[i];
-            }
-            DisplayString(word);
-        }
+        public static void DisplayString(string s) => 
+            DisplayString(MemoryMarshal.Cast<char, zword>(s));
 
         /*
          * os_erase_area
@@ -1061,8 +1052,8 @@ namespace Frotz
                     if (buffer.Length == 8)
                     { 
                         // TODO This is a bit of a hack, it would be better to handle this upfront so there is no guess work
-                        width = (int)MakeId(buffer) * _metrics.Scale;
-                        height = (int)MakeId(buffer.AsSpan(4)) * _metrics.Scale;
+                        width = (int)ReadLong(buffer) * _metrics.Scale;
+                        height = (int)ReadLong(buffer.AsSpan(4)) * _metrics.Scale;
                     }
                     else
                     {
@@ -1294,7 +1285,7 @@ namespace Frotz
          * Called when the height of a window is changed.
          *
          */
-        public static void SetWindowSize(int win, Other.ZWindow wp) 
+        public static void SetWindowSize(int win, ZWindow wp) 
             => Screen?.SetWindowSize(win, wp.YPos, wp.XPos, wp.YSize, wp.XSize);
 
         /*
@@ -1304,7 +1295,7 @@ namespace Frotz
          */
         public static void SetActiveWindow(int win)
         {
-            System.Diagnostics.Debug.WriteLine("Setting Window:" + win);
+            Debug.WriteLine("Setting Window:" + win);
             Screen?.SetActiveWindow(win);
         }
 
@@ -1331,17 +1322,17 @@ namespace Frotz
 
         public static void MouseMoved(int x, int y)
         {
-            Main.MouseX = (ushort)x;
-            Main.MouseY = (ushort)y;
+            Main.MouseX = (zword)x;
+            Main.MouseY = (zword)y;
         }
     }
 
     internal readonly struct BufferChar : IEquatable<BufferChar>
     {
-        public readonly ushort Char;
+        public readonly zword Char;
         public readonly int Width;
 
-        internal BufferChar(ushort character, int width)
+        internal BufferChar(zword character, int width)
         {
             Char = character;
             Width = width;
