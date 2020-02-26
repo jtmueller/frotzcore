@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
     <UseWPF>true</UseWPF>
     <PublishReadyToRun>true</PublishReadyToRun>
@@ -16,7 +16,7 @@
   
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0-preview3.19551.4" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ColorPickerLib\ColorPicker.csproj" />
