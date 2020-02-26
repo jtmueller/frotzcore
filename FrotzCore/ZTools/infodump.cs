@@ -272,9 +272,9 @@ namespace ZTools
                 if ((address + 4) < txio.header.resident_size)
                 {
                     if ((uint)txio.header.version <= TxH.V3)
-                        TxH.SetByte(address + 2, (uint)TxH.GetByte(address + 2) | 0x80);
+                        TxH.SetByte((int)address + 2, (byte)(TxH.GetByte(address + 2) | 0x80));
                     else
-                        TxH.SetByte(address + 4, (uint)TxH.GetByte(address + 4) | 0x80);
+                        TxH.SetByte((int)address + 4, (byte)(TxH.GetByte(address + 4) | 0x80));
                 }
 
                 address += word_size;

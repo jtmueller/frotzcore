@@ -490,7 +490,7 @@ namespace Frotz.Generic
         private static void DecodeText(StringType st, zword addr)
         {
             // zword* ptr;
-            long byte_addr;
+            int byte_addr;
             zword c2;
             zword code;
             zbyte c, prev_c = 0;
@@ -507,18 +507,18 @@ namespace Frotz.Generic
 
             if (st == StringType.ABBREVIATION)
             {
-                byte_addr = (long)addr << 1;
+                byte_addr = addr << 1;
             }
             else if (st == StringType.HIGH_STRING)
             {
                 if (Main.h_version <= ZMachine.V3)
-                    byte_addr = (long)addr << 1;
+                    byte_addr = addr << 1;
                 else if (Main.h_version <= ZMachine.V5)
-                    byte_addr = (long)addr << 2;
+                    byte_addr = addr << 2;
                 else if (Main.h_version <= ZMachine.V7)
-                    byte_addr = ((long)addr << 2) + ((long)Main.h_strings_offset << 3);
+                    byte_addr = (addr << 2) + (Main.h_strings_offset << 3);
                 else /* (h_version <= V8) */
-                    byte_addr = (long)addr << 3;
+                    byte_addr = addr << 3;
 
                 if (byte_addr >= Main.StorySize)
                     Err.RuntimeError(ErrorCodes.ERR_ILL_PRINT_ADDR);
@@ -551,7 +551,6 @@ namespace Frotz.Generic
                 /* Read its three Z-characters */
                 for (i = 10; i >= 0; i -= 5)
                 {
-
                     zword abbr_addr;
                     zword ptr_addr;
                     zword zc;

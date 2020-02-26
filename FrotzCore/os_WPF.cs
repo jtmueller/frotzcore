@@ -888,7 +888,7 @@ namespace Frotz
          * Given a colour index, return the appropriate true colour.
          *
          */
-        public static zword ToTrueColor(int index) => TrueColorStuff.TrueToRGB5(TrueColorStuff.GetColour(index));
+        public static zword ToTrueColor(int index) => TrueColorStuff.TrueToRGB5(TrueColorStuff.GetColor(index));
 
         /*
          * os_set_cursor

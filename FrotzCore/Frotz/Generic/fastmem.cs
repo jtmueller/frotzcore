@@ -26,6 +26,7 @@ using Collections.Pooled;
 using Frotz.Constants;
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using zbyte = System.Byte;
 using zword = System.UInt16;
@@ -50,7 +51,7 @@ namespace Frotz.Generic
     {
         // compiler inlines this pattern
         private static ReadOnlySpan<RecordStruct> Records => new[] {
-            new RecordStruct(Story.SHERLOCK, 97, "871026"),
+            new RecordStruct(Story.SHERLOCK,  97, "871026"),
             new RecordStruct(Story.SHERLOCK,  21, "871214"),
             new RecordStruct(Story.SHERLOCK,  22, "880112"),
             new RecordStruct(Story.SHERLOCK,  26, "880127"),
@@ -122,35 +123,32 @@ namespace Frotz.Generic
         internal static byte Hi(zword v) => (byte)(v >> 8);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void SetWord(long addr, zword v)
+        internal static void SetWord(int addr, zword v)
         {
-            ZMData[addr] = Hi(v);
-            ZMData[addr + 1] = Lo(v);
+            BinaryPrimitives.WriteUInt16BigEndian(ZMData.AsSpan(addr, 2), v);
             DebugState.Output("ZMP: {0} -> {1}", addr, v);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void LowWord(long addr, out zbyte v)
-            => v = (byte)((ZMData[addr] << 8) | ZMData[addr + 1]);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void LowWord(long addr, out zword v)
-            => v = (ushort)((ZMData[addr] << 8) | ZMData[addr + 1]);
+        internal static void LowWord(int addr, out zword v)
+        {
+            v = BinaryPrimitives.ReadUInt16BigEndian(ZMData.AsSpan(addr, 2));
+        }
 
         // TODO I'm suprised that they return the same thing
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void HighWord(long addr, out zword v)
+        internal static void HighWord(int addr, out zword v)
             => LowWord(addr, out v);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void CodeWord(out zword v)
         {
-            v = (zword)(ZMData[Pcp] << 8 | ZMData[Pcp + 1]);
+            LowWord((int)Pcp, out v);
             Pcp += 2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void SetByte(long addr, byte v)
+        internal static void SetByte(int addr, byte v)
         {
             ZMData[addr] = v;
             DebugState.Output("ZMP: {0} -> {1}", addr, v);
@@ -160,7 +158,7 @@ namespace Frotz.Generic
         internal static void CodeByte(out zbyte v) => v = ZMData[Pcp++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void LowByte(long addr, out zbyte v) => v = ZMData[addr];
+        internal static void LowByte(int addr, out zbyte v) => v = ZMData[addr];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void GetPc(out long v) => v = Pcp - Zmp;

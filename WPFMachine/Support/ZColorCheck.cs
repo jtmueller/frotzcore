@@ -101,7 +101,7 @@ namespace WPFMachine
                     return Properties.Settings.Default.DefaultInputColor;
             }
 
-            long new_color = TrueColorStuff.GetColour(color);
+            long new_color = TrueColorStuff.GetColor(color);
             byte r = TrueColorStuff.GetRValue(new_color);
             byte g = TrueColorStuff.GetGValue(new_color);
             byte b = TrueColorStuff.GetBValue(new_color);

@@ -111,24 +111,24 @@ namespace Frotz.Other
         }
 
 
-        // Get a colour
-        public static long GetColour(int colour)
+        // Get a color
+        public static long GetColor(int color)
         {
             // Standard colours
-            if ((colour >= ZColor.BLACK_COLOUR) && (colour <= ZColor.DARKGREY_COLOUR))
-                return s_colours[colour - ZColor.BLACK_COLOUR];
+            if ((color >= ZColor.BLACK_COLOUR) && (color <= ZColor.DARKGREY_COLOUR))
+                return s_colours[color - ZColor.BLACK_COLOUR];
 
             // Default colours
-            if (colour == 16)
+            if (color == 16)
                 return s_defaultFore;
-            if (colour == 17)
+            if (color == 17)
                 return s_defaultBack;
 
             // Non standard colours
-            if ((colour >= 18) && (colour < 256))
+            if ((color >= 18) && (color < 256))
             {
-                if (s_nonStdColours[colour - 18] != 0xFFFFFFFF)
-                    return s_nonStdColours[colour - 18];
+                if (s_nonStdColours[color - 18] != 0xFFFFFFFF)
+                    return s_nonStdColours[color - 18];
             }
             return s_colours[0];
         }

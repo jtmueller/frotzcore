@@ -191,15 +191,15 @@ namespace Frotz.Constants
 
         /*** Constants for os_restart_game */
 
-        public static byte RESTART_BEGIN = 0;
-        public static byte RESTART_WPROP_SET = 1;
-        public static byte RESTART_END = 2;
+        public const byte RESTART_BEGIN = 0;
+        public const byte RESTART_WPROP_SET = 1;
+        public const byte RESTART_END = 2;
 
         /*** Constants for os_menu */
 
-        public static byte MENU_NEW = 0;
-        public static byte MENU_ADD = 1;
-        public static byte MENU_REMOVE = 2;
+        public const byte MENU_NEW = 0;
+        public const byte MENU_ADD = 1;
+        public const byte MENU_REMOVE = 2;
 
 
     }

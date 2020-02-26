@@ -119,7 +119,7 @@ namespace Frotz.Generic
          * Calculate the address of the next property in a property list.
          *
          */
-        private static zword next_property(zword prop_addr)
+        private static zword NextProperty(zword prop_addr)
         {
 
             /* Load the current property id */
@@ -221,7 +221,7 @@ namespace Frotz.Generic
                 /* Get parent of object, and return if no parent */
 
                 obj_addr += O4_PARENT;
-                FastMem.LowWord(obj_addr, out ushort parent);
+                FastMem.LowWord(obj_addr, out zword parent);
                 if (parent == 0)
                     return;
 
@@ -451,7 +451,7 @@ namespace Frotz.Generic
                 do
                 {
                     FastMem.LowByte(prop_addr, out value);
-                    prop_addr = next_property(prop_addr);
+                    prop_addr = NextProperty(prop_addr);
                 } while ((value & mask) > Process.zargs[1]);
 
                 /* Exit if the property does not exist */
@@ -556,7 +556,7 @@ namespace Frotz.Generic
                 FastMem.LowByte(prop_addr, out value);
                 if ((value & mask) <= Process.zargs[1])
                     break;
-                prop_addr = next_property(prop_addr);
+                prop_addr = NextProperty(prop_addr);
             }
 
             if ((value & mask) == Process.zargs[1])
@@ -631,7 +631,7 @@ namespace Frotz.Generic
                 FastMem.LowByte(prop_addr, out value);
                 if ((value & mask) <= Process.zargs[1])
                     break;
-                prop_addr = next_property(prop_addr);
+                prop_addr = NextProperty(prop_addr);
             }
 
             /* Calculate the property address or return zero */
@@ -835,7 +835,7 @@ namespace Frotz.Generic
                 FastMem.LowByte(prop_addr, out value);
                 if ((value & mask) <= Process.zargs[1])
                     break;
-                prop_addr = next_property(prop_addr);
+                prop_addr = NextProperty(prop_addr);
             }
 
             /* Exit if the property does not exist */
@@ -925,7 +925,7 @@ namespace Frotz.Generic
             obj_addr = (zword)(ObjectAddress(Process.zargs[0]) + Process.zargs[1] / 8);
 
             /* Load attribute byte */
-            FastMem.LowByte(obj_addr, out byte value);
+            FastMem.LowByte(obj_addr, out zbyte value);
 
             /* Set attribute bit */
             value |= (zbyte)(0x80 >> (Process.zargs[1] & 7));

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using zbyte_t = System.Byte;
@@ -340,17 +341,16 @@ namespace ZTools
         internal static byte GetByte(int offset) => Datap[offset];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ushort GetWord(int offset) => (ushort)((Datap[offset] << 8) + Datap[offset + 1]);
+        internal static ushort GetWord(int offset) =>
+            BinaryPrimitives.ReadUInt16BigEndian(Datap.AsSpan(offset, 2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void SetByte(ulong offset, uint value) => Datap[offset] = (zbyte_t)value;
+        internal static void SetByte(int offset, zbyte_t value) => 
+            Datap[offset] = value;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void SetWord(ulong offset, uint value)
-        {
-            Datap[offset] = (zbyte_t)(value >> 8);
-            Datap[offset + 1] = (zbyte_t)(value & 0xff);
-        }
+        internal static void SetWord(int offset, zword_t value) => 
+            BinaryPrimitives.WriteUInt16BigEndian(Datap.AsSpan(offset, 2), value);
 
         ///* Inform version codes */
         internal const int INFORM_5 = 500;
