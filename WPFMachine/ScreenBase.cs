@@ -123,7 +123,7 @@ namespace WPFMachine
                    font.Typeface,
                    font.PointSize,
                    ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground),
-                   _substituion, tfm, 1.0);
+                   _substituion, tfm, VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
             SetStyle(cdi, ft);
 

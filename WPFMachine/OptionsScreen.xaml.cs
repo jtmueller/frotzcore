@@ -35,12 +35,12 @@ namespace WPFMachine
                 count++;
 
                 var ft = new FormattedText("i", System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, 1.0);
+                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
                 var s = new Size(ft.Width, ft.Height);
 
                 ft = new FormattedText("w", System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, 1.0);
+                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
                 if (ft.Width == s.Width)
                 {

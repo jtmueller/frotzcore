@@ -43,7 +43,7 @@ namespace WPFMachine.Screen
                     var ft = new FormattedText(at.Text,
                         System.Globalization.CultureInfo.CurrentCulture,
                         FlowDirection.LeftToRight, f.Typeface, f.PointSize, b,
-                        new NumberSubstitution(), TextFormattingMode.Display, 1.0);
+                        new NumberSubstitution(), TextFormattingMode.Display, VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
                     if (at.DisplayInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
                     {

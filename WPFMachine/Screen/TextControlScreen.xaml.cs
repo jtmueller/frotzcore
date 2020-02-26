@@ -231,7 +231,7 @@ namespace WPFMachine.Screen
                    font.Typeface,
                    font.PointSize,
                    ZColorCheck.ZColorToBrush(fColor, ColorType.Foreground),
-                   _substituion, tfm, 1.0);
+                   _substituion, tfm, VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
             if (changes != null)
             {
