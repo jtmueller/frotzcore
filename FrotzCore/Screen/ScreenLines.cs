@@ -24,7 +24,7 @@ namespace Frotz.Screen
         public int Rows { get; }
         public int Columns { get; }
 
-        public void SetChar(int row, int col, char c, CharDisplayInfo FandS)
+        public void SetChar(int row, int col, char c, CharDisplayInfo FandS = default)
         {
             // TODO Check boundaries
             _lines[row].SetChar(col, c, FandS);
@@ -76,9 +76,10 @@ namespace Frotz.Screen
             // TODO Check this boundary
             for (int i = top; i < bottom; i++)
             {
+                var line = _lines[i];
                 for (int j = left; j < right; j++)
                 {
-                    _lines[i].ClearChar(j);
+                    line.ClearChar(j);
                 }
             }
         }

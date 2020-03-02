@@ -25,7 +25,7 @@ namespace Frotz.Screen
             for (int i = 0; i < lineWidth; i++)
             {
                 _chars[i] = ' ';
-                _styles[i] = CharDisplayInfo.Empty;
+                _styles[i] = default;
             }
 
             _width = lineWidth;
@@ -33,7 +33,7 @@ namespace Frotz.Screen
             LastCharSet = -1;
         }
 
-        public void SetChar(int pos, char c, CharDisplayInfo FandS)
+        public void SetChar(int pos, char c, CharDisplayInfo FandS = default)
         {
             if ((uint)pos >= (uint)_width)
                 throw new IndexOutOfRangeException(nameof(pos));
@@ -70,7 +70,7 @@ namespace Frotz.Screen
             }
         }
 
-        public void ClearChar(int pos) => SetChar(pos, ' ', CharDisplayInfo.Empty);
+        public void ClearChar(int pos) => SetChar(pos, ' ');
 
         public ReadOnlySpan<char> CurrentChars => _chars.AsSpan(0, LastCharSet + 1);
 
@@ -80,7 +80,7 @@ namespace Frotz.Screen
             {
                 for (int i = 0; i < newString.Length; i++)
                 {
-                    SetChar(start + i, newString[i], CharDisplayInfo.Empty);
+                    SetChar(start + i, newString[i]);
                 }
             }
         }

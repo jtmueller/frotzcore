@@ -17,7 +17,7 @@ namespace Frotz
     /// On both platforms, the limitations of ref structs mean that StringBuilder may be a better choice
     /// depending on circumstances.
     /// </summary>
-    internal ref struct ValueStringBuilder
+    public ref struct ValueStringBuilder
     {
         private char[]? _arrayToReturnToPool;
         private Span<char> _chars;

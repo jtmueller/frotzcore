@@ -1,4 +1,5 @@
-﻿using Frotz.Constants;
+﻿using Frotz;
+using Frotz.Constants;
 using Frotz.Screen;
 using System;
 using System.Collections.Generic;
@@ -72,7 +73,7 @@ namespace WPFMachine.Screen
             // TODO This is an invalid state, but it still seems to get here... I need to figure out why
             //if (_flushMode == TextFlushMode.Absolute && _x == 1 && Width == 0)
             //{
-            //    ySystem.Diagnostics.Debug.WriteLine("How did I get here?");
+            //    System.Diagnostics.Debug.WriteLine("How did I get here?");
             //}
 
             // If _x is 1 and Width == 0, We don't need to be here...
@@ -211,14 +212,7 @@ namespace WPFMachine.Screen
 
         private ZRun FirstInline => (ZRun)Inlines.FirstInline;
 
-        private ZRun LastInline
-        {
-            get
-            {
-                var r = Inlines.LastInline as ZRun;
-                return r;
-            }
-        }
+        private ZRun LastInline => (ZRun)Inlines.LastInline;
 
         internal void SetCursorXPosition(int x)
         {
@@ -226,7 +220,6 @@ namespace WPFMachine.Screen
             _x = x;
             _flushMode = TextFlushMode.Absolute;
         }
-
 
         internal void ImplementRunStyle(ZRun run)
         {
@@ -267,7 +260,7 @@ namespace WPFMachine.Screen
         {
             get
             {
-                var sb = new StringBuilder();
+                using var sb = new ValueStringBuilder();
                 foreach (var i in Inlines)
                 {
                     if (i is Run r)
@@ -329,15 +322,6 @@ namespace WPFMachine.Screen
         Normal = 0,
         Overwrite = 1,
         Absolute = 2
-    }
-
-    internal class CharsInLine
-    {
-        private readonly List<CharInfo> _chars = new List<CharInfo>();
-
-        internal CharsInLine()
-        {
-        }
     }
 }
 

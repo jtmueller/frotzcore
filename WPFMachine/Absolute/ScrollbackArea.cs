@@ -86,11 +86,10 @@ namespace WPFMachine.Absolute
 
             string fileName = sfd.FileName;
 
-            var fs = new System.IO.FileStream(fileName, System.IO.FileMode.Create);
+            using var fs = new System.IO.FileStream(fileName, System.IO.FileMode.Create);
 
             var range = new TextRange(_RTB.Document.ContentStart, _RTB.Document.ContentEnd);
             range.Save(fs, Format, true);
-            fs.Close();
         }
 
         private void bSaveText_Click(object sender, RoutedEventArgs e) => saveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
@@ -122,7 +121,7 @@ namespace WPFMachine.Absolute
             currentStyle = -1;
         }
 
-        private readonly string threeNewLines = "\r\n\r\n\r\n";
+        private const string threeNewLines = "\r\n\r\n\r\n";
         private int currentStyle = -1;
 
         public void AddString(string text, CharDisplayInfo cdi)
