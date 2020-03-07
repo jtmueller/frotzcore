@@ -116,14 +116,12 @@ namespace WPFMachine
 
         protected FormattedText BuildFormattedText(string text, FontInfo font, CharDisplayInfo cdi)
         {
-            var tfm = TextFormattingMode.Display;
-            var ft = new FormattedText(text,
-                   CultureInfo.CurrentCulture,
-                   FlowDirection.LeftToRight,
-                   font.Typeface,
-                   font.PointSize,
-                   ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground),
-                   _substituion, tfm, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+            var tfm = TextFormattingMode.Ideal;
+            var dpi = VisualTreeHelper.GetDpi(this);
+            var ft = new FormattedText(text, CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, font.Typeface, font.PointSize,
+                ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground),
+                _substituion, tfm, dpi.PixelsPerDip);
 
             SetStyle(cdi, ft);
 

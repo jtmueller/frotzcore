@@ -1,6 +1,7 @@
 ﻿
 using Frotz.Constants;
 using Frotz.Other;
+using System.Collections.Concurrent;
 using System.Windows.Media;
 using WPFMachine.Support;
 
@@ -60,14 +61,20 @@ namespace WPFMachine
         internal static Color CurrentForeColor { get; set; }
         internal static Color CurrentBackColor { get; set; }
 
-        internal static Brush ZColorToBrush(int color, ColorType Type) => new SolidColorBrush(ZColorToColor(color, Type));
+        internal static Brush ZColorToBrush(int color, ColorType type) => new SolidColorBrush(ZColorToColor(color, type));
 
-        internal static Color ZColorToColor(int color, ColorType Type)
+        private static readonly ConcurrentDictionary<(int color, ColorType type), Color> s_colorCache = new ConcurrentDictionary<(int, ColorType), Color>();
+
+        internal static Color ZColorToColor(int color, ColorType type) =>
+            s_colorCache.GetOrAdd((color, type), ZColorToColor);
+
+        private static Color ZColorToColor((int, ColorType) ct)
         {
+            var (color, type) = ct;
             if (color == 0 || color == 1)
             {
-                if (Type == ColorType.Foreground) return CurrentForeColor;
-                if (Type == ColorType.Background) return CurrentBackColor;
+                if (type == ColorType.Foreground) return CurrentForeColor;
+                if (type == ColorType.Background) return CurrentBackColor;
             }
 
             switch (color)
@@ -102,9 +109,7 @@ namespace WPFMachine
             }
 
             long new_color = TrueColorStuff.GetColor(color);
-            byte r = TrueColorStuff.GetRValue(new_color);
-            byte g = TrueColorStuff.GetGValue(new_color);
-            byte b = TrueColorStuff.GetBValue(new_color);
+            var (r, g, b) = TrueColorStuff.GetRGB(new_color);
 
             return Color.FromRgb(r, g, b);
         }

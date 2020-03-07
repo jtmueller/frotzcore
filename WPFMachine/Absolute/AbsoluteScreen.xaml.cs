@@ -328,7 +328,9 @@ namespace WPFMachine.Absolute
                 dc.DrawText(ft, new Point(0, 0));
                 dc.Close();
 
-                var bmp = new RenderTargetBitmap((int)dv.ContentBounds.Width, (int)charHeight, 96, 96, PixelFormats.Pbgra32);
+                var dpi = VisualTreeHelper.GetDpi(this);
+                var bmp = new RenderTargetBitmap((int)dv.ContentBounds.Width, (int)charHeight, 
+                    dpi.PixelsPerInchX / dpi.PixelsPerDip, dpi.PixelsPerInchY / dpi.PixelsPerDip, PixelFormats.Pbgra32);
                 bmp.Render(dv);
 
                 myImage.Source = bmp;
@@ -395,7 +397,7 @@ namespace WPFMachine.Absolute
                         var iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
                         var p = new Point(iLeft, iTop);
 
-                        if (r.Contains(p))
+                        if (r.Contains(p)) // what is iRect for?
                         {
                             mainCanvas.Children.RemoveAt(i);
                             i--;
@@ -429,7 +431,7 @@ namespace WPFMachine.Absolute
                         var iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
                         var p = new Point(iLeft, iTop);
 
-                        if (r.Contains(p))
+                        if (r.Contains(p)) // what is iRect for?
                         {
                             double newPos = iTop - units;
                             if (newPos >= top)
@@ -455,13 +457,13 @@ namespace WPFMachine.Absolute
                 {
                     if (_currentText.Length > 0)
                     {
-                        char c = _currentText[_currentText.Length - 1];
+                        char c = _currentText[^1];
 
                         double x = (double)_cursorCanvas.GetValue(Canvas.LeftProperty);
                         x -= GetStringWidth(c.ToString(), _currentInfo);
                         _cursorCanvas.SetValue(Canvas.LeftProperty, x);
 
-                        _currentText.Remove(_currentText.Length - 1, 1);
+                        _currentText.Remove(^1..);
                         RemoveLastChild();
                         if (_currentText.Length > 0)
                         {

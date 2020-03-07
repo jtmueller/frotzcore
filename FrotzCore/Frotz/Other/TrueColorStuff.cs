@@ -35,6 +35,7 @@ namespace Frotz.Other
             s_colours[10] = RGB5ToTrue(0x2D6B); // dark grey
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int RGB5ToTrue(zword five)
         {
             byte r = (byte)(five & 0x001F);
@@ -49,6 +50,7 @@ namespace Frotz.Other
         internal static int RGB(byte r, byte g, byte b) => r | g << 8 | b << 16;
 
         // Convert from a true colour to 5-bit RGB
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static zword TrueToRGB5(long colour)
         {
             int r = GetRValue(colour) >> 3;
@@ -65,6 +67,8 @@ namespace Frotz.Other
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte GetBValue(long rgb) => LoByte(rgb >> 16);
+
+        public static (byte r, byte g, byte b) GetRGB(long rgb) => (LoByte(rgb), LoByte(rgb >> 8), LoByte(rgb >> 16));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static byte LoByte(long w) => (byte)(w & 0xff);
