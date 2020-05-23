@@ -188,19 +188,19 @@ namespace WPFMachine.Screen
         private static bool IsFixedWidth(CharDisplayInfo info) 
             => info.Font == ZFont.FIXED_WIDTH_FONT || info.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE);
 
-        private ZRun AddInline(string Text, CharDisplayInfo DisplayInfo)
+        private ZRun AddInline(string text, CharDisplayInfo displayValue)
         {
-            var temp = CreateInline(Text, DisplayInfo);
+            var temp = CreateInline(text, displayValue);
             Inlines.Add(temp);
             return temp;
         }
 
-        private ZRun CreateInline(string Text, CharDisplayInfo DisplayInfo)
+        private ZRun CreateInline(string text, CharDisplayInfo displayInfo)
         {
             // Add an empty inline to allow for the absolute positioning
-            var temp = new ZRun(DisplayInfo)
+            var temp = new ZRun(displayInfo)
             {
-                Text = Text,
+                Text = text,
                 FontFamily = _currentInfo.Font == 1 
                     ? _parent.RegularFont.Family : _parent.FixedFont.Family
             };
@@ -278,7 +278,7 @@ namespace WPFMachine.Screen
             {
                 if (i is ZRun r)
                 {
-                    if (!IsFixedWidth(r.DisplayInfo) && r.Text != "") return false;
+                    if (!IsFixedWidth(r.DisplayInfo) && !string.IsNullOrEmpty(r.Text)) return false;
                 }
                 else
                 {

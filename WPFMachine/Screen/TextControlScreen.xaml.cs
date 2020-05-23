@@ -113,14 +113,14 @@ namespace WPFMachine.Screen
                 var standard = OS.BlorbFile.StandardSize;
                 if (standard.Height > 0 && standard.Width > 0)
                 {
-                    int maxW = (int)Math.Floor(width / OS.BlorbFile.StandardSize.Width);
-                    int maxH = (int)Math.Floor(height / OS.BlorbFile.StandardSize.Height);
+                    int maxW = (int)Math.Floor(width / standard.Width);
+                    int maxH = (int)Math.Floor(height / standard.Height);
 
                     scale = Math.Min(maxW, maxH);
                     // scale = 2; // Ok, so the rest of things are at the right scale, but we've pulled back the images to 1x
 
-                    screenWidth = OS.BlorbFile.StandardSize.Width * scale;
-                    screenHeight = OS.BlorbFile.StandardSize.Height * scale;
+                    screenWidth = standard.Width * scale;
+                    screenHeight = standard.Height * scale;
                 }
             }
             else
@@ -541,7 +541,7 @@ namespace WPFMachine.Screen
                 "All Files (*.*)|*.*"
             };
 
-            return string.Join('|', temp.ToArray());
+            return string.Join('|', temp);
         }
 
         private bool _inInputMode = false;
@@ -621,10 +621,9 @@ namespace WPFMachine.Screen
                 if (ofd.ShowDialog(_parent) == true)
                 {
                     fName = ofd.FileName;
-                    var s = ofd.OpenFile();
+                    using var s = ofd.OpenFile();
                     buffer = new byte[s.Length];
                     s.Read(buffer, 0, buffer.Length);
-                    s.Close();
                 }
 
             });

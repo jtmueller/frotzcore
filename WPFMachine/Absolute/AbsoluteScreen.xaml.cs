@@ -291,9 +291,6 @@ namespace WPFMachine.Absolute
             {
                 var myImage = new Image();
 
-                var dv = new DrawingVisual();
-                var dc = dv.RenderOpen();
-
                 double x = _cursorX;
                 double y = _cursorY;
 
@@ -310,23 +307,27 @@ namespace WPFMachine.Absolute
 
                 var ft = BuildFormattedText(text, fi, cdi);
 
-                Brush b = Brushes.Transparent;
+                Brush brush = Brushes.Transparent;
 
                 if (cdi.ImplementsStyle(ZStyles.REVERSE_STYLE))
                 {
-                    b = ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground);
+                    brush = ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground);
                 }
                 else
                 {
                     if (_currentInfo.BackgroundColor != _bColor)
                     {
-                        b = ZColorCheck.ZColorToBrush(cdi.BackgroundColor, ColorType.Background);
+                        brush = ZColorCheck.ZColorToBrush(cdi.BackgroundColor, ColorType.Background);
                     }
                 }
-                dc.DrawRectangle(b, null, new Rect(0, 0, ft.WidthIncludingTrailingWhitespace, charHeight));
 
-                dc.DrawText(ft, new Point(0, 0));
-                dc.Close();
+                var dv = new DrawingVisual();
+                var dc = dv.RenderOpen();
+                using (Utilities.Dispose(dc, x => x.Close()))
+                {
+                    dc.DrawRectangle(brush, null, new Rect(0, 0, ft.WidthIncludingTrailingWhitespace, charHeight));
+                    dc.DrawText(ft, new Point(0, 0));
+                }    
 
                 var dpi = VisualTreeHelper.GetDpi(this);
                 var bmp = new RenderTargetBitmap((int)dv.ContentBounds.Width, (int)charHeight, 

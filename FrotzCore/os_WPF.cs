@@ -5,7 +5,6 @@ using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;

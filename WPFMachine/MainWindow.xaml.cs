@@ -112,8 +112,7 @@ namespace WPFMachine
         // I'd like to make this a return char
         private ushort ConvertAltText(string text)
         {
-            char k = char.ToLowerInvariant(text[0]);
-            return k switch
+            return char.ToLowerInvariant(text[0]) switch
             {
                 'h' => CharCodes.ZC_HKEY_HELP,
                 'd' => CharCodes.ZC_HKEY_DEBUG,
@@ -184,8 +183,7 @@ namespace WPFMachine
                 }
                 else
                 {
-                    // TODO Make Recurse an option
-                    foreach (string dir in gameDirectories.Split(';'))
+                    foreach (string dir in list)
                     {
                         try
                         {
