@@ -49,8 +49,7 @@ namespace Frotz.Generic
 
     internal static class FastMem
     {
-        // compiler inlines this pattern
-        private static ReadOnlySpan<RecordStruct> Records => new[] {
+        private static readonly RecordStruct[] Records = {
             new RecordStruct(Story.SHERLOCK,  97, "871026"),
             new RecordStruct(Story.SHERLOCK,  21, "871214"),
             new RecordStruct(Story.SHERLOCK,  22, "880112"),

@@ -227,11 +227,11 @@ namespace WPFMachine.Screen
             {
                 if (il is ZRun r)
                 {
-                    string text = r.Text;
+                    var text = r.Text.AsSpan();
                     if (text.Contains('>'))
                     {
-                        string temp = text.TrimEnd();
-                        if (temp.LastIndexOf('>') == temp.Length - 1)
+                        var temp = text.TrimEnd();
+                        if (temp[^1] == '>')
                         {
                             width += (int)r.Width;
                             return width;
@@ -247,9 +247,9 @@ namespace WPFMachine.Screen
                         width += (int)r.Width;
                     }
                 }
-                else if (il is ZBlankContainer)
+                else if (il is ZBlankContainer container)
                 {
-                    width += ((ZBlankContainer)il).Width;
+                    width += container.Width;
                 }
                 else
                 {

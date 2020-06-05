@@ -544,7 +544,7 @@ namespace WPFMachine.Absolute
             Invoke(() =>
             {
                 if (mainCanvas.Children.Count > 0)
-                    mainCanvas.Children.RemoveAt(mainCanvas.Children.Count - 1);
+                    mainCanvas.Children.RemoveAt(^1);
 
                 _currentText.Append(c);
 
@@ -564,7 +564,7 @@ namespace WPFMachine.Absolute
         {
             if (mainCanvas.Children.Count > 0)
             {
-                mainCanvas.Children.RemoveAt(mainCanvas.Children.Count - 1);
+                mainCanvas.Children.RemoveAt(^1);
             }
         }
 

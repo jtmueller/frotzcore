@@ -35,6 +35,8 @@ namespace Frotz.Generic
 
         private static bool locked = false;
         private static bool playing = false;
+
+        // compiler inlines this pattern for bytes
         private static ReadOnlySpan<zbyte> LhRepeats => new zbyte[] {
             0x00, 0x00, 0x00, 0x01, 0xff,
             0x00, 0x01, 0x01, 0x01, 0x01,

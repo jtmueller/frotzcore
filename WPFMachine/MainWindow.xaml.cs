@@ -351,13 +351,12 @@ namespace WPFMachine
 
             _lastPlayedGames.Add(s);
 
-
             while (_lastPlayedGames.Count > Properties.Settings.Default.LastPlayedGamesCount)
             {
                 _lastPlayedGames.RemoveAt(0);
             }
 
-            Properties.Settings.Default.LastPlayedGames = string.Join("|", _lastPlayedGames);
+            Properties.Settings.Default.LastPlayedGames = string.Join('|', _lastPlayedGames);
             Properties.Settings.Default.Save();
 
             _storyFileName = e.StoryFileName;
