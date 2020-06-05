@@ -36,15 +36,15 @@ namespace WPFMachine.Screen
             get
             {
                 double w = 0;
-                foreach (var i in base.Inlines)
+                foreach (var inline in base.Inlines)
                 {
-                    if (i is ZRun)
+                    if (inline is ZRun run)
                     {
-                        w += ((ZRun)i).Width;
+                        w += run.Width;
                     }
-                    else if (i is ZBlankContainer)
+                    else if (inline is ZBlankContainer container)
                     {
-                        w += ((ZBlankContainer)i).Width;
+                        w += container.Width;
                     }
                 }
                 return w;
@@ -137,7 +137,7 @@ namespace WPFMachine.Screen
                         }
                         else
                         {
-                            if (text.AsSpan().Trim().Length > 0 || _currentInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
+                            if (!string.IsNullOrWhiteSpace(text) || _currentInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
                             {
                                 SetAbsolute(text, _x, _currentInfo);
 
@@ -223,7 +223,7 @@ namespace WPFMachine.Screen
 
         internal void ImplementRunStyle(ZRun run)
         {
-            if (run == null) return;
+            if (run is null) return;
 
             if (run.DisplayInfo.ImplementsStyle(ZStyles.BOLDFACE_STYLE))
             {

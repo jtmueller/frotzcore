@@ -284,7 +284,7 @@ namespace WPFMachine
             var args = ((Memory<string>)argsO).Span;
             if (args.Length > 0 && args[0] == "last" && _lastPlayedGames.Count > 0)
             {
-                args[0] = _lastPlayedGames[_lastPlayedGames.Count - 1];
+                args[0] = _lastPlayedGames[^1];
             }
 
             try

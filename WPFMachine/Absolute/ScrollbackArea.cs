@@ -1,4 +1,5 @@
-﻿using Frotz.Constants;
+﻿using Frotz;
+using Frotz.Constants;
 using Frotz.Screen;
 using Microsoft.Win32;
 using System.Text;
@@ -72,7 +73,7 @@ namespace WPFMachine.Absolute
             sv.Content = _RTB;
         }
 
-        private void saveFile(string filter, string Format)
+        private void SaveFile(string filter, string Format)
         {
             var sfd = new SaveFileDialog
             {
@@ -92,9 +93,9 @@ namespace WPFMachine.Absolute
             range.Save(fs, Format, true);
         }
 
-        private void bSaveText_Click(object sender, RoutedEventArgs e) => saveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
+        private void bSaveText_Click(object sender, RoutedEventArgs e) => SaveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
 
-        private void bSaveRtf_Click(object sender, RoutedEventArgs e) => saveFile("Rich Text Format (*.rtf)|*.rtf", System.Windows.DataFormats.Rtf);
+        private void bSaveRtf_Click(object sender, RoutedEventArgs e) => SaveFile("Rich Text Format (*.rtf)|*.rtf", System.Windows.DataFormats.Rtf);
 
         private void bCopyText_Click(object sender, RoutedEventArgs e)
         {
@@ -126,7 +127,7 @@ namespace WPFMachine.Absolute
 
         public void AddString(string text, CharDisplayInfo cdi)
         {
-            if (text == "") return;
+            if (string.IsNullOrEmpty(text)) return;
             _parent.Dispatcher.Invoke(() =>
             {
                 if (text == "\r\n")
@@ -185,7 +186,7 @@ namespace WPFMachine.Absolute
                                sb[^4] == '\r' && sb[^3] == '\n' &&
                                sb[^2] == '\r' && sb[^1] == '\n')
                         {
-                            sb.Remove(sb.Length - 2, 2);
+                            sb.Remove(^2..);
                         }
 
                         _currentRun.Text = sb.ToString();
