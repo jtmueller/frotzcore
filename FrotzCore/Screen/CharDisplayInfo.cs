@@ -35,8 +35,6 @@ namespace Frotz.Screen
 
         public override int GetHashCode() => HashCode.Combine(Font, Style, BackgroundColor, ForegroundColor);
 
-        public bool AreSame(CharDisplayInfo fs) => Equals(fs);
-
         public bool ImplementsStyle(int styleBit) => (Style & styleBit) > 0;
     }
 }

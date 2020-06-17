@@ -151,7 +151,7 @@ namespace Frotz
             }
         }
 
-        public static void DisplayString(string s) => 
+        public static void DisplayString(string s) =>
             DisplayString(MemoryMarshal.Cast<char, zword>(s));
 
         /*
@@ -204,7 +204,7 @@ namespace Frotz
          * be changed.
          *
          */
-        public static bool FontData(int font, ref zword height, ref zword width) => 
+        public static bool FontData(int font, ref zword height, ref zword width) =>
             Screen?.GetFontData(font, ref height, ref width) ?? false;
 
         /*
@@ -745,9 +745,9 @@ namespace Frotz
 
                         lock (Entries)
                         {
-                            if (Entries.Count > 0) 
+                            if (Entries.Count > 0)
                                 break;
-                            if (sw.Elapsed.TotalSeconds > timeout / 10 && timeout > 0) 
+                            if (sw.Elapsed.TotalSeconds > timeout / 10 && timeout > 0)
                                 return CharCodes.ZC_TIME_OUT;
                         }
                         Thread.Sleep(10);
@@ -840,7 +840,7 @@ namespace Frotz
             }
             else
             {
-                System.Diagnostics.Debug.Assert(units > 0);
+                Debug.Assert(units > 0);
                 Screen.ScrollLines(top, bottom - top + 1, units);
             }
         }
@@ -1049,7 +1049,7 @@ namespace Frotz
                 {
                     byte[] buffer = BlorbFile.Pictures[picture].Image;
                     if (buffer.Length == 8)
-                    { 
+                    {
                         // TODO This is a bit of a hack, it would be better to handle this upfront so there is no guess work
                         width = (int)ReadLong(buffer) * _metrics.Scale;
                         height = (int)ReadLong(buffer.AsSpan(4)) * _metrics.Scale;
@@ -1126,8 +1126,6 @@ namespace Frotz
             }
         }
 
-        private static ReadOnlySpan<byte> FormBytes => new byte[] { (byte)'F', (byte)'O', (byte)'R', (byte)'M' };
-
         /*
          * os_path_open
          *
@@ -1144,7 +1142,7 @@ namespace Frotz
             }
             else
             {
-                if (story_data.AsSpan(..4).SequenceEqual(FormBytes))
+                if (story_data.AsSpan(..4).SequenceEqual(General.FormBytes))
                 {
                     BlorbFile = Blorb.BlorbReader.ReadBlorbFile(story_data);
 
@@ -1153,7 +1151,7 @@ namespace Frotz
                 }
                 else
                 {
-                    var temp = Path.ChangeExtension(Main.StoryName, "blb");
+                    string? temp = Path.ChangeExtension(Main.StoryName, "blb");
                     BlorbFile = null;
 
                     if (File.Exists(temp))
@@ -1284,7 +1282,7 @@ namespace Frotz
          * Called when the height of a window is changed.
          *
          */
-        public static void SetWindowSize(int win, ZWindow wp) 
+        public static void SetWindowSize(int win, ZWindow wp)
             => Screen?.SetWindowSize(win, wp.YPos, wp.XPos, wp.YSize, wp.XSize);
 
         /*
@@ -1341,6 +1339,6 @@ namespace Frotz
         public override bool Equals(object? obj) => obj is BufferChar bc && Equals(bc);
         public override int GetHashCode() => HashCode.Combine(Char, Width);
 
-        public static implicit operator char(BufferChar bc) => (char)bc.Char; 
+        public static implicit operator char(BufferChar bc) => (char)bc.Char;
     }
 }

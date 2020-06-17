@@ -87,7 +87,7 @@ namespace WPFMachine.Screen
                     AddInline("", _defaultInfo);
                 }
 
-                if (Inlines.Count == 1 && FirstInline.DisplayInfo.AreSame(_currentInfo) &&
+                if (Inlines.Count == 1 && FirstInline.DisplayInfo.Equals(_currentInfo) &&
                     (FirstInline.DisplayInfo.Font == ZFont.FIXED_WIDTH_FONT ||
                     FirstInline.DisplayInfo.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE)))
                 {
@@ -160,7 +160,7 @@ namespace WPFMachine.Screen
                 throw new Exception("In Overwrite mode");
             }
 
-            if (LastInline != null && LastInline.DisplayInfo.AreSame(_currentInfo))
+            if (LastInline != null && LastInline.DisplayInfo.Equals(_currentInfo))
             {
                 LastInline.Text += text;
             }

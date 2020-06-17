@@ -37,13 +37,13 @@ namespace Frotz.Generic
         // * ID types.
         // */
 
-        private static readonly zlong ID_FORM = ZMath.MakeInt('F', 'O', 'R', 'M');
-        private static readonly zlong ID_IFZS = ZMath.MakeInt('I', 'F', 'Z', 'S');
-        private static readonly zlong ID_IFhd = ZMath.MakeInt('I', 'F', 'h', 'd');
-        private static readonly zlong ID_UMem = ZMath.MakeInt('U', 'M', 'e', 'm');
-        private static readonly zlong ID_CMem = ZMath.MakeInt('C', 'M', 'e', 'm');
-        private static readonly zlong ID_Stks = ZMath.MakeInt('S', 't', 'k', 's');
-        private static readonly zlong ID_ANNO = ZMath.MakeInt('A', 'N', 'N', 'O');
+        private static readonly zlong ID_FORM = ZMath.MakeInt("FORM");
+        private static readonly zlong ID_IFZS = ZMath.MakeInt("IFZS");
+        private static readonly zlong ID_IFhd = ZMath.MakeInt("IFhd");
+        private static readonly zlong ID_UMem = ZMath.MakeInt("UMem");
+        private static readonly zlong ID_CMem = ZMath.MakeInt("CMem");
+        private static readonly zlong ID_Stks = ZMath.MakeInt("Stks");
+        private static readonly zlong ID_ANNO = ZMath.MakeInt("ANNO");
 
         /*
          * Various parsing states within restoration.
@@ -79,11 +79,12 @@ namespace Frotz.Generic
             return true;
         }
 
-        //private static bool write_word(FileStream fp, zword w) {
-        //    write_bytx(fp, (w) >> 8);
-        //    write_bytx(fp, (w));
-        //    return true;
-        //}
+        private static bool WriteWord(FileStream fp, zword w)
+        {
+            WriteBytx(fp, w >> 8);
+            WriteBytx(fp, w);
+            return true;
+        }
 
         private static bool WriteWord(FileStream fp, int w)
         {
@@ -137,7 +138,6 @@ namespace Frotz.Generic
             if (fs.Read(buffer) < 4) return false;
 
             result = BinaryPrimitives.ReadUInt32BigEndian(buffer);
-
             return true;
         }
 

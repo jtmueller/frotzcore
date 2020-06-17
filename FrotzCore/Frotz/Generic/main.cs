@@ -35,8 +35,7 @@ namespace Frotz.Generic
 {
     public static class Main
     {
-        /* Story file name, id number and size */
-        internal static string? StoryName = null;
+        public static string? StoryName { get; internal set; } = null;
 
         internal static byte[]? StoryData = null; // TODO: Make this a ReadOnlyMemory, replace class-level stream?
 

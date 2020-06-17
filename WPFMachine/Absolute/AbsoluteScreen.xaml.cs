@@ -2,6 +2,7 @@
 using Frotz;
 using Frotz.Blorb;
 using Frotz.Constants;
+using Frotz.Generic;
 using Frotz.Screen;
 using System;
 using System.Collections.Generic;
@@ -609,9 +610,7 @@ namespace WPFMachine.Absolute
         {
             Invoke(() =>
             {
-                _parent.Title = OS.BlorbFile != null
-                    ? $"FrotzCore - {OS.BlorbFile.StoryName}"
-                    : $"FrotzCore - {Path.GetFileName(storyFileName)}";
+                _parent.Title = $"FrotzCore - {blorbFile?.StoryName ?? OS.BlorbFile?.StoryName ?? Path.GetFileName(storyFileName)}";
 
                 OnStoryStarted(new GameSelectedEventArgs(storyFileName, blorbFile));
                 Scrollback.Reset();
@@ -626,8 +625,8 @@ namespace WPFMachine.Absolute
             var ft = f switch
             {
                 ZFont.FIXED_WIDTH_FONT => BuildFormattedText(s, _fixedFont, _currentInfo),
-                ZFont.GRAPHICS_FONT => BuildFormattedText(s, _beyZorkFont.Value, _currentInfo),
-                _ => BuildFormattedText(s, _regularFont, _currentInfo),
+                ZFont.GRAPHICS_FONT    => BuildFormattedText(s, _beyZorkFont.Value, _currentInfo),
+                _                      => BuildFormattedText(s, _regularFont, _currentInfo),
             };
             return (int)ft.WidthIncludingTrailingWhitespace;
         }
@@ -644,8 +643,7 @@ namespace WPFMachine.Absolute
                     DefaultExt = ".sav"
                 };
 
-                var fi = new System.IO.FileInfo(defaultName);
-                ofd.FileName = fi.Name;
+                ofd.FileName = Path.GetFileName(defaultName);
 
                 if (ofd.ShowDialog(_parent) == true)
                 {

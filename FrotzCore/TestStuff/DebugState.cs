@@ -49,7 +49,7 @@ namespace Frotz
 
                     if (string.Compare(expected, current, StringComparison.OrdinalIgnoreCase) != 0)
                     {
-                        System.Diagnostics.Debug.WriteLine($"mismatch! Expected:{expected}: Current:{current}:{CurrentState}");
+                        Debug.WriteLine($"mismatch! Expected:{expected}: Current:{current}:{CurrentState}");
                         StateLines.Clear();
                     }
 
@@ -57,7 +57,7 @@ namespace Frotz
                 else
                 {
                     OutputLines.Add(current);
-                    System.Diagnostics.Debug.WriteLine(current);
+                    Debug.WriteLine(current);
                 }
             }
         }

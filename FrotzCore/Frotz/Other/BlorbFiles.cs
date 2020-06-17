@@ -1,4 +1,5 @@
 ﻿using Collections.Pooled;
+using Frotz.Constants;
 using Frotz.Screen;
 using System;
 using System.Buffers;
@@ -137,19 +138,12 @@ namespace Frotz.Blorb
                             break;
                         case BlorbUsage.Snd:
                             {
-                                if (buffer[0] == 'A' && buffer[1] == 'I' && buffer[2] == 'F' && buffer[3] == 'F')
+                                if (buffer[..4].Matches("AIFF"))
                                 {
                                     byte[] temp = new byte[buffer.Length + 8];
 
-                                    temp[0] = (byte)'F';
-                                    temp[1] = (byte)'O';
-                                    temp[2] = (byte)'R';
-                                    temp[3] = (byte)'M';
-                                    temp[4] = (byte)((buffer.Length >> 24) & 0xff);
-                                    temp[5] = (byte)((buffer.Length >> 16) & 0xff);
-                                    temp[6] = (byte)((buffer.Length >> 8) & 0xff);
-                                    temp[7] = (byte)((buffer.Length) & 0xff);
-
+                                    General.FormBytes.CopyTo(temp.AsSpan(..4));
+                                    BinaryPrimitives.WriteInt32BigEndian(temp.AsSpan(4..8), buffer.Length);
                                     buffer.CopyTo(temp.AsSpan(8));
 
                                     blorb.Sounds[c.Number] = temp;

@@ -99,7 +99,7 @@ namespace Frotz.Screen
                         var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
                         for (int i = 0; i < _width; i++)
                         {
-                            if (!_styles[i].AreSame(fc.FontAndStyle))
+                            if (!_styles[i].Equals(fc.FontAndStyle))
                             {
                                 fc = new FontChanges(i, 1, _styles[i]);
                                 fc.AddChar(chars[i]);

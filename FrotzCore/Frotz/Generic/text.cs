@@ -1131,7 +1131,7 @@ namespace Frotz.Generic
             int i;
 
             if (Decoded == null)
-                throw new InvalidOperationException("Encoding not initailized");
+                throw new InvalidOperationException("Encoding not initialized");
 
             for (int j = 0; j < Decoded.Length; j++)
             {
@@ -1147,7 +1147,7 @@ namespace Frotz.Generic
             len = 0;
             int pos = 0;
 
-            while ((pos < buffer.Length && (c = buffer[pos++]) != 0))
+            while (pos < buffer.Length && (c = buffer[pos++]) != 0)
             {
                 if (c != ' ')
                 {

@@ -1,3 +1,5 @@
+using System;
+
 namespace Frotz.Constants
 {
     // typedef unsigned char zbyte;
@@ -19,5 +21,10 @@ namespace Frotz.Constants
         public const string DEFAULT_AUXILARY_NAME = "story.aux";
         
         public const string DEFAULT_SAVE_DIR = ".frotz-saves";
+
+        /// <summary>
+        /// The string "FORM" when UTF-8 encoded
+        /// </summary>
+        internal static ReadOnlySpan<byte> FormBytes => new byte[] { 70, 79, 82, 77 };
     }
 }

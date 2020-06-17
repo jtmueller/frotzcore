@@ -21,29 +21,11 @@ namespace WPFMachine
         {
             _element.Source = null;
 
-            string temp = null;
+            string tempFile = Path.GetTempFileName();
+            using var fs = File.Create(tempFile);
+            fs.Write(sound);
 
-            // TODO: Really? There must be a better way.
-            for (int i = 0; i < 1000 && temp == null; i++)
-            {
-                try
-                {
-                    temp = $"{Path.GetTempPath()}\\{i}.aiff";
-
-                    using var fs = new FileStream(temp, FileMode.Create);
-                    fs.Write(sound);
-                }
-                catch (IOException)
-                {
-                    i++;
-                    temp = null;
-                }
-            }
-
-            if (temp != null)
-            {
-                _element.Source = new Uri("file:///" + temp);
-            }
+            _element.Source = new Uri("file:///" + tempFile);
         }
 
         public void PlaySound() => _element.Play();

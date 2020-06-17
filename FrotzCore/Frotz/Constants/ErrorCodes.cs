@@ -51,10 +51,10 @@
         //  specify a report mode on the command line by typing "-Z 0"
         //  through "-Z 3". */
 
-        public const short ERR_REPORT_NEVER = (0);
-        public const short ERR_REPORT_ONCE = (1);
-        public const short ERR_REPORT_ALWAYS = (2);
-        public const short ERR_REPORT_FATAL = (3);
+        public const short ERR_REPORT_NEVER = 0;
+        public const short ERR_REPORT_ONCE = 1;
+        public const short ERR_REPORT_ALWAYS = 2;
+        public const short ERR_REPORT_FATAL = 3;
         
         public const short ERR_DEFAULT_REPORT_MODE = ERR_REPORT_ONCE;
     }
