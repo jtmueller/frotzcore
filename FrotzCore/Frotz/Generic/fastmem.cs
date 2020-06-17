@@ -338,7 +338,6 @@ namespace Frotz.Generic
             /* Allocate memory for story header */
 
             ZMData = new byte[64];
-            //Frotz.Other.ZMath.clearArray(ZMData);
 
             /* Load header into memory */
             if (StoryFp.Read(ZMData, 0, 64) != 64)
@@ -677,7 +676,7 @@ namespace Frotz.Generic
             if (addr != 0)
             {
 
-                var vsb = new ValueStringBuilder();
+                using var vsb = new ValueStringBuilder();
 
                 int i;
 

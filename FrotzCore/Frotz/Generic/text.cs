@@ -19,6 +19,7 @@
  */
 using Frotz.Constants;
 using System;
+using System.Text;
 using zbyte = System.Byte;
 using zword = System.UInt16;
 
@@ -1174,7 +1175,7 @@ namespace Frotz.Generic
             DecodeText(StringType.VOCABULARY, minaddr);
 
             // ptr = result;
-            var temp = new ValueStringBuilder(len);
+            var temp = new StringBuilder(len);
 
             for (i = len; (c = (char)Decoded[i]) != 0; i++)
                 temp.Append(c);

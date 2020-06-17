@@ -1865,7 +1865,7 @@ namespace ZTools
             if (flag == 1)
             {
                 Console.Error.Write("\nFatal: cannot find label!\n");
-                throw new ArgumentException(string.Format("Can't find label for addr: {0}", +addr));
+                throw new ArgumentException($"Can't find label for addr: {+addr}");
             }
             else
             {
@@ -2134,7 +2134,7 @@ namespace ZTools
                 if (option_symbols > 0 && Symbols.PrintGlobalName(start_of_routine, (int)(varnum - 16)) > 0) /* null */{ }
             else
             {
-                txio.TxPrintf("{0}{1:X2}", (txio.option_inform) ? 'g' : 'G', varnum - 16);
+                txio.TxPrintf("{0}{1:X2}", txio.option_inform ? 'g' : 'G', varnum - 16);
             }
         }
 

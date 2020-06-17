@@ -577,10 +577,7 @@ namespace WPFMachine.Screen
         {
             Dispatcher.Invoke(() =>
             {
-                _parent.Title = OS.BlorbFile != null
-                    ? $"FrotzCore - {OS.BlorbFile.StoryName}"
-                    : $"FrotzCore - {storyFileName}";
-
+                _parent.Title = $"FrotzCore - {blorbFile?.StoryName ?? OS.BlorbFile?.StoryName ?? Path.GetFileName(storyFileName)}";
                 GameSelected?.Invoke(this, new GameSelectedEventArgs(storyFileName, blorbFile));
             });
         }

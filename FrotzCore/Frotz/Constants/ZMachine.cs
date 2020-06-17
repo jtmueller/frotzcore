@@ -16,7 +16,7 @@ namespace Frotz.Constants
         FILE_SAVE_AUX = 6,
     }
 
-    public class CharCodes
+    public static class CharCodes
     {
         /*** Character codes ***/
         public const zword ZC_TIME_OUT = 0x00;
@@ -57,7 +57,7 @@ namespace Frotz.Constants
         public const zword ZC_LATIN1_MAX = 0xff;
     }
 
-    public class ZColor
+    public static class ZColor
     {
         public const byte BLACK_COLOUR = 2;
         public const byte RED_COLOUR = 3;
@@ -74,7 +74,7 @@ namespace Frotz.Constants
         public const byte TRANSPARENT_COLOUR = 15;  /* ZSpec 1.1 */
     }
 
-    public class ZFont
+    public static class ZFont
     {
         public const byte TEXT_FONT = 1;
         public const byte PICTURE_FONT = 2;
@@ -82,7 +82,7 @@ namespace Frotz.Constants
         public const byte FIXED_WIDTH_FONT = 4;
     }
 
-    public class ZStyles
+    public static class ZStyles
     {
         public const byte NORMAL_STYLE = 0; // szurgot
         public const byte REVERSE_STYLE = 1;

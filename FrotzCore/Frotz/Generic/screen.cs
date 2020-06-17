@@ -349,8 +349,11 @@ namespace Frotz.Generic
 
             if (UnitsLeft() < (width = OS.CharWidth(c)))
             {
-
-                if (!Main.enable_wrapping) { cwp.x_cursor = (zword)(cwp.XSize - cwp.right); return; }
+                if (!Main.enable_wrapping)
+                {
+                    cwp.x_cursor = (zword)(cwp.XSize - cwp.right);
+                    return;
+                }
 
                 ScreenNewline();
 
@@ -386,7 +389,7 @@ namespace Frotz.Generic
                 {
                     zword c;
 
-                    while ((c = buf[pos++]) != 0)
+                    while (pos++ < buf.Length && (c = buf[pos]) != 0)
                     {
                         if (c == CharCodes.ZC_NEW_FONT || c == CharCodes.ZC_NEW_STYLE)
                         {

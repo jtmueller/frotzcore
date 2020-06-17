@@ -51,8 +51,7 @@ namespace Frotz.Generic
 
         internal static void ScrollBackWord(ReadOnlySpan<zword> s)
         {
-            // for (i = 0; s[i] != 0; i++)
-            for (int i = 0; i < s.Length; i++)
+            for (int i = 0; i < s.Length && s[i] != 0; i++)
             {
                 if (s[i] == CharCodes.ZC_NEW_FONT || s[i] == CharCodes.ZC_NEW_STYLE)
                     i++;
@@ -72,7 +71,7 @@ namespace Frotz.Generic
         {
             int i;
 
-            for (i = 0; buf[i] != 0; i++)
+            for (i = 0; i < buf.Length && buf[i] != 0; i++)
                 ScrollBackChar(buf[i]);
 
             if (key == CharCodes.ZC_RETURN)
@@ -91,7 +90,7 @@ namespace Frotz.Generic
             int width;
             int i;
 
-            for (i = 0, width = 0; buf[i] != 0; i++)
+            for (i = 0, width = 0; i < buf.Length && buf[i] != 0; i++)
                 width++;
 
             OS.ScrollbackErase(width);

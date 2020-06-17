@@ -11,7 +11,7 @@ namespace Frotz.Other
 {
     public class PNGChunk
     {
-        public PNGChunk(string type, ReadOnlyMemory<byte> data, ulong crc)
+        public PNGChunk(string type, ReadOnlyMemory<byte> data, uint crc)
         {
             Type = type;
             Data = data;
@@ -20,7 +20,7 @@ namespace Frotz.Other
 
         public string Type { get; set; }
         public ReadOnlyMemory<byte> Data { get; }
-        public ulong CRC { get; set; }
+        public uint CRC { get; set; }
     }
 
 
@@ -59,11 +59,11 @@ namespace Frotz.Other
             string type = ReadType(stream);
             byte[] buffer = new byte[len];
             stream.Read(buffer, 0, len);
-            ulong crc = ReadInt(stream);
+            uint crc = ReadInt(stream);
 
             if (crc != CalcCRC(type, buffer))
             {
-                Console.WriteLine("CRC Don't match! {0} {1:X}:{2:X}", type, crc, CalcCRC(type, buffer));
+                Console.WriteLine("CRC doesn't match! {0} {1:X}:{2:X}", type, crc, CalcCRC(type, buffer));
             }
 
             var pc = new PNGChunk(type, buffer, crc);
@@ -104,8 +104,14 @@ namespace Frotz.Other
         {
             Span<byte> buffer = stackalloc byte[4];
             stream.Read(buffer);
-
             return BinaryPrimitives.ReadUInt32BigEndian(buffer);
+        }
+
+        private static void WriteInt(Stream s, uint num)
+        {
+            Span<byte> bytes = stackalloc byte[4];
+            BinaryPrimitives.WriteUInt32BigEndian(bytes, num);
+            s.Write(bytes);
         }
 
         public void Save(string fileName)
@@ -122,7 +128,7 @@ namespace Frotz.Other
             {
                 var chunk = Chunks[type];
 
-                WriteLong(stream, (ulong)chunk.Data.Length);
+                WriteInt(stream, (uint)chunk.Data.Length);
                 stream.WriteByte((byte)type[0]);
                 stream.WriteByte((byte)type[1]);
                 stream.WriteByte((byte)type[2]);
@@ -130,18 +136,10 @@ namespace Frotz.Other
 
                 stream.Write(chunk.Data.Span);
 
-                WriteLong(stream, chunk.CRC);
+                WriteInt(stream, chunk.CRC);
             }
 
             stream.Close();
-        }
-
-        private static void WriteLong(Stream s, ulong l)
-        {
-            s.WriteByte((byte)(l >> 24));
-            s.WriteByte((byte)(l >> 16));
-            s.WriteByte((byte)(l >> 8));
-            s.WriteByte((byte)(l));
         }
 
         public PNG(Stream stream)

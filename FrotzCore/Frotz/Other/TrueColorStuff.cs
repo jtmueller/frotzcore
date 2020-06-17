@@ -47,6 +47,7 @@ namespace Frotz.Other
                 (byte)((b << 3) | (b >> 2)));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int RGB(byte r, byte g, byte b) => r | g << 8 | b << 16;
 
         // Convert from a true colour to 5-bit RGB

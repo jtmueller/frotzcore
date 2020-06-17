@@ -590,7 +590,7 @@ namespace Frotz
                     }
                     else if (c == CharCodes.ZC_RETURN)
                     {
-                        var sb = new ValueStringBuilder(buffer.Count);
+                        using var sb = new ValueStringBuilder(buffer.Count);
                         foreach (var bc in buffer.Span)
                         {
                             sb.Append(bc);
@@ -938,7 +938,7 @@ namespace Frotz
         {
             if (Screen == null) throw new InvalidOperationException("Screen not initialized.");
 
-            var sb = new ValueStringBuilder();
+            using var sb = new ValueStringBuilder();
             int font = -1;
             int style = -1;
 
@@ -1314,6 +1314,7 @@ namespace Frotz
         {
             if (Screen == null || Main.StoryName == null)
                 throw new InvalidOperationException("Game not properly initialized.");
+
             Screen.StoryStarted(Main.StoryName, BlorbFile);
         }
 

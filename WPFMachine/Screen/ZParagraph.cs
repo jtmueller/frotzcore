@@ -3,6 +3,7 @@ using Frotz.Constants;
 using Frotz.Screen;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Documents;
@@ -261,12 +262,9 @@ namespace WPFMachine.Screen
             get
             {
                 using var sb = new ValueStringBuilder();
-                foreach (var i in Inlines)
+                foreach (var run in Inlines.OfType<Run>())
                 {
-                    if (i is Run r)
-                    {
-                        sb.Append(r.Text);
-                    }
+                    sb.Append(run.Text);
                 }
                 return sb.ToString();
             }
