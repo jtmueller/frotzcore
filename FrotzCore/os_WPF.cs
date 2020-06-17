@@ -5,6 +5,7 @@ using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -81,11 +82,11 @@ namespace Frotz
         {
             if (number == 1)
             {
-                Console.Beep(800, 200);
+                Console.Beep(800, 350);
             }
             else
             {
-                Console.Beep(392, 200);
+                Console.Beep(392, 350);
             }
         }
 
@@ -151,8 +152,25 @@ namespace Frotz
             }
         }
 
-        public static void DisplayString(string s) =>
-            DisplayString(MemoryMarshal.Cast<char, zword>(s));
+        public static void DisplayString(ReadOnlySpan<char> s)
+        {
+            zword[]? pooled = null;
+            int len = s.Length;
+            Span<zword> word = len <= MaxStack ? stackalloc zword[len] : (pooled = ArrayPool<zword>.Shared.Rent(len));
+            try
+            {
+                for (int i = 0; i < len; i++)
+                {
+                    word[i] = s[i];
+                }
+                DisplayString(word[..len]);
+            }
+            finally
+            {
+                if (pooled is object)
+                    ArrayPool<zword>.Shared.Return(pooled);
+            }
+        }
 
         /*
          * os_erase_area
@@ -334,7 +352,7 @@ namespace Frotz
             // TODO Set font to be default fixed width font
 
             _metrics = Screen?.GetScreenMetrics() ?? default;
-            System.Diagnostics.Debug.WriteLine("Metrics:" + _metrics.WindowSize.Height + ":" + _metrics.WindowSize.Width);
+            Debug.WriteLine("Metrics: {0}:{1}", _metrics.WindowSize.Height, _metrics.WindowSize.Width);
 
             // TODO Make these numbers match the types (remove the casts)
 
@@ -398,7 +416,7 @@ namespace Frotz
 
             while (Entries.Count == 0)
             {
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
             Entries.Dequeue();
 
