@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using zbyte = System.Byte;
@@ -1317,6 +1318,7 @@ namespace Frotz
         // New Variables go here //
         private static ScreenMetrics _metrics;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsValidChar(zword c)
         {
             if (c >= CharCodes.ZC_ASCII_MIN && c <= CharCodes.ZC_ASCII_MAX)

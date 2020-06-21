@@ -13,6 +13,7 @@ namespace WPFMachine
 
             tbAbout.Text = @"Original Frotz Code at http://sourceforge.frotz.net
 Ported to .NET by Chris Szurgot (chris.szurgot@microsoft.com)
+Ported to .NET Core by Joel Mueller (joel.mueller@spglobal.com)
 
 More info to be added
 ";

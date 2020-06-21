@@ -1,8 +1,6 @@
-﻿using Collections.Pooled;
-using Frotz;
+﻿using Frotz;
 using Frotz.Blorb;
 using Frotz.Constants;
-using Frotz.Generic;
 using Frotz.Screen;
 using System;
 using System.Collections.Generic;
@@ -71,144 +69,85 @@ namespace WPFMachine.Absolute
 
         private void AbsoluteScreen_MouseDown(object sender, MouseButtonEventArgs e) => OnMouseMove(e, CharCodes.ZC_SINGLE_CLICK);
 
-        private readonly Dictionary<char, string> _graphicsChars = new Dictionary<char, string>();
+        //private readonly Dictionary<char, string> _graphicsChars = new Dictionary<char, string>();
 
         public void DisplayChar(char c)
         {
-            if (_currentInfo.Font == ZFont.GRAPHICS_FONT)
-            {
+            _currentText.Append(_currentInfo.Font == ZFont.GRAPHICS_FONT ? Frotz.Other.GraphicsFont.GetChar(c) : c);
 
-                Invoke(() =>
-                {
-#if !TEMP
-                    string lines = null;
-                    if (_graphicsChars.ContainsKey(c))
-                    {
-                        lines = _graphicsChars[c];
-                    }
-                    else
-                    {
-                        string temp = Frotz.Other.GraphicsFont.GetLines(c);
-                        var sb = new StringBuilder(@"
-    <Image xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Width=""8"" Height=""8"" Stretch=""None"">
-        <Image.Source>
-            <DrawingImage>
-                <DrawingImage.Drawing>
-                    <GeometryDrawing Geometry=""");
+    //        if (_currentInfo.Font == ZFont.GRAPHICS_FONT)
+    //        {
+    //            if (_cursorX <= _lastDrawn.X)
+    //            {
+    //                _cursorX += (int)_lastDrawn.Width;
+    //            }
 
-                        for (int i = 0; i < 8; i++)
-                        {
-                            int x = int.Parse(temp.AsSpan(i * 2, 2), NumberStyles.HexNumber);
-                            for (int j = 0; j < 8; j++)
-                            {
-                                int toggled = (x >> j) & 1;
-                                if (toggled == 1)
-                                {
-                                    //sb.AppendFormat(" <Line X1=\"{0}\" Y1=\"{1}\" X2=\"{2}\" Y2=\"{3}\" Stroke=\"White\" StrokeThickness=\"1\" />\r\n",
-                                    //    j, i, j + 1, i + 1);
-                                    sb.AppendFormat("M {0} {1} L {2} {3} ", j, i, j + 1, i);
-                                }
-                            }
-                        }
+    //            Invoke(() =>
+    //            {
+    //                if (!_graphicsChars.TryGetValue(c, out string lines))
+    //                {
+    //                    var (width, height) = _metrics.FontSize;
+    //                    string lineData = Frotz.Other.GraphicsFont.GetLines(c);
+    //                    var sb = new StringBuilder(1000);
+    //                    sb.AppendFormat(
+    //@"<Image xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Width=""{0}"" Height=""{0}"" Stretch=""None"">
+    //    <Image.Source>
+    //        <DrawingImage>
+    //            <DrawingImage.Drawing>
+    //                <GeometryDrawing Geometry=""", width);
 
-                        sb.Append(@""">
-                        <GeometryDrawing.Pen>
-                            <Pen Brush=""White"" Thickness=""1"" />
-                        </GeometryDrawing.Pen>
-                    </GeometryDrawing>
-                </DrawingImage.Drawing>
-            </DrawingImage>
-        </Image.Source>
-    </Image>");
+    //                    for (int y = 0; y < 8; y++)
+    //                    {
+    //                        int flag = int.Parse(lineData.AsSpan(y * 2, 2), NumberStyles.HexNumber);
+    //                        for (int x = 0; x < 8; x++)
+    //                        {
+    //                            int toggled = (flag >> x) & 1;
+    //                            if (toggled == 1)
+    //                            {
+    //                                //sb.AppendFormat(" <Line X1=\"{0}\" Y1=\"{1}\" X2=\"{2}\" Y2=\"{3}\" Stroke=\"White\" StrokeThickness=\"1\" />\r\n",
+    //                                //    j, i, j + 1, i + 1);
+    //                                sb.AppendFormat("M {0},{1} L {2},{3} ", x, y, x + 1, y);
+    //                            }
+    //                        }
+    //                    }
 
-                        lines = sb.ToString();
-                        _graphicsChars.Add(c, lines);
+    //                    sb.AppendFormat(@""">
+    //                    <GeometryDrawing.Pen>
+    //                        <Pen Brush=""{0}"" Thickness=""1"" />
+    //                    </GeometryDrawing.Pen>
+    //                </GeometryDrawing>
+    //            </DrawingImage.Drawing>
+    //        </DrawingImage>
+    //    </Image.Source>
+    //</Image>", ZColorCheck.ZColorToColor(_currentInfo.ForegroundColor, ColorType.Foreground));
 
-                        //var sw = new System.IO.StreamWriter(String.Format(@"c:\temp\{0}.xaml", (byte)c));
-                        //sw.Write(lines);
-                        //sw.Close();
-                    }
+    //                    lines = sb.ToString();
+    //                    _graphicsChars.Add(c, lines);
+    //                }
 
-                    //String temp = String.Format("<Canvas xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\">{0}</Canvas>", Frotz.Other.GraphicsFont.getLines(c));
-                    //temp = temp.Replace("Black", "White");
-                    var img = System.Windows.Markup.XamlReader.Parse(lines) as Image;
+    //                var img = (Image)System.Windows.Markup.XamlReader.Parse(lines);
 
-                    var cnvs = new Canvas();
-                    cnvs.Children.Add(img);
+    //                var cnvs = new Canvas();
+    //                cnvs.Children.Add(img);
 
-                    img.SnapsToDevicePixels = true;
-                    // img.Stretch = Stretch.Uniform;
+    //                img.SnapsToDevicePixels = true;
+    //                // img.Stretch = Stretch.Uniform;
 
-                    cnvs.SetValue(Canvas.TopProperty, (double)_cursorY);
-                    cnvs.SetValue(Canvas.LeftProperty, (double)_cursorX);
-                    cnvs.SetValue(Canvas.RightProperty, (double)(_cursorX + _metrics.FontSize.Width));
-                    cnvs.SetValue(Canvas.BottomProperty, (double)(_cursorY + _metrics.FontSize.Height));
+    //                cnvs.Top(_cursorY);
+    //                cnvs.Left(_cursorX);
+    //                cnvs.Right(_cursorX + _metrics.FontSize.Width);
+    //                cnvs.Bottom(_cursorY + _metrics.FontSize.Height))
 
-                    _cursorX += _metrics.FontSize.Width;
+    //                _cursorX += _metrics.FontSize.Width;
 
-                    mainCanvas.Children.Add(cnvs);
+    //                mainCanvas.Children.Add(cnvs);
 
-
-#else
-
-
-                    var bmp = Frotz.Other.GraphicsFont.GetImage(c);
-
-                    var ms = new System.IO.MemoryStream();
-                    bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
-
-                    bmp.Save("C:\\TEMP\\TEST.BMP");
-
-                    ms.Position = 0;
-                    Image img = new Image();
-                    BitmapImage bi = new BitmapImage();
-                    bi.BeginInit();
-                    bi.StreamSource = ms;
-                    bi.EndInit();
-                    img.Source = bi;
-
-                    img.Stretch = Stretch.Fill;
-
-                    img.SetValue(Canvas.TopProperty, (double)_cursorY);
-                    img.SetValue(Canvas.LeftProperty, (double)_cursorX);
-                    img.SetValue(Canvas.RightProperty, (double)(_cursorX + _metrics.FontSize.Width));
-                    img.SetValue(Canvas.BottomProperty, (double)(_cursorY + _metrics.FontSize.Height));
-
-                    // _cursorX += Convert.ToInt32(bi.Width);
-                    _cursorX += _metrics.FontSize.Width;
-
-                    mainCanvas.Children.Add(img);
-
-                    //Image img = new Image();
-                    //img.Source = null;
-
-                    //BitmapImage bi = new BitmapImage();
-                    // 
-
-                    //Image img = new Image();
-                    //BitmapImage bi = new BitmapImage();
-                    //bi.BeginInit();
-                    //bi.StreamSource = new System.IO.MemoryStream(ScaleImages.Scale(buffer, scale));
-                    //bi.EndInit();
-                    //img.Source = bi;
-
-                    //int newX = x;
-                    //int newY = y;
-
-                    //if (newY > short.MaxValue) newY -= ushort.MaxValue;
-                    //if (newX > short.MaxValue) newX -= ushort.MaxValue;
-
-                    //img.SetValue(Canvas.TopProperty, (double)newY);
-                    //img.SetValue(Canvas.LeftProperty, (double)newX);
-
-                    //mainCanvas.Children.Add(img);
-#endif
-                });
-            }
-            else
-            {
-                _currentText.Append(c);
-            }
+    //            });
+    //        }
+    //        else
+    //        {
+    //            _currentText.Append(c);
+    //        }
         }
 
         public void RefreshScreen() => FlushCurrentString(); // TODO Determine if anything else needs to be done here
@@ -255,7 +194,7 @@ namespace WPFMachine.Absolute
                             double newPos = iTop - lines;
                             if (newPos >= top)
                             {
-                                img.SetValue(Canvas.TopProperty, newPos);
+                                img.Top(newPos);
                             }
                             else
                             {
@@ -338,8 +277,8 @@ namespace WPFMachine.Absolute
                 myImage.Source = bmp;
 
                 mainCanvas.Children.Add(myImage);
-                myImage.SetValue(Canvas.TopProperty, y);
-                myImage.SetValue(Canvas.LeftProperty, x);
+                myImage.Top(y);
+                myImage.Left(x);
 
                 _lastDrawn = new Rect(x, y, (int)dv.ContentBounds.Width, charHeight);
 
@@ -438,7 +377,7 @@ namespace WPFMachine.Absolute
                             double newPos = iTop - units;
                             if (newPos >= top)
                             {
-                                img.SetValue(Canvas.TopProperty, newPos);
+                                img.Top(newPos);
                             }
                             else
                             {
@@ -461,9 +400,9 @@ namespace WPFMachine.Absolute
                     {
                         char c = _currentText[^1];
 
-                        double x = (double)_cursorCanvas.GetValue(Canvas.LeftProperty);
+                        double x = _cursorCanvas.Left();
                         x -= GetStringWidth(c.ToString(), _currentInfo);
-                        _cursorCanvas.SetValue(Canvas.LeftProperty, x);
+                        _cursorCanvas.Left(x);
 
                         _currentText.Remove(^1..);
                         RemoveLastChild();
@@ -505,9 +444,9 @@ namespace WPFMachine.Absolute
 
         public ushort PeekColor() => (ushort)_currentInfo.BackgroundColor;
 
-        public void SetInputMode(bool InputMode, bool CursorVisibility)
+        public void SetInputMode(bool inputMode, bool cursorVisible)
         {
-            _inInputMode = InputMode;
+            _inInputMode = inputMode;
             if (_inInputMode == false)
             {
                 for (int i = 0; i < 10; i++)
@@ -531,10 +470,10 @@ namespace WPFMachine.Absolute
             {
                 mainCanvas.Children.Add(new Image());
 
-                _cursorCanvas.Visibility = CursorVisibility ? Visibility.Visible : Visibility.Hidden;
+                _cursorCanvas.Visibility = cursorVisible ? Visibility.Visible : Visibility.Hidden;
 
-                _cursorCanvas.SetValue(Canvas.TopProperty, _cursorY + charHeight - _cursorCanvas.MinHeight);
-                _cursorCanvas.SetValue(Canvas.LeftProperty, (double)_cursorX);
+                _cursorCanvas.Top(_cursorY + charHeight - _cursorCanvas.MinHeight);
+                _cursorCanvas.Left(_cursorX);
             });
         }
 
@@ -551,9 +490,9 @@ namespace WPFMachine.Absolute
 
                 SendStringToScreen(_currentText.ToString(), _currentInfo);
 
-                double x = (double)_cursorCanvas.GetValue(Canvas.LeftProperty);
+                double x = _cursorCanvas.Left();
                 x += GetStringWidth(c.ToString(), _currentInfo);
-                _cursorCanvas.SetValue(Canvas.LeftProperty, x);
+                _cursorCanvas.Left(x);
             });
         }
 
@@ -716,7 +655,7 @@ namespace WPFMachine.Absolute
             });
         }
 
-        private static Frotz.Other.PNGChunk PalatteChunk = null;
+        private static Frotz.Other.PNGChunk PaletteChunk = null;
 
         public void DrawPicture(int picture, byte[] image, int y, int x)
         {
@@ -737,12 +676,12 @@ namespace WPFMachine.Absolute
 
                         if (OS.BlorbFile.AdaptivePalatte.Contains(picture))
                         {
-                            if (PalatteChunk == null) throw new ArgumentException("No last palette");
-                            p.Chunks["PLTE"] = PalatteChunk;
+                            if (PaletteChunk == null) throw new ArgumentException("No last palette");
+                            p.Chunks["PLTE"] = PaletteChunk;
                         }
                         else
                         {
-                            PalatteChunk = p.Chunks["PLTE"];
+                            PaletteChunk = p.Chunks["PLTE"];
                         }
 
                         using var writeMS = OS.StreamManger.GetStream("AbsoluteScreen.DrawPicture");
@@ -759,7 +698,7 @@ namespace WPFMachine.Absolute
                 var img = new FrotzImage();
                 var bi = new BitmapImage();
                 bi.BeginInit();
-                bi.StreamSource = new System.IO.MemoryStream(buffer);
+                bi.StreamSource = new MemoryStream(buffer);
                 bi.EndInit();
                 img.Source = bi;
 
@@ -771,11 +710,11 @@ namespace WPFMachine.Absolute
                 if (newY > short.MaxValue) newY -= ushort.MaxValue;
                 if (newX > short.MaxValue) newX -= ushort.MaxValue;
 
-                img.SetValue(Canvas.TopProperty, (double)newY);
-                img.SetValue(Canvas.LeftProperty, (double)newX);
+                img.Top(newY);
+                img.Left(newX);
 
-                img.SetValue(Canvas.HeightProperty, bi.Height * scale);
-                img.SetValue(Canvas.WidthProperty, bi.Width * scale);
+                img.Width(bi.Height * scale);
+                img.Height(bi.Width * scale);
 
                 if (picture == 1)
                 {
@@ -783,8 +722,8 @@ namespace WPFMachine.Absolute
                     {
                         // Picture one is generallythe title page, Resize the img to be the same size as the canvas, 
                         // and it will show correctly in the bounds
-                        img.SetValue(Canvas.WidthProperty, mainCanvas.ActualWidth);
-                        img.SetValue(Canvas.HeightProperty, mainCanvas.ActualHeight);
+                        img.Width(mainCanvas.ActualWidth);
+                        img.Height(mainCanvas.ActualHeight);
                     }
                 }
 
@@ -796,10 +735,10 @@ namespace WPFMachine.Absolute
 
         private Rect GetImageBounds(Image img)
         {
-            double x = (double)img.GetValue(Canvas.LeftProperty);
-            double y = (double)img.GetValue(Canvas.TopProperty);
-            double width = (double)img.GetValue(Canvas.WidthProperty);
-            double height = (double)img.GetValue(Canvas.HeightProperty);
+            double x = img.Left();
+            double y = img.Top();
+            double width = img.Width();
+            double height = img.Height();
 
             if (double.IsNaN(width) && img.Source != null)
             {
