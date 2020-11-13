@@ -743,9 +743,7 @@ namespace ZTools
                                     switch (code)
                                     {
                                         case 0x20: return DecodeOperands("CALL", TxH.ROUTINE, TxH.ANYTHING, TxH.ANYTHING, TxH.ANYTHING, TxH.STORE, TxH.CALL);
-
                                         case 0x24: return DecodeOperands("READ", TxH.LOW_ADDR, TxH.LOW_ADDR, TxH.NIL, TxH.NIL, TxH.NONE, TxH.PLAIN);
-
                                         case 0x29: return DecodeOperands("PULL", TxH.VAR, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.PLAIN);
                                     }
                                     break;

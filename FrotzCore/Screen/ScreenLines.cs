@@ -86,9 +86,9 @@ namespace Frotz.Screen
 
         private void AddLines()
         {
-            while (_lines.Count <= Rows * 2)
+            lock (_lines)
             {
-                lock (_lines)
+                while (_lines.Count <= Rows * 2)
                 {
                     _lines.Add(new LineInfo(Columns * 3));
                 }
@@ -138,7 +138,9 @@ namespace Frotz.Screen
 
         public void Dispose()
         {
-            if (_lines != null)
+            GC.SuppressFinalize(this);
+
+            if (_lines is not null)
             {
                 _lines.ForEach(x => x?.Dispose());
                 _lines.Dispose();

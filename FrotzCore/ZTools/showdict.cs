@@ -79,7 +79,7 @@ namespace ZTools
                 if (columns == 1 || (i % columns) == 1)
                     txio.TxPrint("\n");
 
-                txio.TxPrintf("[{0:d4}] ", (int)i);
+                txio.TxPrintf("[{0:d4}] ", i);
 
                 /* Calculate address of next entry */
 
@@ -259,7 +259,7 @@ namespace ZTools
                     /* Get address of abbreviation text from table */
 
                     abbreviation_address = (ulong)txio.ReadDataWord(ref table_address) * 2;
-                    txio.TxPrintf("[{0:d2}] \"", (int)i);
+                    txio.TxPrintf("[{0:d2}] \"", i);
                     txio.DecodeText(ref abbreviation_address);
                     txio.TxPrint("\"\n");
                 }

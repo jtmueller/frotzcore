@@ -1126,10 +1126,7 @@ namespace ZTools
 
                 /* Pick up the index */
 
-                if (prep_type == 0)
-                    prep_index = txio.ReadDataWord(ref address);
-                else
-                    prep_index = txio.ReadDataByte(ref address);
+                prep_index = prep_type == 0 ? txio.ReadDataWord(ref address) : txio.ReadDataByte(ref address);
 
                 /* Display index and word */
 
@@ -1544,10 +1541,7 @@ namespace ZTools
             for (i = 0; (uint)i < prep_count; i++)
             {
                 text_address = txio.ReadDataWord(ref address);
-                if (prep_type == 0)
-                    prep_num = txio.ReadDataWord(ref address);
-                else
-                    prep_num = txio.ReadDataByte(ref address);
+                prep_num = prep_type == 0 ? txio.ReadDataWord(ref address) : txio.ReadDataByte(ref address);
 
                 /* If the indices match then print the preposition text */
 

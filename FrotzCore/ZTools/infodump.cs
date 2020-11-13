@@ -318,7 +318,7 @@ namespace ZTools
          * for each area. Each area is then sorted in ascending order and displayed.
          */
 
-        private static readonly PooledList<AreaT> areas = new PooledList<AreaT>();
+        private static readonly PooledList<AreaT> areas = new();
 
         private static void ShowMap()
         {

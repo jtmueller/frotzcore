@@ -12,14 +12,14 @@ namespace Frotz.Other
         {
             RawMetaData = metadata;
 
-            var doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml(metadata);
             var elements = doc.GetElementsByTagName("bibliographic");
             //Console.WriteLine("NODE:" + elements.Count);
 
             if (elements.Count > 0)
             {
-                RawBiblographic = elements[0].InnerXml;
+                RawBiblographic = elements[0]!.InnerXml;
             }
         }
     }

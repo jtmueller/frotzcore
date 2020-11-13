@@ -9,7 +9,7 @@ namespace Frotz
         /// </summary>
         /// <param name="onDispose">The action to call on disposing.</param>
         /// <returns></returns>
-        public static DisposableWrapper<T> Dispose<T>(T obj, Action<T> onDispose) => new DisposableWrapper<T>(obj, onDispose);
+        public static DisposableWrapper<T> Dispose<T>(T obj, Action<T> onDispose) => new(obj, onDispose);
 
         public ref struct DisposableWrapper<T>
         {
@@ -24,7 +24,7 @@ namespace Frotz
 
             public void Dispose()
             {
-                if (_onDispose is object)
+                if (_onDispose is not null)
                 {
                     _onDispose.Invoke(_obj);
                     _onDispose = null;

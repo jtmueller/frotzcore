@@ -28,8 +28,8 @@ namespace Frotz.Other
     {
         // compiler optimizes this to much faster than static array field
         private static ReadOnlySpan<byte> Header => new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-        private readonly List<string> _chunkOrder = new List<string>();
-        public Dictionary<string, PNGChunk> Chunks { get; } = new Dictionary<string, PNGChunk>();
+        private readonly List<string> _chunkOrder = new();
+        public Dictionary<string, PNGChunk> Chunks { get; } = new();
 
         public PNG(string fileName)
         {
@@ -88,7 +88,7 @@ namespace Frotz.Other
             }
             finally
             {
-                if (pooled is object)
+                if (pooled is not null)
                     ArrayPool<byte>.Shared.Return(pooled);
             }
         }

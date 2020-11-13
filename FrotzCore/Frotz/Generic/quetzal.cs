@@ -118,12 +118,14 @@ namespace Frotz.Generic
 
 
         /* Read one word from file; return TRUE if OK. */
-        private static bool ReadWord(FileStream fs, out zword result)
+        private static bool TryReadWord(FileStream fs, out zword result)
         {
-            result = zword.MaxValue;
-
             Span<byte> buffer = stackalloc byte[2];
-            if (fs.Read(buffer) < 2) return false;
+            if (fs.Read(buffer) < 2)
+            {
+                result = zword.MaxValue;
+                return false;
+            }
 
             result = BinaryPrimitives.ReadUInt16BigEndian(buffer);
             return true;
@@ -132,10 +134,12 @@ namespace Frotz.Generic
         /* Read one long from file; return TRUE if OK. */
         private static bool TryReadLong(FileStream fs, out zlong result)
         {
-            result = zlong.MaxValue;
-
             Span<byte> buffer = stackalloc byte[4];
-            if (fs.Read(buffer) < 4) return false;
+            if (fs.Read(buffer) < 4)
+            {
+                result = zlong.MaxValue;
+                return false;
+            }
 
             result = BinaryPrimitives.ReadUInt32BigEndian(buffer);
             return true;
@@ -200,7 +204,7 @@ namespace Frotz.Generic
                             return fatal;
                         }
                         progress |= GOT_HEADER;
-                        if (currlen < 13 || !ReadWord(svf, out tmpw))
+                        if (currlen < 13 || !TryReadWord(svf, out tmpw))
                         {
                             return fatal;
                         }
@@ -215,7 +219,7 @@ namespace Frotz.Generic
                                 progress = GOT_ERROR;
                         }
 
-                        if (!ReadWord(svf, out tmpw)) return fatal;
+                        if (!TryReadWord(svf, out tmpw)) return fatal;
                         if (tmpw != Main.h_checksum)
                             progress = GOT_ERROR;
 
@@ -260,7 +264,7 @@ namespace Frotz.Generic
                             if (currlen < 8) return fatal;
                             for (i = 0; i < 6; ++i)
                                 if (svf.ReadByte() != 0) return fatal;
-                            if (!ReadWord(svf, out tmpw)) return fatal;
+                            if (!TryReadWord(svf, out tmpw)) return fatal;
                             if (tmpw > General.STACK_SIZE)
                             {
                                 Text.PrintString("Save-file has too much stack (and I can't cope).\n");
@@ -270,7 +274,7 @@ namespace Frotz.Generic
                             if (currlen < tmpw * 2) return fatal;
                             for (i = 0; i < tmpw; ++i)
                                 // if (!read_word(svf, --sp)) return fatal;
-                                if (!ReadWord(svf, out Main.Stack[--Main.sp])) return fatal;
+                                if (!TryReadWord(svf, out Main.Stack[--Main.sp])) return fatal;
                             currlen -= (zword)(tmpw * 2);
                         }
 
@@ -336,7 +340,7 @@ namespace Frotz.Generic
                             Main.fp = Main.sp;	/* FP for next frame. */
 
                             /* Read amount of eval stack used. */
-                            if (!ReadWord(svf, out tmpw)) return fatal;
+                            if (!TryReadWord(svf, out tmpw)) return fatal;
 
                             tmpw += (zword)y;	/* Amount of stack + number of locals. */
                             // if (sp - stack <= tmpw) {
@@ -347,7 +351,7 @@ namespace Frotz.Generic
                             }
                             if (currlen < tmpw * 2) return fatal;
                             for (i = 0; i < tmpw; ++i)
-                                if (!ReadWord(svf, out Main.Stack[--Main.sp])) return fatal;
+                                if (!TryReadWord(svf, out Main.Stack[--Main.sp])) return fatal;
                             currlen -= (zword)(tmpw * 2);
                         }
                         /* End of `Stks' processing... */

@@ -51,7 +51,7 @@ namespace WPFMachine
         protected ScreenLines _regularLines = null; // TODO Are these even used now?
         protected ScreenLines _fixedWidthLines = null;
 
-        protected NumberSubstitution _substituion = new NumberSubstitution();
+        protected NumberSubstitution _substituion = new();
 
         public void SetCharsAndLines()
         {

@@ -217,18 +217,13 @@ namespace ZTools
                 throw new ArgumentException("Can't handle files with no length. Giving up!");
                 // file_size = get_story_size();
             }
-            else if ((uint)header.version <= TxH.V3)
+
+            file_size = (uint)header.version switch
             {
-                file_size = header.file_size * 2;
-            }
-            else if ((uint)header.version <= TxH.V5)
-            {
-                file_size = header.file_size * 4;
-            }
-            else
-            {
-                file_size = header.file_size * 8;
-            }
+                <= TxH.V3 => header.file_size * 2,
+                <= TxH.V5 => header.file_size * 4,
+                _ => header.file_size * 8
+            };
         }/* configure */
 
         internal static void OpenStory(byte[] story)
@@ -255,15 +250,7 @@ namespace ZTools
             if (gfp == null)
                 throw new InvalidOperationException("gfp not initialized.");
 
-            int bytes_to_read;
-
-            if (file_size == 0)
-                bytes_to_read = 64;
-            else if (page != (uint)(file_size / TxH.PAGE_SIZE))
-                bytes_to_read = TxH.PAGE_SIZE;
-            else
-                bytes_to_read = file_size & TxH.PAGE_MASK;
-
+            int bytes_to_read = file_size == 0 ? 64 : page != (uint)(file_size / TxH.PAGE_SIZE) ? TxH.PAGE_SIZE : file_size & TxH.PAGE_MASK;
             gfp.Position = page * TxH.PAGE_SIZE;
             gfp.Read(buffer[..bytes_to_read]);
 
@@ -370,15 +357,10 @@ namespace ZTools
                 {
                     for (j = 0; j < 26; j++)
                     {
-                        if ((uint)header.alphabet > 0)
-                        {
-                            lookup_table[i, j] = (char)TxH.GetByte(header.alphabet + (i * 26) + j);
-                        }
-                        else
-                        {
-                            lookup_table[i, j] = (uint)header.version == TxH.V1
+                        lookup_table[i, j] = (uint)header.alphabet > 0
+                            ? (char)TxH.GetByte(header.alphabet + (i * 26) + j)
+                            : (uint)header.version == TxH.V1
                                 ? v1_lookup_table[i][j] : v3_lookup_table[i][j];
-                        }
 
                         if (option_inform && lookup_table[i, j] == '\"')
                         {
@@ -887,7 +869,7 @@ namespace ZTools
 
         }/* tx_set_width */
 
-        private static readonly System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        private static readonly System.Text.StringBuilder sb = new();
         internal static void StartStringBuilder() => sb.Clear();
 
         internal static string GetTextFromStringBuilder()

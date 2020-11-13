@@ -10,7 +10,7 @@ namespace Frotz.Screen
         private char[] _chars;
         private CharDisplayInfo[] _styles;
         private readonly int _width;
-        private readonly object _lockObj = new object();
+        private readonly object _lockObj = new();
         private PooledList<FontChanges>? _changes;
 
         public int X { get; set; }
@@ -101,13 +101,12 @@ namespace Frotz.Screen
                         {
                             if (!_styles[i].Equals(fc.FontAndStyle))
                             {
-                                fc = new FontChanges(i, 1, _styles[i]);
+                                fc = new FontChanges(i, _width, _styles[i]);
                                 fc.AddChar(chars[i]);
                                 _changes.Add(fc);
                             }
                             else
                             {
-                                fc.Count++;
                                 fc.AddChar(chars[i]);
                             }
                         }
@@ -128,6 +127,8 @@ namespace Frotz.Screen
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             if (_styles.Length > 0)
             {
                 ArrayPool<CharDisplayInfo>.Shared.Return(_styles);

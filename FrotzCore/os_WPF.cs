@@ -64,7 +64,7 @@ namespace Frotz
             Entries.Enqueue(CharCodes.ZC_RETURN);
         }
 
-        public static readonly PooledQueue<zword> Entries = new PooledQueue<zword>();
+        public static readonly PooledQueue<zword> Entries = new();
 
         public static void Fail(string message) => Screen?.HandleFatalError(message);
 
@@ -81,13 +81,16 @@ namespace Frotz
          */
         public static void Beep(int number)
         {
-            if (number == 1)
+            if (OperatingSystem.IsWindows())
             {
-                Console.Beep(800, 350);
-            }
-            else
-            {
-                Console.Beep(392, 350);
+                if (number == 1)
+                {
+                    Console.Beep(800, 350);
+                }
+                else
+                {
+                    Console.Beep(392, 350);
+                }
             }
         }
 
@@ -634,30 +637,7 @@ namespace Frotz
                     }
                     else if (c == '\t')
                     {
-                        Span<char> chars = buffer.Count > 0xff ? new char[buffer.Count] : stackalloc char[buffer.Count];
-
-                        for (int i = 0; i < buffer.Count; i++)
-                        {
-                            chars[i] = buffer[i];
-                        }
-
-                        int result = Text.Completion(chars, out string word);
-                        if (result == 0)
-                        {
-                            foreach (char c1 in word)
-                            {
-                                Entries.Enqueue(c1);
-                            }
-                            Entries.Enqueue(' ');
-                        }
-                        else if (result == 1)
-                        {
-                            Beep(0);
-                        }
-                        else
-                        {
-                            Beep(1);
-                        }
+                        HandleTabCompletion(buffer);
                     }
                     else
                     {
@@ -684,6 +664,34 @@ namespace Frotz
                 {
                     buf[i] = buffer[i].Char;
                 }
+            }
+        }
+
+        private static void HandleTabCompletion(PooledList<BufferChar> buffer)
+        {
+            Span<char> chars = buffer.Count > 0xff ? new char[buffer.Count] : stackalloc char[buffer.Count];
+
+            for (int i = 0; i < buffer.Count; i++)
+            {
+                chars[i] = buffer[i];
+            }
+
+            int result = Text.Completion(chars, out string word);
+            if (result == 0)
+            {
+                foreach (char c1 in word)
+                {
+                    Entries.Enqueue(c1);
+                }
+                Entries.Enqueue(' ');
+            }
+            else if (result == 1)
+            {
+                Beep(0);
+            }
+            else
+            {
+                Beep(1);
             }
         }
 
@@ -1173,7 +1181,7 @@ namespace Frotz
                     string? temp = Path.ChangeExtension(Main.StoryName, "blb");
                     BlorbFile = null;
 
-                    if (File.Exists(temp))
+                    if (!string.IsNullOrEmpty(temp) && File.Exists(temp))
                     {
                         using var fs = File.OpenRead(temp);
                         BlorbFile = Blorb.BlorbReader.ReadBlorbFile(fs);

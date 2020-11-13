@@ -30,11 +30,10 @@ namespace Frotz.Screen
             y = Y;
         }
 
-        public static implicit operator ZPoint(ValueTuple<int, int> pair) 
-            => new ZPoint(pair.Item1, pair.Item2);
+        public static implicit operator ZPoint(ValueTuple<int, int> pair) => new(pair.Item1, pair.Item2);
 
-        public ZPoint WithX(int x) => new ZPoint(x, Y);
-        public ZPoint WithY(int y) => new ZPoint(X, y);
+        public ZPoint WithX(int x) => new(x, Y);
+        public ZPoint WithY(int y) => new(X, y);
         public bool Equals(ZPoint other) => other.X == X && other.Y == Y;
         public override bool Equals(object? obj) => obj is ZPoint p && Equals(p);
         public override int GetHashCode() => HashCode.Combine(X, Y);
@@ -76,12 +75,12 @@ namespace Frotz.Screen
         public static bool operator !=(ZSize left, ZSize right) => !left.Equals(right);
 
         public static implicit operator ZSize(ValueTuple<int, int> pair)
-            => new ZSize(pair.Item1, pair.Item2);
+            => new(pair.Item1, pair.Item2);
 
         public static implicit operator ZSize(ValueTuple<double, double> pair)
-            => new ZSize(pair.Item1, pair.Item2);
+            => new(pair.Item1, pair.Item2);
 
-        public static readonly ZSize Empty = new ZSize(0, 0);
+        public static readonly ZSize Empty = new(0, 0);
     }
 
     public readonly struct ScreenMetrics : IEquatable<ScreenMetrics>
@@ -128,7 +127,7 @@ namespace Frotz.Screen
     {
         public int Offset { get; set; }
         public int StartCol { get; private set; }
-        public int Count { get; set; }
+        public int Count => _sb.Length;
         public int Style => FontAndStyle.Style;
         public int Font => FontAndStyle.Font;
         public string Text => _sb.ToString();
@@ -136,15 +135,15 @@ namespace Frotz.Screen
 
         public CharDisplayInfo FontAndStyle { get; set; }
 
-        private readonly StringBuilder _sb = new StringBuilder();
+        private readonly StringBuilder _sb;
 
         internal void AddChar(char c) => _sb.Append(c);
 
         public FontChanges(int startCol, int count, CharDisplayInfo FandS)
         {
             StartCol = startCol;
-            Count = count;
-            this.FontAndStyle = FandS;
+            FontAndStyle = FandS;
+            _sb = new(count);
         }
     }
 }

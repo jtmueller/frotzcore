@@ -15,18 +15,6 @@ using zword_t = System.UInt16;
 
 namespace ZTools
 {
-    internal class BufferWithPointer
-    {
-        internal byte[] Buffer { get; private set; }
-        internal int Pointer { get; set; }
-
-        public BufferWithPointer(int size)
-        {
-            Buffer = new zbyte_t[size];
-            Pointer = 0;
-        }
-    }
-
     public static class TxH
     {
         /* Z types */
@@ -325,7 +313,7 @@ namespace ZTools
         {
             public ulong Address;
             public int Number;
-            public readonly List<CRefItemT> Child = new List<CRefItemT>();
+            public readonly List<CRefItemT> Child = new();
 
             public override string ToString()
                 => $"{Address} -> {Number}";

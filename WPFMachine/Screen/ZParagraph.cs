@@ -2,7 +2,6 @@
 using Frotz.Constants;
 using Frotz.Screen;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -14,7 +13,7 @@ namespace WPFMachine.Screen
     internal class ZParagraph : Paragraph
     {
         private readonly ZTextControl _parent;
-        private readonly StringBuilder _currentText = new StringBuilder();
+        private readonly StringBuilder _currentText = new();
         private int _x;
         private CharDisplayInfo _currentInfo;
         private CharDisplayInfo _defaultInfo;
@@ -312,7 +311,7 @@ namespace WPFMachine.Screen
 
         internal void EndInputMode() => _inputRun = null;
 
-        private void RemoveCharsFromRun(ZRun run, int count) => run.Text = run.Text.Remove(run.Text.Length - count);
+        private static void RemoveCharsFromRun(ZRun run, int count) => run.Text = run.Text.Remove(run.Text.Length - count);
     }
 
     internal enum TextFlushMode

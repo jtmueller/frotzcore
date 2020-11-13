@@ -11,7 +11,7 @@ namespace WPFMachine.Screen
     // TODO This may be so I can overlay different text
     internal class OverlayAdorner : Adorner
     {
-        private readonly List<AbsoluteText> _text = new List<AbsoluteText>();
+        private readonly List<AbsoluteText> _text = new();
 
         internal int FontHeight { get; set; }
 

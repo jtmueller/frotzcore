@@ -8,6 +8,8 @@
  * Future:  Add property type (e.g. name property contains dictionary words)
  *          Finish user-defined symbol table
  */
+using System;
+
 namespace ZTools
 {
     internal static class Symbols
@@ -55,11 +57,11 @@ namespace ZTools
             //internal symtab_entry_t globals;
         };
 
-        private static readonly symtab_entry_t[] attribute_names_table = new symtab_entry_t[0];
+        private static readonly symtab_entry_t[] attribute_names_table = Array.Empty<symtab_entry_t>();
         private static readonly int attribute_entries = 0;
-        private static readonly symtab_entry_t[] property_names_table = new symtab_entry_t[0];
+        private static readonly symtab_entry_t[] property_names_table = Array.Empty<symtab_entry_t>();
         private static readonly int property_entries = 0;
-        private static readonly symtab_entry_t[] global_names_table = new symtab_entry_t[0];
+        private static readonly symtab_entry_t[] global_names_table = Array.Empty<symtab_entry_t>();
         private static readonly int global_entries = 0;
 
         // static routine_entry_t[] routines_table;

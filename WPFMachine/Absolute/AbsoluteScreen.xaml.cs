@@ -4,7 +4,6 @@ using Frotz.Constants;
 using Frotz.Screen;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -21,7 +20,7 @@ namespace WPFMachine.Absolute
     /// </summary>
     public partial class AbsoluteScreen : ScreenBase, IZScreen
     {
-        private readonly StringBuilder _currentText = new StringBuilder();
+        private readonly StringBuilder _currentText = new();
         private int _activeWindow = -1;
 
         public ScrollbackArea Scrollback { get; }
@@ -496,7 +495,7 @@ namespace WPFMachine.Absolute
             });
         }
 
-        public ZPoint GetCursorPosition() => new ZPoint(_cursorX, _cursorY);
+        public ZPoint GetCursorPosition() => new(_cursorX, _cursorY);
 
         private bool _inInputMode = false;
 
@@ -619,10 +618,8 @@ namespace WPFMachine.Absolute
             return name;
         }
 
-        private string CreateFilterList(params string[] types)
-        {
-            return string.Join("|", types) + "|All Files (*.*)|*.*";
-        }
+        private static string CreateFilterList(params string[] types) 
+            => string.Join("|", types) + "|All Files (*.*)|*.*";
 
         public void PrepareSample(int number)
         {
@@ -733,7 +730,7 @@ namespace WPFMachine.Absolute
             });
         }
 
-        private Rect GetImageBounds(Image img)
+        private static Rect GetImageBounds(Image img)
         {
             double x = img.Left();
             double y = img.Top();
@@ -760,7 +757,7 @@ namespace WPFMachine.Absolute
             {
                 var oldImg = mainCanvas.Children[i] as Image;
                 if (img == oldImg) continue;
-                if (oldImg != null)
+                if (oldImg is not null)
                 {
                     var oldR = GetImageBounds(oldImg);
 

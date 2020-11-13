@@ -14,7 +14,6 @@ namespace WPFMachine
         public int ColorCode { get; set; }
         public ColorType Type { get; set; }
 
-
         public ZColorCheck(int color, ColorType colorType)
         {
             ColorCode = color;
@@ -63,7 +62,7 @@ namespace WPFMachine
 
         internal static Brush ZColorToBrush(int color, ColorType type) => new SolidColorBrush(ZColorToColor(color, type));
 
-        private static readonly ConcurrentDictionary<(int color, ColorType type), Color> s_colorCache = new ConcurrentDictionary<(int, ColorType), Color>();
+        private static readonly ConcurrentDictionary<(int color, ColorType type), Color> s_colorCache = new();
 
         internal static Color ZColorToColor(int color, ColorType type) =>
             s_colorCache.GetOrAdd((color, type), ZColorToColor);
@@ -77,41 +76,31 @@ namespace WPFMachine
                 if (type == ColorType.Background) return CurrentBackColor;
             }
 
-            switch (color)
+            return color switch
             {
-                case ZColor.BLACK_COLOUR:
-                    return Colors.Black;
-                case ZColor.BLUE_COLOUR:
-                    return C64Blue;
-                case ZColor.CYAN_COLOUR:
-                    return Colors.Cyan;
-                case ZColor.DARKGREY_COLOUR:
-                    return Colors.DarkGray;
-                case ZColor.GREEN_COLOUR:
-                    return Colors.Green;
+                ZColor.BLACK_COLOUR => Colors.Black,
+                ZColor.BLUE_COLOUR => C64Blue,
+                ZColor.CYAN_COLOUR => Colors.Cyan,
+                ZColor.DARKGREY_COLOUR => Colors.DarkGray,
+                ZColor.GREEN_COLOUR => Colors.Green,
                 // case ZColor.LIGHTGREY_COLOUR: // Light Grey & Grey both equal 10
-                case ZColor.GREY_COLOUR:
-                    return Colors.Gray;
-                case ZColor.MAGENTA_COLOUR:
-                    return Colors.Magenta;
-                case ZColor.MEDIUMGREY_COLOUR:
-                    return Colors.DimGray;
-                case ZColor.RED_COLOUR:
-                    return Colors.Red;
-                case ZColor.TRANSPARENT_COLOUR:
-                    return Colors.Transparent;
-                case ZColor.WHITE_COLOUR:
-                    return Colors.White;
-                case ZColor.YELLOW_COLOUR:
-                    return Colors.Yellow;
-                case 32:
-                    return Properties.Settings.Default.DefaultInputColor;
+                ZColor.GREY_COLOUR => Colors.Gray,
+                ZColor.MAGENTA_COLOUR => Colors.Magenta,
+                ZColor.MEDIUMGREY_COLOUR => Colors.DimGray,
+                ZColor.RED_COLOUR => Colors.Red,
+                ZColor.TRANSPARENT_COLOUR => Colors.Transparent,
+                ZColor.WHITE_COLOUR => Colors.White,
+                ZColor.YELLOW_COLOUR => Colors.Yellow,
+                32 => Properties.Settings.Default.DefaultInputColor,
+                _ => ParseColor(color),
+            };
+
+            static Color ParseColor(int color)
+            {
+                long new_color = TrueColorStuff.GetColor(color);
+                var (r, g, b) = TrueColorStuff.GetRGB(new_color);
+                return Color.FromRgb(r, g, b);
             }
-
-            long new_color = TrueColorStuff.GetColor(color);
-            var (r, g, b) = TrueColorStuff.GetRGB(new_color);
-
-            return Color.FromRgb(r, g, b);
         }
     }
 }

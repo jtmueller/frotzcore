@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace WPFMachine
 {
-    public class FontInfo
+    public record FontInfo
     {
         public FontInfo(string name, double size)
         {
@@ -25,8 +25,8 @@ namespace WPFMachine
 
         }
 
-        public string Name { get; private set; }
-        public FontFamily Family { get; private set; }
+        public string Name { get; private init; }
+        public FontFamily Family { get; private init; }
 
         private double _size;
         public double Size

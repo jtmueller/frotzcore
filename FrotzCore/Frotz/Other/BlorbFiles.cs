@@ -97,7 +97,7 @@ namespace Frotz.Blorb
         }
 
         private static int _level = 0;
-        private static readonly PooledDictionary<int, Chunk> _chunks = new PooledDictionary<int, Chunk>();
+        private static readonly PooledDictionary<int, Chunk> _chunks = new();
         //private static readonly PooledDictionary<int, Resource> _resources = new PooledDictionary<int, Resource>();
 
         private static void HandleForm(Blorb blorb, Stream stream, int start, int length)
@@ -190,7 +190,7 @@ namespace Frotz.Blorb
                         {
                             // TODO Make sure that this is being handled correctly
                             int index = blorb.MetaData.IndexOf('<');
-                            blorb.MetaData = blorb.MetaData.Substring(index);
+                            blorb.MetaData = blorb.MetaData[index..];
                         }
                     }
                     else if (type.SequenceEqual("Fspc"))
@@ -321,10 +321,13 @@ namespace Frotz.Blorb
                     var doc = XDocument.Parse(blorb.MetaData);
                     var r = doc.Root;
 
-                    var n = XName.Get("title", r.Name.NamespaceName);
-                    foreach (var e in doc.Descendants(n))
+                    if (r is not null)
                     {
-                        blorb.StoryName = e.Value;
+                        var n = XName.Get("title", r.Name.NamespaceName);
+                        foreach (var e in doc.Descendants(n))
+                        {
+                            blorb.StoryName = e.Value;
+                        }
                     }
                 }
                 catch (Exception)

@@ -26,8 +26,8 @@ namespace Frotz
             IsActive = true;
         }
 
-        public static List<string> StateLines { get; } = new List<string>();
-        public static List<string> OutputLines { get; } = new List<string>();
+        public static List<string> StateLines { get; } = new();
+        public static List<string> OutputLines { get; } = new();
 
         private static int CurrentState = 0;
 
@@ -49,7 +49,7 @@ namespace Frotz
 
                     if (string.Compare(expected, current, StringComparison.OrdinalIgnoreCase) != 0)
                     {
-                        Debug.WriteLine($"mismatch! Expected:{expected}: Current:{current}:{CurrentState}");
+                        Debug.WriteLine("mismatch! Expected:{0}: Current:{1}:{2}", expected, current, CurrentState);
                         StateLines.Clear();
                     }
 
