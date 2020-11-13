@@ -511,18 +511,16 @@ namespace Frotz.Generic
             }
             else if (st == StringType.HIGH_STRING)
             {
-                if (Main.h_version <= ZMachine.V3)
-                    byte_addr = addr << 1;
-                else if (Main.h_version <= ZMachine.V5)
-                    byte_addr = addr << 2;
-                else if (Main.h_version <= ZMachine.V7)
-                    byte_addr = (addr << 2) + (Main.h_strings_offset << 3);
-                else /* (h_version <= V8) */
-                    byte_addr = addr << 3;
+                byte_addr = Main.h_version switch
+                {
+                    <= ZMachine.V3 => addr << 1,
+                    <= ZMachine.V5 => addr << 2,
+                    <= ZMachine.V7 => (addr << 2) + (Main.h_strings_offset << 3),
+                    _  => addr << 3
+                };
 
                 if (byte_addr >= Main.StorySize)
                     Err.RuntimeError(ErrorCodes.ERR_ILL_PRINT_ADDR);
-
             }
 
             /* Loop until a 16bit word has the highest bit set */

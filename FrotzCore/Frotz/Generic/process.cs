@@ -367,12 +367,13 @@ namespace Frotz.Generic
 
             /* Calculate byte address of routine */
 
-            pc = Main.h_version <= ZMachine.V3
-                ? (long)routine << 1
-                : Main.h_version <= ZMachine.V5
-                    ? (long)routine << 2
-                    : Main.h_version <= ZMachine.V7 
-                        ? ((long)routine << 2) + ((long)Main.h_functions_offset << 3) : (long)routine << 3;
+            pc = Main.h_version switch
+            {
+                <= ZMachine.V3 => (long)routine << 1,
+                <= ZMachine.V5 => (long)routine << 2,
+                <= ZMachine.V7 => ((long)routine << 2) + ((long)Main.h_functions_offset << 3),
+                _ => (long)routine << 3
+            };
 
             if (pc >= Main.StorySize)
                 Err.RuntimeError(ErrorCodes.ERR_ILL_CALL_ADDR);
