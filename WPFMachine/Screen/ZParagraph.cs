@@ -276,21 +276,19 @@ namespace WPFMachine.Screen
             return true;
         }
 
-        private ZRun _inputRun = null;
+        private StringBuilder _inputText = null;
         internal void StartInputMode()
         {
-            _inputRun = new ZRun(_currentInfo);
-            ImplementRunStyle(_inputRun);
-            Inlines.Add(_inputRun);
+            _inputText = new StringBuilder();
         }
 
-        internal void AddInputChar(char c) => _inputRun.Text += c;
+        internal void AddInputChar(char c) => _inputText?.Append(c);
 
         internal void RemoveInputChars(int count)
         {
-            if (_inputRun != null)
+            if (_inputText is not null)
             {
-                RemoveCharsFromRun(_inputRun, count);
+                _inputText.Remove(^count..);
             }
             else
             {
@@ -299,9 +297,20 @@ namespace WPFMachine.Screen
         }
 
 
-        internal void EndInputMode() => _inputRun = null;
+        internal void EndInputMode()
+        {
+            if (_inputText is not null)
+            {
+                var inputRun = new ZRun(_currentInfo);
+                ImplementRunStyle(inputRun);
+                inputRun.Text = _inputText.ToString();
+                Inlines.Add(inputRun);
+                _inputText = null;
+            }
+        }
 
-        private static void RemoveCharsFromRun(ZRun run, int count) => run.Text = run.Text.Remove(run.Text.Length - count);
+        private static void RemoveCharsFromRun(ZRun run, int count) => 
+            run.Text = run.Text.Remove(run.Text.Length - count);
     }
 
     internal enum TextFlushMode
