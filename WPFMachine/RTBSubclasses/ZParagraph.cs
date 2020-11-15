@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Linq;
 using System.Windows.Documents;
 
 namespace WPFMachine.RTBSubclasses
@@ -17,17 +17,13 @@ namespace WPFMachine.RTBSubclasses
             set;
         }
 
-        public double Width
+        public double DetermineWidth(double pixelsPerDip = 1.0)
         {
-            get
+            return Inlines.Sum(x => x switch
             {
-                double w = 0;
-                foreach (ZRun run in base.Inlines)
-                {
-                    w += run.Width;
-                }
-                return w;
-            }
+                ZRun run => run.DetermineWidth(pixelsPerDip),
+                _ => 0.0
+            });
         }
 
         public new InlineCollection Inlines => throw new ArgumentException("Please use Add/Clear functions");

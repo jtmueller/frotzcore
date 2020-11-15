@@ -363,7 +363,7 @@ namespace ZTools
                 txio.TxPrint("Inform Version:           ");
                 for (i = 4; i < header.name.Length; i++)
                     txio.TxPrint((char)header.name[i]);
-                txio.TxPrint("\n");
+                txio.TxPrint('\n');
             }
 
             ShowHeaderExtension();

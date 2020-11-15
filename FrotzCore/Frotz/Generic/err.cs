@@ -149,7 +149,7 @@ namespace Frotz.Generic
 
         private static void PrintLong(long value, int base_val)
         {
-            string s = "";
+            string s = string.Empty;
             switch (base_val)
             {
                 case 10: s = value.ToString(); break;

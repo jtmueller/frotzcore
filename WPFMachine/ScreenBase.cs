@@ -15,8 +15,7 @@ namespace WPFMachine
     {
         protected ScreenBase()
         {
-            _regularLines?.Dispose();
-            _fixedWidthLines?.Dispose();
+            _dpi = new(() => VisualTreeHelper.GetDpi(this));
         }
 
         #region ZMachineScreen Members
@@ -35,6 +34,8 @@ namespace WPFMachine
         protected ScreenMetrics _metrics;
 
         public ScreenMetrics Metrics => _metrics;
+
+        private readonly Lazy<DpiScale> _dpi;
 
         protected FontInfo _regularFont;
         protected FontInfo _fixedFont;
@@ -114,14 +115,13 @@ namespace WPFMachine
 
         protected abstract void AfterSetCharsAndLines();
 
+
         protected FormattedText BuildFormattedText(string text, FontInfo font, CharDisplayInfo cdi)
         {
-            var tfm = TextFormattingMode.Ideal;
-            var dpi = VisualTreeHelper.GetDpi(this);
             var ft = new FormattedText(text, CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight, font.Typeface, font.PointSize,
                 ZColorCheck.ZColorToBrush(cdi.ForegroundColor, ColorType.Foreground),
-                _substituion, tfm, dpi.PixelsPerDip);
+                _substituion, TextFormattingMode.Ideal, _dpi.Value.PixelsPerDip);
 
             SetStyle(cdi, ft);
 
@@ -165,7 +165,7 @@ namespace WPFMachine
             _beyZorkFont = new Lazy<FontInfo>(() => new FontInfo("BEYZORK", font_size, new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/beyzork.fon")));
         }
 
-        public new void Focus() => base.Focus(); // TODO Determine if this is actually necessary
+        public new void Focus() => base.Focus();
 
         public event EventHandler<GameSelectedEventArgs> GameSelected;
 

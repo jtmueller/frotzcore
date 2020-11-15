@@ -115,8 +115,12 @@ namespace Frotz
         }
 
         public ReadOnlySpan<char> AsSpan() => _chars.Slice(0, _pos);
-        public ReadOnlySpan<char> AsSpan(int start) => _chars[start.._pos];
-        public ReadOnlySpan<char> AsSpan(int start, int length) => _chars.Slice(start, length);
+        public ReadOnlySpan<char> AsSpan(int start) => _chars.Slice(start, _pos);
+        public ReadOnlySpan<char> AsSpan(int start, int length)
+        {
+            Debug.Assert(length <= _pos);
+            return _chars.Slice(start, length);
+        }
 
         public int IndexOf(char searchChar) => AsSpan().IndexOf(searchChar);
 
@@ -204,6 +208,8 @@ namespace Frotz
             }
         }
 
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void AppendSlow(string s)
         {
             int pos = _pos;

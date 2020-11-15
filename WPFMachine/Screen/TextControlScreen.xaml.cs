@@ -422,20 +422,13 @@ namespace WPFMachine.Screen
 
         public void SetFont(int font) => ztc.SetFont(font);
 
-        public void DisplayMessage(string Message, string Caption) => MessageBox.Show(Message, Caption);
+        public void DisplayMessage(string message, string caption) => MessageBox.Show(message, caption);
 
-        public int GetStringWidth(string s, CharDisplayInfo Font)
+        public int GetStringWidth(string s, CharDisplayInfo font)
         {
-            FormattedText ft;
-            if (Font.Font == ZFont.FIXED_WIDTH_FONT)
-            {
-                ft = BuildFormattedText(s, _fixedFont, true, null, null);
-            }
-            else
-            {
-                ft = BuildFormattedText(s, _regularFont, true, null, null);
-            }
-
+            var ft = font.Font == ZFont.FIXED_WIDTH_FONT
+                ? BuildFormattedText(s, _fixedFont, true, null, null)
+                : BuildFormattedText(s, _regularFont, true, null, null);
             return (int)ft.WidthIncludingTrailingWhitespace;
         }
 
@@ -467,7 +460,6 @@ namespace WPFMachine.Screen
 
         public void RemoveChars(int count)
         {
-
             Dispatcher.Invoke(() =>
             {
                 if (_inInputMode)
@@ -495,7 +487,6 @@ namespace WPFMachine.Screen
             var f = _regularLines.GetFontAndStyle(_x, _y);
             return (ushort)f.BackgroundColor;
         }
-
 
         public void GetColor(out int foreground, out int background)
         {

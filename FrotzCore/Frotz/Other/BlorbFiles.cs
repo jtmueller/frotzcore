@@ -31,8 +31,8 @@ namespace Frotz.Blorb
             IFhd = Array.Empty<byte>();
         }
 
-        public Dictionary<int, BlorbPicture> Pictures { get; private set; }
-        public Dictionary<int, byte[]> Sounds { get; private set; }
+        public Dictionary<int, BlorbPicture> Pictures { get; private init; }
+        public Dictionary<int, byte[]> Sounds { get; private init; }
         public byte[] ZCode { get; set; }
         public string MetaData { get; set; }
         public string StoryName { get; set; }
@@ -43,7 +43,7 @@ namespace Frotz.Blorb
         public ZSize MaxSize { get; set; }
         public ZSize MinSize { get; set; }
 
-        public List<int> AdaptivePalatte { get; set; }
+        public List<int> AdaptivePalatte { get; private init; }
     }
 
     public class BlorbPicture

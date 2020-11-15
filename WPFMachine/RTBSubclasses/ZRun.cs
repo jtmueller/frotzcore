@@ -8,29 +8,36 @@ namespace WPFMachine.RTBSubclasses
 {
     public class ZRun : Run
     {
-        public ZRun(FontFamily Family)
-            : this(Family, "")
+        public ZRun(FontFamily family) : this(family, "")
         { }
 
-        public ZRun(FontFamily Family, string Text)
-            : base(Text)
+        public ZRun(FontFamily family, string text) : base(text)
         {
             FontStyle = FontStyles.Normal;
             FontWeight = FontWeights.Normal;
-            FontFamily = Family;
+            FontFamily = family;
         }
 
-        private double? _width = null;
-        public double Width
+        private double? _width;
+
+        public double DetermineWidth(double pixelsPerDip)
         {
-            get
-            {
-                if (_width == null)
-                {
-                    _width = DetermineWidth();
-                }
-                return (double)_width;
-            }
+            if (_width.HasValue)
+                return _width.GetValueOrDefault();
+
+            _width = DetermineWidth(Text, pixelsPerDip);
+            return _width.GetValueOrDefault();
+        }
+
+        private double DetermineWidth(string text, double pixelsPerDip)
+        {
+            var ft = new FormattedText(text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize, Foreground, new NumberSubstitution(), TextFormattingMode.Display, pixelsPerDip);
+
+            return ft.Width;
         }
 
         internal event EventHandler WidthChanged;
@@ -77,18 +84,6 @@ namespace WPFMachine.RTBSubclasses
                     base.Text = value;
                 }
             }
-        }
-
-        private double DetermineWidth()
-        {
-            var ns = new NumberSubstitution();
-            var ft = new FormattedText(Text,
-                CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-                FontSize, Foreground, ns, TextFormattingMode.Display, 1.0);
-
-            return ft.Width;
         }
     }
 }

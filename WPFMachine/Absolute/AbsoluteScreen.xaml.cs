@@ -265,7 +265,7 @@ namespace WPFMachine.Absolute
                 using (Utilities.Dispose(dc, x => x.Close()))
                 {
                     dc.DrawRectangle(brush, null, new Rect(0, 0, ft.WidthIncludingTrailingWhitespace, charHeight));
-                    dc.DrawText(ft, new Point(0, 0));
+                    dc.DrawText(ft, new(0, 0));
                 }    
 
                 var dpi = VisualTreeHelper.GetDpi(this);
@@ -558,9 +558,7 @@ namespace WPFMachine.Absolute
 
         public int GetStringWidth(string s, CharDisplayInfo font)
         {
-            int f = font.Font;
-            if (f == -1) f = _currentInfo.Font;
-            var ft = f switch
+            var ft = (font.Font == -1 ? _currentInfo.Font : font.Font) switch
             {
                 ZFont.FIXED_WIDTH_FONT => BuildFormattedText(s, _fixedFont, _currentInfo),
                 ZFont.GRAPHICS_FONT    => BuildFormattedText(s, _beyZorkFont.Value, _currentInfo),

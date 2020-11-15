@@ -30,17 +30,19 @@ namespace WPFMachine
 
             int count = 0;
 
+            double ppd = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+
             foreach (var ff in Fonts.SystemFontFamilies)
             {
                 count++;
 
                 var ft = new FormattedText("i", System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, ppd);
 
                 var s = new Size(ft.Width, ft.Height);
 
                 ft = new FormattedText("w", System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                    FlowDirection.LeftToRight, new Typeface(ff.Source), 10, Brushes.Black, ppd);
 
                 if (ft.Width == s.Width)
                 {
@@ -86,10 +88,9 @@ namespace WPFMachine
 
             if (dirs != "")
             {
-                string[] temp = dirs.Split(';');
-                for (int i = 0; i < temp.Length; i++)
+                foreach (var dir in dirs.Split(';'))
                 {
-                    AddDirectory(temp[i]);
+                    AddDirectory(dir);
                 }
             }
 
@@ -161,8 +162,7 @@ namespace WPFMachine
                 dirs.Add(gd.Directory);
             }
 
-            Properties.Settings.Default.GameDirectoryList =
-            string.Join(";", dirs);
+            Properties.Settings.Default.GameDirectoryList = string.Join(";", dirs);
 
             settings.FrotzPiracy = cbPiracy.IsChecked ?? false;
             settings.FrotzExpandAbbreviations = cbExpandAbbreviations.IsChecked ?? false;

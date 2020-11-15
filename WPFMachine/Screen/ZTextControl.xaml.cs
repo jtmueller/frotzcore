@@ -223,6 +223,8 @@ namespace WPFMachine.Screen
 
             int width = 0;
 
+            var ppd = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+
             foreach (var il in _currentParagraph.Inlines)
             {
                 if (il is ZRun r)
@@ -233,18 +235,18 @@ namespace WPFMachine.Screen
                         var temp = text.TrimEnd();
                         if (temp[^1] == '>')
                         {
-                            width += (int)r.Width;
+                            width += (int)r.DetermineWidth(ppd);
                             return width;
                         }
                         else
                         {
                             // MessageBox.Show("> is not the last character in the line");
-                            width += (int)r.Width;
+                            width += (int)r.DetermineWidth(ppd);
                         }
                     }
                     else
                     {
-                        width += (int)r.Width;
+                        width += (int)r.DetermineWidth(ppd);
                     }
                 }
                 else if (il is ZBlankContainer container)

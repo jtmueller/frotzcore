@@ -15,20 +15,25 @@ namespace WPFMachine.Screen
             DisplayInfo = displayInfo;
         }
 
-        private double? _width = null;
-        public double Width => _width ?? (double)(_width = DetermineWidth());
+        private double? _width;
 
-        internal double DetermineWidth() => DetermineWidth(Text);
-
-        internal double DetermineWidth(string text)
+        public double DetermineWidth(double pixelsPerDip)
         {
-            var ns = new NumberSubstitution();
+            if (_width.HasValue)
+                return _width.GetValueOrDefault();
+
+            _width = DetermineWidth(Text, pixelsPerDip);
+            return _width.GetValueOrDefault();
+        }
+
+        private double DetermineWidth(string text, double pixelsPerDip)
+        {
             var ft = new FormattedText(text,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-                FontSize, Foreground, ns, TextFormattingMode.Display, 1.0);
-            
+                FontSize, Foreground, new NumberSubstitution(), TextFormattingMode.Display, pixelsPerDip);
+
             return ft.Width;
         }
     }

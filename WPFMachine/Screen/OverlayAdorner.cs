@@ -31,9 +31,11 @@ namespace WPFMachine.Screen
             lock (_text)
             {
                 if (RegularFont == null || FixedWidthFont == null) return;
+
+                double ppd = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+
                 foreach (var at in _text)
                 {
-
                     var f = RegularFont;
                     if (at.DisplayInfo.Font == ZFont.FIXED_WIDTH_FONT || at.DisplayInfo.ImplementsStyle(ZStyles.FIXED_WIDTH_STYLE))
                     {
@@ -43,7 +45,7 @@ namespace WPFMachine.Screen
                     var ft = new FormattedText(at.Text,
                         System.Globalization.CultureInfo.CurrentCulture,
                         FlowDirection.LeftToRight, f.Typeface, f.PointSize, b,
-                        new NumberSubstitution(), TextFormattingMode.Display, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                        new NumberSubstitution(), TextFormattingMode.Display, ppd);
 
                     if (at.DisplayInfo.ImplementsStyle(ZStyles.REVERSE_STYLE))
                     {

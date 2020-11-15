@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media;
 using WPFMachine.Support;
 
 namespace WPFMachine.Screen
@@ -31,24 +32,14 @@ namespace WPFMachine.Screen
 
         internal double Top { get; set; }
 
-        public double Width
+        public double DetermineWidth(double pixelsPerDip = 1.0)
         {
-            get
+            return Inlines.Sum(x => x switch
             {
-                double w = 0;
-                foreach (var inline in base.Inlines)
-                {
-                    if (inline is ZRun run)
-                    {
-                        w += run.Width;
-                    }
-                    else if (inline is ZBlankContainer container)
-                    {
-                        w += container.Width;
-                    }
-                }
-                return w;
-            }
+                ZRun run => run.DetermineWidth(pixelsPerDip),
+                ZBlankContainer ctr => ctr.Width,
+                _ => 0.0
+            });
         }
 
         internal void SetDisplayInfo(CharDisplayInfo CurrentInfo)
@@ -58,7 +49,6 @@ namespace WPFMachine.Screen
                 Dispatcher.Invoke(Flush);
             }
             _currentInfo = CurrentInfo;
-
         }
 
         internal void AddDisplayChar(char c) => _currentText.Append(c);
@@ -96,7 +86,7 @@ namespace WPFMachine.Screen
                 }
                 else
                 {
-                    if (Width == 0)
+                    if (DetermineWidth() == 0)
                     {
                         if (IsFixedWidth(_currentInfo))
                         {
