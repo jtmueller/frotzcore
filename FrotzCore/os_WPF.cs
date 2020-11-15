@@ -647,7 +647,7 @@ namespace Frotz
                         p = p.WithX(p.X + w);
                         Screen.SetCursorPosition(p.X, p.Y);
 
-                        buffer.Add(new BufferChar(c, w));
+                        buffer.Add(new(c, w));
 
                         Screen.AddInputChar((char)c);
 

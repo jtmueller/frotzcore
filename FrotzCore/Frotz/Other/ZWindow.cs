@@ -24,7 +24,6 @@ namespace Frotz.Other
         public zword true_back;
         public int index; // szurgot
 
-
         public zword this[int index]
         {
             get => index switch
@@ -47,7 +46,7 @@ namespace Frotz.Other
                 15 => line_count,
                 16 => true_fore,
                 17 => true_back,
-                _ => (zword)0,
+                _ => 0,
             };
 
             set

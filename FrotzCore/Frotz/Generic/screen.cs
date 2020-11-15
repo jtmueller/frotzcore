@@ -1071,8 +1071,6 @@ namespace Frotz.Generic
             {
                 if (Main.StoryId == mapper[i].story_id && pic == mapper[i].pic)
                 {
-
-
                     int delta = 0;
 
                     OS.PictureData(pic, out int height1, out int width1);

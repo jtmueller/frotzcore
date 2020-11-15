@@ -19,7 +19,5 @@ namespace Frotz.Other
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint MakeInt(Span<byte> bytes)
             => BinaryPrimitives.ReadUInt32BigEndian(bytes);
-
-        internal static void ClearArray(Span<byte> bytes) => bytes.Clear();
     }
 }

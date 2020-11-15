@@ -164,6 +164,7 @@ namespace Frotz.Generic
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void SetPc(long v) => Pcp = Zmp + v;
+
         #endregion
 
         /*

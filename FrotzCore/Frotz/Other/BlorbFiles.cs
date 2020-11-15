@@ -343,7 +343,7 @@ namespace Frotz.Blorb
         private static int ReadChars(Stream stream, Span<char> destination)
         {
             if (destination.Length < 4)
-                throw new ArgumentException("Destination must hold at least four characters.");
+                throw new ArgumentException("Destination must hold at least four characters.", nameof(destination));
 
             Span<byte> buffer = stackalloc byte[4];
             int read = stream.Read(buffer);
