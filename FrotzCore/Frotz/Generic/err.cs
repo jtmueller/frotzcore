@@ -19,6 +19,7 @@
  */
 
 using Frotz.Constants;
+using System;
 
 namespace Frotz.Generic
 {
@@ -78,12 +79,8 @@ namespace Frotz.Generic
 
         internal static void InitErr()
         {
-            int i;
-
             /* Initialize the counters. */
-
-            for (i = 0; i < ErrorCodes.ERR_NUM_ERRORS; i++)
-                error_count[i] = 0;
+            error_count.AsSpan(..ErrorCodes.ERR_NUM_ERRORS).Clear();
         }
 
         /*

@@ -19,6 +19,7 @@
  */
 using Frotz.Constants;
 using Frotz.Other;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -536,81 +537,75 @@ namespace Frotz.Generic
             if ((stkspos = svf.Position) < 0) return 0;
             if (!WriteChunk(svf, ID_Stks, 0)) return 0;
 
-            zword[] frames = ArrayPool<zword>.Shared.Rent(General.STACK_SIZE / 4 + 1);
-            try
+            using var buffer = SpanOwner<zword>.Allocate(General.STACK_SIZE / 4 + 1);
+            var frames = buffer.Span;
+            /*
+                * We construct a list of frame indices, most recent first, in `frames'.
+                * These indices are the offsets into the `stack' array of the word before
+                * the first word pushed in each frame.
+                */
+            frames[0] = (zword)Main.sp; /* The frame we'd get by doing a call now. */
+            for (i = (zword)(Main.fp + 4), n = 0; i < General.STACK_SIZE + 4; i = (zword)(Main.Stack[i - 3] + 5))
+                frames[++n] = i;
+
+            /*
+                * All versions other than V6 can use evaluation stack outside a function
+                * context. We write a faked stack frame (most fields zero) to cater for
+                * this.
+                */
+            if (Main.h_version != ZMachine.V6)
             {
-                /*
-                 * We construct a list of frame indices, most recent first, in `frames'.
-                 * These indices are the offsets into the `stack' array of the word before
-                 * the first word pushed in each frame.
-                 */
-                frames[0] = (zword)Main.sp; /* The frame we'd get by doing a call now. */
-                for (i = (zword)(Main.fp + 4), n = 0; i < General.STACK_SIZE + 4; i = (zword)(Main.Stack[i - 3] + 5))
-                    frames[++n] = i;
-
-                /*
-                 * All versions other than V6 can use evaluation stack outside a function
-                 * context. We write a faked stack frame (most fields zero) to cater for
-                 * this.
-                 */
-                if (Main.h_version != ZMachine.V6)
-                {
-                    for (i = 0; i < 6; ++i)
-                        if (!WriteByte(svf, 0)) return 0;
-                    nstk = General.STACK_SIZE - frames[n];
-                    if (!WriteWord(svf, nstk)) return 0;
-                    for (j = General.STACK_SIZE - 1; j >= frames[n]; --j)
-                        if (!WriteWord(svf, Main.Stack[j])) return 0;
-                    stkslen = (zword)(8 + 2 * nstk);
-                }
-
-                /* Write out the rest of the stack frames. */
-                for (i = n; i > 0; --i)
-                {
-                    p = frames[i] - 4;  // p = stack + frames[i] - 4;	/* Points to call frame. */
-                    nvars = (Main.Stack[p] & 0x0F00) >> 8;
-                    nargs = Main.Stack[p] & 0x00FF;
-                    nstk = (zword)(frames[i] - frames[i - 1] - nvars - 4);
-                    pc = ((zlong)Main.Stack[p + 3] << 9) | Main.Stack[p + 2];
-
-                    switch (Main.Stack[p] & 0xF000) /* Check type of call. */
-                    {
-                        case 0x0000:    /* Function. */
-                            var = FastMem.ZMData[FastMem.Zmp + pc];
-                            pc = ((pc + 1) << 8) | (zlong)nvars;
-                            break;
-                        case 0x1000:    /* Procedure. */
-                            var = 0;
-                            pc = (pc << 8) | 0x10 | (zlong)nvars;   /* Set procedure flag. */
-                            break;
-                        /* case 0x2000: */
-                        default:
-                            Err.RuntimeError(ErrorCodes.ERR_SAVE_IN_INTER);
-                            return 0;
-                    }
-                    if (nargs != 0)
-                        nargs = (zword)((1 << nargs) - 1);  /* Make args into bitmap. */
-
-                    /* Write the main part of the frame... */
-                    if (!WriteLong(svf, pc)
-                        || !WriteByte(svf, var)
-                        || !WriteByte(svf, nargs)
-                        || !WriteWord(svf, nstk))
-                    {
-                        return 0;
-                    }
-
-                    /* Write the variables and eval stack. */
-                    for (j = 0, --p; j < nvars + nstk; ++j, --p)
-                        if (!WriteWord(svf, Main.Stack[p])) return 0;
-
-                    /* Calculate length written thus far. */
-                    stkslen += (zword)(8 + 2 * (nvars + nstk));
-                }
+                for (i = 0; i < 6; ++i)
+                    if (!WriteByte(svf, 0)) return 0;
+                nstk = General.STACK_SIZE - frames[n];
+                if (!WriteWord(svf, nstk)) return 0;
+                for (j = General.STACK_SIZE - 1; j >= frames[n]; --j)
+                    if (!WriteWord(svf, Main.Stack[j])) return 0;
+                stkslen = (zword)(8 + 2 * nstk);
             }
-            finally
+
+            /* Write out the rest of the stack frames. */
+            for (i = n; i > 0; --i)
             {
-                ArrayPool<zword>.Shared.Return(frames);
+                p = frames[i] - 4;  // p = stack + frames[i] - 4;	/* Points to call frame. */
+                nvars = (Main.Stack[p] & 0x0F00) >> 8;
+                nargs = Main.Stack[p] & 0x00FF;
+                nstk = (zword)(frames[i] - frames[i - 1] - nvars - 4);
+                pc = ((zlong)Main.Stack[p + 3] << 9) | Main.Stack[p + 2];
+
+                switch (Main.Stack[p] & 0xF000) /* Check type of call. */
+                {
+                    case 0x0000:    /* Function. */
+                        var = FastMem.ZMData[FastMem.Zmp + pc];
+                        pc = ((pc + 1) << 8) | (zlong)nvars;
+                        break;
+                    case 0x1000:    /* Procedure. */
+                        var = 0;
+                        pc = (pc << 8) | 0x10 | (zlong)nvars;   /* Set procedure flag. */
+                        break;
+                    /* case 0x2000: */
+                    default:
+                        Err.RuntimeError(ErrorCodes.ERR_SAVE_IN_INTER);
+                        return 0;
+                }
+                if (nargs != 0)
+                    nargs = (zword)((1 << nargs) - 1);  /* Make args into bitmap. */
+
+                /* Write the main part of the frame... */
+                if (!WriteLong(svf, pc) ||
+                    !WriteByte(svf, var) ||
+                    !WriteByte(svf, nargs) ||
+                    !WriteWord(svf, nstk))
+                {
+                    return 0;
+                }
+
+                /* Write the variables and eval stack. */
+                for (j = 0, --p; j < nvars + nstk; ++j, --p)
+                    if (!WriteWord(svf, Main.Stack[p])) return 0;
+
+                /* Calculate length written thus far. */
+                stkslen += (zword)(8 + 2 * (nvars + nstk));
             }
 
             /* Fill in variable chunk lengths. */

@@ -24,6 +24,7 @@
 
 using Collections.Pooled;
 using Frotz.Constants;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -175,10 +176,10 @@ namespace Frotz.Generic
          */
 
         //typedef struct undo_struct undo_t;
-        internal readonly struct UndoStruct
+        internal readonly struct UndoStruct : IDisposable
         {
             public UndoStruct(long pc, long diffSize, zword frameCount, zword stackSize,
-                zword frameOffset, long sp, ReadOnlyMemory<zword> stack, ReadOnlyMemory<byte> undoData)
+                zword frameOffset, long sp, MemoryOwner<zword> stack, MemoryOwner<byte> undoData)
             {
                 Pc = pc; DiffSize = diffSize; FrameCount = frameCount; StackSize = stackSize;
                 FrameOffset = frameOffset; Sp = sp; Stack = stack; UndoData = undoData;
@@ -192,17 +193,21 @@ namespace Frotz.Generic
             /* undo diff and stack data follow */
 
             public readonly long Sp;
-            public readonly ReadOnlyMemory<zword> Stack;
-            public readonly ReadOnlyMemory<byte> UndoData;
+            public readonly MemoryOwner<zword> Stack;
+            public readonly MemoryOwner<byte> UndoData;
+
+            public void Dispose()
+            {
+                Stack?.Dispose();
+                UndoData?.Dispose();
+            }
         }
 
         // static undo_struct first_undo = null, last_undo = null, curr_undo = null;
         //static zbyte *undo_mem = NULL, *prev_zmp, *undo_diff;
 
-        private static IMemoryOwner<zbyte>? zmpHandle;
-        private static IMemoryOwner<zbyte>? diffHandle;
-        private static Memory<zbyte> PrevZmp = Memory<zbyte>.Empty;
-        private static Memory<zbyte> UndoDiff = Memory<zbyte>.Empty;
+        private static MemoryOwner<zbyte> PrevZmp = MemoryOwner<zbyte>.Empty;
+        private static MemoryOwner<zbyte> UndoDiff = MemoryOwner<zbyte>.Empty;
         private static readonly PooledList<UndoStruct> UndoMem = new();
         private static int UndoCount = 0;
 
@@ -465,19 +470,11 @@ namespace Frotz.Generic
                 var len = ZMData.Length;
                 if (len < Main.StorySize)
                 {
-                    byte[] temp = ArrayPool<byte>.Shared.Rent(len);
-                    try
-                    {
-                        Array.Copy(ZMData, temp, len);
+                    using var buffer = SpanOwner<byte>.Allocate(len);
+                    ZMData.CopyTo(buffer.Span);
 
-                        ZMData = new byte[Main.StorySize];
-                        //Frotz.Other.ZMath.clearArray(ZMData);
-                        Array.Copy(temp, ZMData, len);
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(temp);
-                    }
+                    ZMData = new byte[Main.StorySize];
+                    buffer.Span.CopyTo(ZMData);
                 }
 
                 /* Load story file in chunks of 32KB */
@@ -520,16 +517,14 @@ namespace Frotz.Generic
         /// </summary>
         internal static void InitUndo()
         {
-            var pool = MemoryPool<zbyte>.Shared;
             var len = ZMData.Length;
-            zmpHandle?.Dispose();
-            zmpHandle = pool.Rent(len);
-            PrevZmp = zmpHandle.Memory.Slice(0, len);
+            PrevZmp.Dispose();
+            PrevZmp = MemoryOwner<zbyte>.Allocate(len);
 
-            diffHandle?.Dispose();
-            diffHandle = pool.Rent(len);
-            UndoDiff = diffHandle.Memory.Slice(0, len);
+            UndoDiff.Dispose();
+            UndoDiff = MemoryOwner<zbyte>.Allocate(len);
 
+            UndoMem.ForEach(x => x.Dispose());
             UndoMem.Clear();
 
             ZMData.AsSpan(..Main.h_dynamic_size).CopyTo(PrevZmp.Span);
@@ -543,6 +538,7 @@ namespace Frotz.Generic
         {
             for (int i = 0; i < count; i++)
             {
+                UndoMem[0].Dispose();
                 UndoMem.RemoveAt(0);
             }
 
@@ -554,6 +550,7 @@ namespace Frotz.Generic
         internal static void ResetMemory()
         {
             StoryFp?.Dispose();
+            UndoMem.ForEach(x => x.Dispose());
             UndoMem.Clear();
         }
 
@@ -673,7 +670,6 @@ namespace Frotz.Generic
 
         internal static string? GetDefaultName(zword addr)
         {
-
             if (addr != 0)
             {
 
@@ -1002,6 +998,7 @@ namespace Frotz.Generic
             //Frotz.Other.ArrayCopy.Copy(undo.stack, 0, Main.stack, undo.sp, undo.stack.Length);
 
             UndoMem.Remove(undo);
+            undo.Dispose();
 
             RestartHeader();
 
@@ -1171,19 +1168,17 @@ namespace Frotz.Generic
 
             GetPc(out long pc);
             // p.undo_data = undo_diff;
-            zbyte[] undoData = new zbyte[diff_size];
-            UndoDiff[..diff_size].CopyTo(undoData);
+            var undoData = MemoryOwner<zbyte>.Allocate(diff_size);
+            UndoDiff.Span[..diff_size].CopyTo(undoData.Span);
 
-            zword[] stack = new zword[Main.Stack.Length - Main.sp];
-            Array.Copy(Main.Stack, Main.sp, stack, 0, Main.Stack.Length - Main.sp);
+            var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - (int)Main.sp);
+            Main.Stack.AsSpan((int)Main.sp, Main.Stack.Length - (int)Main.sp).CopyTo(stack.Span);
 
-            var undo = new UndoStruct(
+            UndoMem.Add(new(
                 pc, diffSize: diff_size, frameCount: Main.frame_count,
                 stackSize: (zword)stack_size, frameOffset: (zword)Main.fp, sp: Main.sp,  //    p->frame_offset = fp - stack;
                 stack, undoData
-            );
-
-            UndoMem.Add(undo);
+            ));
 
             return 1;
         }

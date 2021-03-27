@@ -1,5 +1,6 @@
 ﻿// This is a very quick hack to allow me to use the Adaptive Palatte stuff
 
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -97,7 +98,7 @@ namespace Frotz.Other
         {
             Span<byte> buffer = stackalloc byte[4];
             stream.Read(buffer);
-            return Encoding.UTF8.GetString(buffer);
+            return StringPool.Shared.GetOrAdd(buffer, Encoding.UTF8);
         }
 
         private static uint ReadInt(Stream stream)

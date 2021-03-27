@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 using Frotz.Constants;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using zbyte = System.Byte;
@@ -206,111 +207,104 @@ namespace Frotz.Generic
          */
         internal static void ZRead()
         {
-            zword[] pooled = ArrayPool<zword>.Shared.Rent(General.INPUT_BUFFER_SIZE);
-            try
+            using var pooled = SpanOwner<zword>.Allocate(General.INPUT_BUFFER_SIZE);
+            var buffer = pooled.Span;
+            zword addr;
+            zword key;
+            zbyte size;
+            int i;
+
+            /* Supply default arguments */
+
+            if (Process.zargc < 3)
+                Process.zargs[2] = 0;
+
+            /* Get maximum input size */
+
+            addr = Process.zargs[0];
+
+            FastMem.LowByte(addr, out zbyte max);
+
+            if (Main.h_version <= ZMachine.V4)
+                max--;
+
+            if (max >= General.INPUT_BUFFER_SIZE)
+                max = General.INPUT_BUFFER_SIZE - 1;
+
+            /* Get initial input size */
+
+            if (Main.h_version >= ZMachine.V5)
             {
-                var buffer = pooled.AsSpan(..General.INPUT_BUFFER_SIZE);
-                zword addr;
-                zword key;
-                zbyte size;
-                int i;
-
-                /* Supply default arguments */
-
-                if (Process.zargc < 3)
-                    Process.zargs[2] = 0;
-
-                /* Get maximum input size */
-
-                addr = Process.zargs[0];
-
-                FastMem.LowByte(addr, out zbyte max);
-
-                if (Main.h_version <= ZMachine.V4)
-                    max--;
-
-                if (max >= General.INPUT_BUFFER_SIZE)
-                    max = General.INPUT_BUFFER_SIZE - 1;
-
-                /* Get initial input size */
-
-                if (Main.h_version >= ZMachine.V5)
-                {
-                    addr++;
-                    FastMem.LowByte(addr, out size);
-                }
-                else
-                {
-                    size = 0;
-                }
-
-                /* Copy initial input to local buffer */
-
-                for (i = 0; i < size; i++)
-                {
-                    addr++;
-                    FastMem.LowByte(addr, out zbyte c);
-                    buffer[i] = Text.TranslateFromZscii(c);
-                }
-
-                buffer[i] = 0;
-
-                /* Draw status line for V1 to V3 games */
-
-                if (Main.h_version <= ZMachine.V3)
-                    Screen.ZShowStatus();
-
-                /* Read input from current input stream */
-
-                key = Stream.StreamReadInput(
-                    max, buffer,        /* buffer and size */
-                    Process.zargs[2],       /* timeout value   */
-                    Process.zargs[3],       /* timeout routine */
-                    true,               /* enable hot keys */
-                    Main.h_version == ZMachine.V6); /* no script in V6 */
-
-                if (key == CharCodes.ZC_BAD)
-                    return;
-
-                /* Perform save_undo for V1 to V4 games */
-
-                if (Main.h_version <= ZMachine.V4)
-                    FastMem.SaveUndo();
-
-                /* Copy local buffer back to dynamic memory */
-
-                for (i = 0; buffer[i] != 0; i++)
-                {
-                    if (key == CharCodes.ZC_RETURN)
-                    {
-                        buffer[i] = Text.UnicodeToLower(buffer[i]);
-                    }
-
-                    FastMem.StoreB((zword)(Process.zargs[0] + ((Main.h_version <= ZMachine.V4) ? 1 : 2) + i), Text.TranslateToZscii(buffer[i]));
-
-                }
-
-                /* Add null character (V1-V4) or write input length into 2nd byte */
-
-                if (Main.h_version <= ZMachine.V4)
-                    FastMem.StoreB((zword)(Process.zargs[0] + 1 + i), 0);
-                else
-                    FastMem.StoreB((zword)(Process.zargs[0] + 1), (byte)i);
-
-                /* Tokenise line if a token buffer is present */
-
-                if (key == CharCodes.ZC_RETURN && Process.zargs[1] != 0)
-                    Text.TokeniseLine(Process.zargs[0], Process.zargs[1], 0, false);
-
-                /* Store key */
-
-                if (Main.h_version >= ZMachine.V5)
-                    Process.Store(Text.TranslateToZscii(key));
+                addr++;
+                FastMem.LowByte(addr, out size);
             }
-            finally
+            else
             {
-                ArrayPool<zword>.Shared.Return(pooled);
+                size = 0;
             }
+
+            /* Copy initial input to local buffer */
+
+            for (i = 0; i < size; i++)
+            {
+                addr++;
+                FastMem.LowByte(addr, out zbyte c);
+                buffer[i] = Text.TranslateFromZscii(c);
+            }
+
+            buffer[i] = 0;
+
+            /* Draw status line for V1 to V3 games */
+
+            if (Main.h_version <= ZMachine.V3)
+                Screen.ZShowStatus();
+
+            /* Read input from current input stream */
+
+            key = Stream.StreamReadInput(
+                max, buffer,        /* buffer and size */
+                Process.zargs[2],       /* timeout value   */
+                Process.zargs[3],       /* timeout routine */
+                true,               /* enable hot keys */
+                Main.h_version == ZMachine.V6); /* no script in V6 */
+
+            if (key == CharCodes.ZC_BAD)
+                return;
+
+            /* Perform save_undo for V1 to V4 games */
+
+            if (Main.h_version <= ZMachine.V4)
+                FastMem.SaveUndo();
+
+            /* Copy local buffer back to dynamic memory */
+
+            for (i = 0; buffer[i] != 0; i++)
+            {
+                if (key == CharCodes.ZC_RETURN)
+                {
+                    buffer[i] = Text.UnicodeToLower(buffer[i]);
+                }
+
+                FastMem.StoreB((zword)(Process.zargs[0] + ((Main.h_version <= ZMachine.V4) ? 1 : 2) + i), Text.TranslateToZscii(buffer[i]));
+
+            }
+
+            /* Add null character (V1-V4) or write input length into 2nd byte */
+
+            if (Main.h_version <= ZMachine.V4)
+                FastMem.StoreB((zword)(Process.zargs[0] + 1 + i), 0);
+            else
+                FastMem.StoreB((zword)(Process.zargs[0] + 1), (byte)i);
+
+            /* Tokenise line if a token buffer is present */
+
+            if (key == CharCodes.ZC_RETURN && Process.zargs[1] != 0)
+                Text.TokeniseLine(Process.zargs[0], Process.zargs[1], 0, false);
+
+            /* Store key */
+
+            if (Main.h_version >= ZMachine.V5)
+                Process.Store(Text.TranslateToZscii(key));
         }/* z_read */
 
         /*
