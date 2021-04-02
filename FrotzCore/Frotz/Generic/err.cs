@@ -97,7 +97,7 @@ namespace Frotz.Generic
         {
             bool wasfirst;
 
-            if (errnum <= 0 || errnum > ErrorCodes.ERR_NUM_ERRORS)
+            if (errnum is <= 0 or > ErrorCodes.ERR_NUM_ERRORS)
                 return;
 
             if (ErrorReportMode == ErrorCodes.ERR_REPORT_FATAL

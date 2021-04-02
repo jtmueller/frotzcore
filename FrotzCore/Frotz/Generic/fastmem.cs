@@ -24,6 +24,7 @@
 
 using Collections.Pooled;
 using Frotz.Constants;
+using Microsoft.Toolkit.Diagnostics;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
@@ -332,8 +333,8 @@ namespace Frotz.Generic
             zword n;
             int i, j;
 
-            if (Main.StoryData == null || Main.StoryName == null)
-                throw new InvalidOperationException("Story not initialized.");
+            if (Main.StoryData is null || Main.StoryName is null)
+                ThrowHelper.ThrowInvalidOperationException("Story not initialized.");
 
             StoryFp?.Dispose();
             StoryFp = OS.PathOpen(Main.StoryData);
@@ -354,7 +355,7 @@ namespace Frotz.Generic
             /* Copy header fields to global variables */
             LowByte(ZMachine.H_VERSION, out Main.h_version);
 
-            if (Main.h_version < ZMachine.V1 || Main.h_version > ZMachine.V8)
+            if (Main.h_version is < ZMachine.V1 or > ZMachine.V8)
             {
                 OS.Fatal("Unknown Z-code version");
             }
@@ -389,7 +390,6 @@ namespace Frotz.Generic
 
                 if (Main.h_release == Records[i].Release)
                 {
-
                     for (j = 0; j < 6; j++)
                     {
                         if (Main.h_serial[j] != Records[i].Serial[j])
@@ -446,8 +446,7 @@ namespace Frotz.Generic
 
                 if (Main.StoryId == Story.ZORK_ZERO)
                 {
-                    if (Main.h_release == 96 || Main.h_release == 153 ||
-                        Main.h_release == 242 || Main.h_release == 296)
+                    if (Main.h_release is 96 or 153 or 242 or 296)
                     {
                         Main.h_flags |= ZMachine.GRAPHICS_FLAG;
                     }
@@ -621,8 +620,8 @@ namespace Frotz.Generic
 
             if (!FirstRestart)
             {
-                if (StoryFp == null)
-                    throw new InvalidOperationException("StoryFp not initialized.");
+                if (StoryFp is null)
+                    ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
 
                 StoryFp.Position = InitFpPos;
 
@@ -685,7 +684,7 @@ namespace Frotz.Generic
                     FastMem.LowByte(addr, out zbyte c);
                     addr++;
 
-                    if (c >= 'A' && c <= 'Z')
+                    if (c is >= (zbyte)'A' and <= (zbyte)'Z')
                         c += 'a' - 'A';
 
                     // default_name[i] = c;
@@ -762,13 +761,13 @@ namespace Frotz.Generic
 
                 SaveName = new_name;
 
-                if (StoryFp == null)
-                    throw new InvalidOperationException("StoryFp not initialized.");
+                if (StoryFp is null)
+                    ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
 
                 /* Open game file */
                 using (var gfp = new System.IO.FileStream(new_name, System.IO.FileMode.Open))
                 {
-                    if (gfp == null) goto finished;
+                    if (gfp is null) goto finished;
 
                     if (Main.option_save_quetzal == true)
                     {
@@ -1072,8 +1071,8 @@ namespace Frotz.Generic
 
                 SaveName = new_name;
 
-                if (StoryFp == null)
-                    throw new InvalidOperationException("StoryFp not initialized.");
+                if (StoryFp is null)
+                    ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
 
                 /* Open game file */
 

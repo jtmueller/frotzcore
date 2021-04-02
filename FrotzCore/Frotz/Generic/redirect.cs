@@ -124,7 +124,7 @@ namespace Frotz.Generic
                 {
                     if (redirect[depth].Width + width > redirect[depth].XSize)
                     {
-                        if (s[pos] == ' ' || s[pos] == CharCodes.ZC_INDENT || s[pos] == CharCodes.ZC_GAP)
+                        if (s[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
                             width = OS.StringWidth(s.Slice(++pos));
 
                         MemoryNewline();

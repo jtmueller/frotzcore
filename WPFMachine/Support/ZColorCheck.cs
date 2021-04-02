@@ -9,7 +9,7 @@ namespace WPFMachine
 {
     public class ZColorCheck
     {
-        private static Color C64Blue = Color.FromRgb(66, 66, 231);
+        private static readonly Color C64Blue = Color.FromRgb(66, 66, 231);
 
         public int ColorCode { get; set; }
         public ColorType Type { get; set; }
@@ -20,13 +20,13 @@ namespace WPFMachine
             Type = colorType;
         }
 
-        public bool AreSameColor(ZColorCheck ColorToCompare)
+        public bool AreSameColor(ZColorCheck colorToCompare)
         {
-            if (ColorToCompare == null) return false;
+            if (colorToCompare == null) return false;
 
-            if (ColorToCompare.ColorCode == 0 || ColorCode == 0 && Type == ColorToCompare.Type) return true;
+            if (colorToCompare.ColorCode == 0 || ColorCode == 0 && Type == colorToCompare.Type) return true;
 
-            return ColorToCompare.ColorCode == ColorCode && ColorToCompare.Type == Type;
+            return colorToCompare.ColorCode == ColorCode && colorToCompare.Type == Type;
         }
 
         internal Brush ToBrush() => ZColorToBrush(ColorCode, Type);
@@ -70,7 +70,7 @@ namespace WPFMachine
         private static Color ZColorToColor((int, ColorType) ct)
         {
             var (color, type) = ct;
-            if (color == 0 || color == 1)
+            if (color is 0 or 1)
             {
                 if (type == ColorType.Foreground) return CurrentForeColor;
                 if (type == ColorType.Background) return CurrentBackColor;

@@ -53,7 +53,7 @@ namespace Frotz.Generic
         {
             for (int i = 0; i < s.Length && s[i] != 0; i++)
             {
-                if (s[i] == CharCodes.ZC_NEW_FONT || s[i] == CharCodes.ZC_NEW_STYLE)
+                if (s[i] is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
                     i++;
                 else
                     ScrollBackChar(s[i]);
@@ -297,7 +297,7 @@ namespace Frotz.Generic
 
             /* Verify mouse clicks */
 
-            if (key == CharCodes.ZC_SINGLE_CLICK || key == CharCodes.ZC_DOUBLE_CLICK)
+            if (key is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
             {
                 if (!Screen.ValidateClick())
                     goto continue_input;
@@ -318,7 +318,7 @@ namespace Frotz.Generic
 
             /* Handle hot keys */
 
-            if (hot_keys && key >= CharCodes.ZC_HKEY_MIN && key <= CharCodes.ZC_HKEY_MAX)
+            if (hot_keys && key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
             {
 
                 if (Main.h_version == ZMachine.V4 && key == CharCodes.ZC_HKEY_UNDO)
@@ -372,7 +372,7 @@ namespace Frotz.Generic
 
             /* Verify mouse clicks */
 
-            if (key == CharCodes.ZC_SINGLE_CLICK || key == CharCodes.ZC_DOUBLE_CLICK)
+            if (key is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
             {
                 if (!Screen.ValidateClick())
                     goto continue_input;
@@ -393,7 +393,7 @@ namespace Frotz.Generic
 
             /* Handle hot keys */
 
-            if (hot_keys && key >= CharCodes.ZC_HKEY_MIN && key <= CharCodes.ZC_HKEY_MAX)
+            if (hot_keys && key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
             {
                 if (!Hotkey.HandleHotkey(key))
                     goto continue_input;

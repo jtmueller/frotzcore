@@ -140,11 +140,11 @@ namespace Frotz.Generic
             if (Process.zargc < 3)
                 volume = 8;
 
-            if (number >= 3 || number == 0)
+            if (number is >= 3 or 0)
             {
                 locked = true;
 
-                if (Main.StoryId == Story.LURKING_HORROR && (number == 9 || number == 16))
+                if (Main.StoryId == Story.LURKING_HORROR && (number is 9 or 16))
                 {
                     if (effect == EFFECT_PLAY)
                     {

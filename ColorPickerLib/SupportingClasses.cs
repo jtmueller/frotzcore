@@ -93,13 +93,13 @@ namespace Microsoft.Samples.CustomControls
             };
 
 
-            var colorsList = ColorUtilities.GenerateHsvSpectrum();
-            double stopIncrement = (double)1 / colorsList.Count;
+            var colors = ColorUtilities.GenerateHsvSpectrum();
+            double stopIncrement = (double)1 / colors.Length;
 
             int i;
-            for (i = 0; i < colorsList.Count; i++)
+            for (i = 0; i < colors.Length; i++)
             {
-                _pickerBrush.GradientStops.Add(new GradientStop(colorsList[i], i * stopIncrement));
+                _pickerBrush.GradientStops.Add(new GradientStop(colors[i], i * stopIncrement));
             }
 
             _pickerBrush.GradientStops[i - 1].Offset = 1.0;

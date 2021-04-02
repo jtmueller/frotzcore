@@ -87,12 +87,12 @@ namespace ZTools
 
             var header = txio.header;
 
-            if (header.serial[0] >= '0' && header.serial[0] <= '9' &&
-                header.serial[1] >= '0' && header.serial[1] <= '9' &&
-                header.serial[2] >= '0' && header.serial[2] <= '1' &&
-                header.serial[3] >= '0' && header.serial[3] <= '9' &&
-                header.serial[4] >= '0' && header.serial[4] <= '3' &&
-                header.serial[5] >= '0' && header.serial[5] <= '9' &&
+            if (header.serial[0] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[1] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[2] is >= (byte)'0' and <= (byte)'1' &&
+                header.serial[3] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[4] is >= (byte)'0' and <= (byte)'3' &&
+                header.serial[5] is >= (byte)'0' and <= (byte)'9' &&
                 header.serial[0] != '8')
             {
                 inform = 5;
@@ -285,10 +285,10 @@ namespace ZTools
                         txio.TxPrint("Left arrow");
                     else if (i == 0x84)
                         txio.TxPrint("Right arrow");
-                    else if (i >= 0x85 && i <= 0x90)
-                        txio.TxPrintf("F{0}", (int)(i - 0x84)); /* Function keys */
-                    else if (i >= 0x91 && i <= 0x9a)
-                        txio.TxPrintf("KP{0}", (int)(i - 0x91)); /* Keypad keys */
+                    else if (i is >= 0x85 and <= 0x90)
+                        txio.TxPrintf("F{0}", i - 0x84); /* Function keys */
+                    else if (i is >= 0x91 and <= 0x9a)
+                        txio.TxPrintf("KP{0}", i - 0x91); /* Keypad keys */
                     else if (i == 0xfc)
                         txio.TxPrint("Menu click");
                     else if (i == 0xfd)

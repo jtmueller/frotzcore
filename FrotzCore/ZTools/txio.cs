@@ -797,12 +797,12 @@ namespace ZTools
             /* In V6 games a tab is a paragraph indent gap and a vertical tab is
                an inter-sentence gap. Both can be set to a space for readability */
 
-            if (c == '\v' || c == '\t')
+            if (c is '\v' or '\t')
                 c = ' ';
 
             //    /* European characters should be substituted by their replacements. */
 
-            if (c >= 0x9b && c <= 0xfb)
+            if (c is >= 0x9b and <= 0xfb)
             {
                 WriteHighZscii(c);
                 return;

@@ -6,6 +6,7 @@ namespace Frotz.Screen
 {
     public interface IZScreen
     {
+        [DoesNotReturn]
         void HandleFatalError(string message);
         ScreenMetrics GetScreenMetrics();
         void DisplayChar(char c);

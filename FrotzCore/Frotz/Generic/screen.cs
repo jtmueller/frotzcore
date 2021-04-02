@@ -391,7 +391,7 @@ namespace Frotz.Generic
 
                     while (pos++ < buf.Length && (c = buf[pos]) != 0)
                     {
-                        if (c == CharCodes.ZC_NEW_FONT || c == CharCodes.ZC_NEW_STYLE)
+                        if (c is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
                         {
                             int arg = buf[pos++];
 
@@ -410,7 +410,7 @@ namespace Frotz.Generic
 
                 }
 
-                if (buf[pos] == ' ' || buf[pos] == CharCodes.ZC_INDENT || buf[pos] == CharCodes.ZC_GAP)
+                if (buf[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
                     width = OS.StringWidth(buf.Slice(++pos));
 
                 ScreenNewline();
@@ -1176,7 +1176,7 @@ namespace Frotz.Generic
 
             Buffer.FlushBuffer();
 
-            if ((short)Process.zargs[0] == -1 || (short)Process.zargs[0] == -2)
+            if ((short)Process.zargs[0] is -1 or -2)
                 EraseScreen(Process.zargs[0]);
             else
                 EraseWindow(WinArg0());

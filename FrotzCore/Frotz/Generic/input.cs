@@ -43,12 +43,12 @@ namespace Frotz.Generic
                 return true;
             if (key == CharCodes.ZC_RETURN)
                 return true;
-            if (key >= CharCodes.ZC_HKEY_MIN && key <= CharCodes.ZC_HKEY_MAX)
+            if (key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
                 return true;
 
             if (Main.h_terminating_keys != 0)
             {
-                if (key >= CharCodes.ZC_ARROW_MIN && key <= CharCodes.ZC_MENU_CLICK)
+                if (key is >= CharCodes.ZC_ARROW_MIN and <= CharCodes.ZC_MENU_CLICK)
                 {
 
                     zword addr = Main.h_terminating_keys;
@@ -139,7 +139,7 @@ namespace Frotz.Generic
 
             key = Stream.StreamReadKey(0, 0, false);
 
-            if (key == 'y' || key == 'Y')
+            if (key is 'y' or 'Y')
             {
                 Text.PrintString("y\n");
                 return true;
@@ -188,7 +188,7 @@ namespace Frotz.Generic
 
             for (i = 0; buffer[i] != 0; i++)
             {
-                if (buffer[i] >= '0' && buffer[i] <= '9')
+                if (buffer[i] is >= '0' and <= '9')
                     value = 10 * value + buffer[i] - '0';
             }
 

@@ -31,7 +31,7 @@ namespace WPFMachine
 
             Properties.Settings.Default.Upgrade();
 
-            var b = new Border
+            Border b = new()
             {
                 BorderThickness = new Thickness(1),
                 BorderBrush = Brushes.Black
@@ -135,7 +135,7 @@ namespace WPFMachine
 
             foreach (string s in _lastPlayedGames)
             {
-                var mi = new MenuItem
+                MenuItem mi = new()
                 {
                     Header = s,
                     Tag = s
@@ -163,7 +163,7 @@ namespace WPFMachine
                     if (miGames.Items.Count == 1)
                     {
                         var mi = miGames.Items[0] as MenuItem;
-                        var items = new List<MenuItem>();
+                        var items = new List<MenuItem>(mi.Items.Count);
 
                         foreach (MenuItem i in mi.Items)
                         {
@@ -201,7 +201,7 @@ namespace WPFMachine
             }
         }
 
-        private readonly HashSet<string> _validExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private readonly HashSet<string> _validExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".z1", ".z2", ".z3", ".z4", ".z5", ".z6", ".z7", ".z8", ".zblorb", ".dat"
         };
@@ -211,7 +211,7 @@ namespace WPFMachine
 
         private void AddFilesInPath(DirectoryInfo di, MenuItem parent, bool recurse = true)
         {
-            var miRoot = new MenuItem
+            MenuItem miRoot = new()
             {
                 Header = di.Name
             };
@@ -240,7 +240,7 @@ namespace WPFMachine
 
         private void AddGameItem(FileInfo file, MenuItem parent)
         {
-            var mi = new MenuItem
+            MenuItem mi = new()
             {
                 Header = file.Name,
                 Tag = file.FullName
@@ -416,10 +416,7 @@ namespace WPFMachine
 
         private void MiOptions_Click(object sender, RoutedEventArgs e)
         {
-            var os = new OptionsScreen
-            {
-                Owner = this
-            };
+            OptionsScreen os = new() { Owner = this };
             os.ShowDialog();
 
             _screen.SetFontInfo();
@@ -442,7 +439,7 @@ namespace WPFMachine
 
         private void MiGameInfo_Click(object sender, RoutedEventArgs e)
         {
-            var bm = new BlorbMetadata(_blorbFile)
+            BlorbMetadata bm = new(_blorbFile)
             {
                 Owner = this
             };
@@ -451,10 +448,7 @@ namespace WPFMachine
 
         private void MiAbout_Click(object sender, RoutedEventArgs e)
         {
-            var aw = new AboutWindow
-            {
-                Owner = this
-            };
+            AboutWindow aw = new() { Owner = this };
             aw.ShowDialog();
         }
         #endregion
@@ -515,25 +509,22 @@ namespace WPFMachine
             }
         }
 
-        private void CreateTextBox(TabControl tc, string header, string text)
+        private static void CreateTextBox(TabControl tc, string header, string text)
         {
-            var tb = new TextBox
+            TextBox tb = new()
             {
                 Text = text,
                 FontFamily = new FontFamily("Consolas")
             };
 
-            var sv = new ScrollViewer
-            {
-                Content = tb
-            };
+            ScrollViewer sv = new() { Content = tb };
 
             AddTabItem(tc, header, sv);
         }
 
-        private void AddTabItem(TabControl tc, string header, Control c)
+        private static void AddTabItem(TabControl tc, string header, Control c)
         {
-            var ti = new TabItem
+            TabItem ti = new()
             {
                 Header = header,
                 Content = c
@@ -545,7 +536,7 @@ namespace WPFMachine
         {
             var d = ((Absolute.AbsoluteScreen)_screen).Scrollback.DP;
 
-            var w = new Window
+            Window w = new()
             {
                 Content = d,
                 Owner = this

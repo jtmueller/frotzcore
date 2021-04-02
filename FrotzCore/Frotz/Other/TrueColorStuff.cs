@@ -120,7 +120,7 @@ namespace Frotz.Other
         public static long GetColor(int color)
         {
             // Standard colours
-            if ((color >= ZColor.BLACK_COLOUR) && (color <= ZColor.DARKGREY_COLOUR))
+            if (color is >= ZColor.BLACK_COLOUR and <= ZColor.DARKGREY_COLOUR)
                 return s_colours[color - ZColor.BLACK_COLOUR];
 
             // Default colours
@@ -130,7 +130,7 @@ namespace Frotz.Other
                 return s_defaultBack;
 
             // Non standard colours
-            if ((color >= 18) && (color < 256))
+            if (color is >= 18 and < 256)
             {
                 if (s_nonStdColours[color - 18] != 0xFFFFFFFF)
                     return s_nonStdColours[color - 18];

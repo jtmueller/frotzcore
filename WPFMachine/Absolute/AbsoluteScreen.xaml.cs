@@ -2,9 +2,9 @@
 using Frotz.Blorb;
 using Frotz.Constants;
 using Frotz.Screen;
-using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -810,6 +810,7 @@ namespace WPFMachine.Absolute
 
         public void DisplayMessage(string message, string caption) => MessageBox.Show(message, caption);
 
+        [DoesNotReturn]
         public void HandleFatalError(string message)
         {
             Dispatcher.Invoke(() =>

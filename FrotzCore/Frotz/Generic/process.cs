@@ -309,7 +309,7 @@ namespace Frotz.Generic
                 {	/* VAR opcodes */
                     zbyte specifier1;
 
-                    if (opcode == 0xec || opcode == 0xfa)
+                    if (opcode is 0xec or 0xfa)
                     {	/* opcodes 0xec */
                         FastMem.CodeByte(out specifier1);                  /* and 0xfa are */
                         FastMem.CodeByte(out zbyte specifier2);                  /* call opcodes */

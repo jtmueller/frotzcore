@@ -392,7 +392,7 @@ namespace ZTools
                                 pc += txio.code_scaler;
                                 vars = (char)txio.ReadDataByte(ref pc);
                                 pc--;
-                            } while (vars < 0 || vars > 15);
+                            } while (vars is < 0 or > 15);
                             decode.Pc = pc;
                         }
                         else
@@ -474,7 +474,7 @@ namespace ZTools
                 old_pc = decode.Pc;
                 decode.Pc = RoundCode(decode.Pc);
                 vars = txio.ReadDataByte(ref decode.Pc);
-                if (vars >= 0 && vars <= 15)
+                if (vars is >= 0 and <= 15)
                 {
                     if (option_labels > 0)
                         AddRoutine(decode.Pc - 1);
@@ -1104,7 +1104,7 @@ namespace ZTools
                     break;
 
                 default:
-                    throw new ArgumentException(string.Format("\nFatal: bad class ({0})\n", opcode.OpClass));
+                    throw new ArgumentException($"\nFatal: bad class ({opcode.OpClass})\n");
             }
 
             return (0);
@@ -1147,7 +1147,7 @@ namespace ZTools
                     return 0;
 
                 default:
-                    throw new ArgumentException(string.Format("\nFatal: bad addressing mode ({0})\n", addr_mode));
+                    throw new ArgumentException($"\nFatal: bad addressing mode ({addr_mode})\n");
             }
 
             /*
@@ -1284,14 +1284,14 @@ namespace ZTools
                             addr >= code_base)
                         {
                             vars = txio.ReadDataByte(ref addr);
-                            if (vars >= 0 && vars <= 15)
+                            if (vars is >= 0 and <= 15)
                                 decode.LowAddress = addr - 1;
                         }
                         if (addr > decode.HighAddress &&
                             addr < (ulong)txio.file_size)
                         {
                             vars = txio.ReadDataByte(ref addr);
-                            if (vars >= 0 && vars <= 15)
+                            if (vars is >= 0 and <= 15)
                                 decode.HighAddress = addr - 1;
                         }
                     }

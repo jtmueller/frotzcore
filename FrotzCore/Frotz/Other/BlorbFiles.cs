@@ -1,6 +1,7 @@
 ﻿using Collections.Pooled;
 using Frotz.Constants;
 using Frotz.Screen;
+using Microsoft.Toolkit.Diagnostics;
 using Microsoft.Toolkit.HighPerformance;
 using System;
 using System.Buffers;
@@ -308,7 +309,7 @@ namespace Frotz.Blorb
             ReadChars(stream, chars);
             if (!chars.SequenceEqual(stackalloc char[] { 'F', 'O', 'R', 'M' }))
             {
-                throw new Exception("Not a FORM");
+                ThrowHelper.ThrowInvalidDataException("Not a FORM");
             }
 
             int len = ReadInt(stream);
@@ -316,7 +317,7 @@ namespace Frotz.Blorb
 
             if (!chars.SequenceEqual(stackalloc char[] { 'I', 'F', 'R', 'S' }))
             {
-                throw new Exception("Not an IFRS FORM");
+                ThrowHelper.ThrowInvalidDataException("Not an IFRS FORM");
             }
 
             HandleForm(blorb, stream, (int)stream.Position - 4, len); // Backup over the Form ID so that handle form can read it
@@ -349,14 +350,13 @@ namespace Frotz.Blorb
 
         private static int ReadChars(Stream stream, Span<char> destination)
         {
-            if (destination.Length < 4)
-                throw new ArgumentException("Destination must hold at least four characters.", nameof(destination));
+            Guard.HasSizeGreaterThanOrEqualTo(destination, 4, nameof(destination));
 
             Span<byte> buffer = stackalloc byte[4];
             int read = stream.Read(buffer);
 
             if (read < buffer.Length)
-                throw new InvalidOperationException("Not enough bytes available in stream.");
+                ThrowHelper.ThrowInvalidOperationException("Not enough bytes available in stream.");
 
             return Encoding.UTF8.GetChars(buffer, destination);
         }
@@ -367,7 +367,7 @@ namespace Frotz.Blorb
             int read = stream.Read(buffer);
 
             if (read < buffer.Length)
-                throw new InvalidOperationException("Not enough bytes available in stream.");
+                ThrowHelper.ThrowInvalidOperationException("Not enough bytes available in stream.");
 
             return BinaryPrimitives.ReadInt32BigEndian(buffer);
         }

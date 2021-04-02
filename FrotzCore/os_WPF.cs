@@ -4,6 +4,7 @@ using Frotz.Generic;
 using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
+using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -12,7 +13,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using zbyte = System.Byte;
 using zword = System.UInt16;
@@ -53,7 +53,8 @@ namespace Frotz
         }
 
         private static void Screen_KeyPressed(object? sender, ZKeyPressEventArgs e) => Entries.Enqueue(e.KeyPressed);
-        private static void OnFatalError(string message) => Screen?.HandleFatalError(message);
+
+        private static void OnFatalError(string message) { Screen?.HandleFatalError(message); }
 
         private static void EnqueueWord(string word)
         {
@@ -137,7 +138,7 @@ namespace Frotz
             for (int i = 0; i < chars.Length && chars[i] != 0; i++)
             {
                 c = chars[i];
-                if (c == CharCodes.ZC_NEW_FONT || c == CharCodes.ZC_NEW_STYLE)
+                if (c is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
                 {
                     int arg = chars[++i];
                     if (c == CharCodes.ZC_NEW_FONT)
@@ -209,6 +210,7 @@ namespace Frotz
          * Display error message and stop interpreter.
          *
          */
+        [DoesNotReturn]
         public static void Fatal(string s) => OnFatalError(s);
 
         /*
@@ -413,7 +415,7 @@ namespace Frotz
          */
         public static void MorePrompt()
         {
-            if (Screen == null) return;
+            if (Screen is null) return;
 
             DisplayString("[MORE]");
             Screen.RefreshScreen();
@@ -535,7 +537,7 @@ namespace Frotz
          */
         public static zword ReadLine(int max, Span<zword> buf, int timeout, int width, bool continued)
         {
-            if (Screen == null) throw new InvalidOperationException("Screen has not been set.");
+            if (Screen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
 
             //        ZC_SINGLE_CLICK || ZC_DOUBLE_CLICK
 
@@ -591,7 +593,7 @@ namespace Frotz
                             return c;
                     }
 
-                    if (c == CharCodes.ZC_SINGLE_CLICK || c == CharCodes.ZC_DOUBLE_CLICK)
+                    if (c is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
                     {
                         // Just discard mouse clicks here
                         continue;
@@ -745,7 +747,7 @@ namespace Frotz
          */
         public static zword ReadKey(int timeout, bool cursor)
         {
-            if (Screen == null) throw new InvalidOperationException("Screen has not been set.");
+            if (Screen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
 
             Screen.RefreshScreen();
 
@@ -838,7 +840,7 @@ namespace Frotz
          */
         public static void ResetScreen()
         {
-            if (Screen == null) return;
+            if (Screen is null) return;
 
             Screen.Clear();
 
@@ -857,7 +859,7 @@ namespace Frotz
          */
         public static void ScrollArea(int top, int left, int bottom, int right, int units)
         {
-            if (Screen == null) return;
+            if (Screen is null) return;
 
             // TODO This version can scroll better
 
@@ -963,7 +965,7 @@ namespace Frotz
          */
         public static int StringWidth(ReadOnlySpan<zword> s)
         {
-            if (Screen == null) throw new InvalidOperationException("Screen not initialized.");
+            if (Screen is null) ThrowHelper.ThrowInvalidOperationException("Screen not initialized.");
 
             using var sb = new ValueStringBuilder();
             int font = -1;
@@ -975,7 +977,7 @@ namespace Frotz
             for (int i = 0; i < s.Length && s[i] != 0; i++)
             {
                 c = s[i];
-                if (c == CharCodes.ZC_NEW_FONT || c == CharCodes.ZC_NEW_STYLE)
+                if (c is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
                 {
                     i++;
                     if (width == 0)
@@ -1039,7 +1041,7 @@ namespace Frotz
          */
         public static zword PeekColor()
         {
-            if (Screen == null) throw new InvalidOperationException("Screen has not been set.");
+            if (Screen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
             return Screen.PeekColor();
         }
 
@@ -1083,7 +1085,7 @@ namespace Frotz
                     }
                     else
                     {
-                        if (Screen == null) throw new InvalidOperationException("Screen has not been set.");
+                        if (Screen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
                         (height, width) = Screen.GetImageInfo(buffer);
                     }
 
@@ -1162,34 +1164,28 @@ namespace Frotz
          */
         public static MemoryStream PathOpen(zbyte[] story_data)
         {
-            // System.IO.FileInfo fi = new System.IO.FileInfo(FileName);
-            if (story_data.Length < 4)
+            Guard.HasSizeGreaterThanOrEqualTo(story_data, 4, nameof(story_data));
+
+            if (story_data.AsSpan(..4).SequenceEqual(General.FormBytes))
             {
-                throw new ArgumentException("story_data isn't long enough");
+                BlorbFile = Blorb.BlorbReader.ReadBlorbFile(story_data);
+
+                var stream = new MemoryStream(BlorbFile.ZCode);
+                return stream;
             }
             else
             {
-                if (story_data.AsSpan(..4).SequenceEqual(General.FormBytes))
+                string? temp = Path.ChangeExtension(Main.StoryName, "blb");
+                BlorbFile = null;
+
+                if (!string.IsNullOrEmpty(temp) && File.Exists(temp))
                 {
-                    BlorbFile = Blorb.BlorbReader.ReadBlorbFile(story_data);
-
-                    var stream = new MemoryStream(BlorbFile.ZCode);
-                    return stream;
+                    using var fs = File.OpenRead(temp);
+                    BlorbFile = Blorb.BlorbReader.ReadBlorbFile(fs);
                 }
-                else
-                {
-                    string? temp = Path.ChangeExtension(Main.StoryName, "blb");
-                    BlorbFile = null;
 
-                    if (!string.IsNullOrEmpty(temp) && File.Exists(temp))
-                    {
-                        using var fs = File.OpenRead(temp);
-                        BlorbFile = Blorb.BlorbReader.ReadBlorbFile(fs);
-                    }
-
-                    var stream = new MemoryStream(story_data);
-                    return stream;
-                }
+                var stream = new MemoryStream(story_data);
+                return stream;
             }
         }
 
@@ -1329,19 +1325,17 @@ namespace Frotz
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsValidChar(zword c)
         {
-            if (c >= CharCodes.ZC_ASCII_MIN && c <= CharCodes.ZC_ASCII_MAX)
+            if (c is >= CharCodes.ZC_ASCII_MIN and <= CharCodes.ZC_ASCII_MAX)
                 return true;
-            if (c >= CharCodes.ZC_LATIN1_MIN && c <= CharCodes.ZC_LATIN1_MAX)
+            if (c is >= CharCodes.ZC_LATIN1_MIN and <= CharCodes.ZC_LATIN1_MAX)
                 return true;
-            if (c >= 0x100)
-                return true;
-            return false;
+            return c >= 0x100;
         }
 
         public static void GameStarted()
         {
-            if (Screen == null || Main.StoryName == null)
-                throw new InvalidOperationException("Game not properly initialized.");
+            if (Screen is null || Main.StoryName is null)
+                ThrowHelper.ThrowInvalidOperationException("Game not properly initialized.");
 
             Screen.StoryStarted(Main.StoryName, BlorbFile);
         }

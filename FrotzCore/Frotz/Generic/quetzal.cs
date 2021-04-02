@@ -21,9 +21,9 @@ using Frotz.Constants;
 using Frotz.Other;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.IO;
+using System.Runtime.CompilerServices;
 using zbyte = System.Byte;
 using zlong = System.UInt32;
 using zword = System.UInt16;
@@ -68,44 +68,47 @@ namespace Frotz.Generic
             return true;
         }
 
-        private static bool WriteByte(FileStream fp, int b)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool WriteByte(FileStream fp, byte b)
         {
-            fp.WriteByte((byte)b);
+            fp.WriteByte(b);
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool WriteBytx(FileStream fp, int b)
         {
-            WriteByte(fp, (b) & 0xFF);
+            WriteByte(fp, (byte)(b & 0xFF));
             return true;
         }
 
         private static bool WriteWord(FileStream fp, zword w)
         {
-            WriteBytx(fp, w >> 8);
-            WriteBytx(fp, w);
+            WriteByte(fp, (byte)(w >> 8));
+            WriteByte(fp, (byte)(w & 0xFF));
             return true;
         }
 
         private static bool WriteWord(FileStream fp, int w)
         {
-            WriteBytx(fp, w >> 8);
-            WriteBytx(fp, w);
+            WriteByte(fp, (byte)(w >> 8));
+            WriteByte(fp, (byte)(w & 0xFF));
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool WriteBytx(FileStream fp, long b)
         {
             WriteByte(fp, (byte)(b & 0xFF));
             return true;
         }
 
-        private static bool WriteLong(FileStream fp, long l)
+        private static bool WriteLong(FileStream fp, long x)
         {
-            WriteBytx(fp, (l) >> 24);
-            WriteBytx(fp, (l) >> 16);
-            WriteBytx(fp, (l) >> 8);
-            WriteBytx(fp, (l));
+            WriteByte(fp, (byte)(x >> 24));
+            WriteByte(fp, (byte)(x >> 16));
+            WriteByte(fp, (byte)(x >> 8));
+            WriteByte(fp, (byte)(x & 0xFF));
             return true;
         }
 
@@ -116,7 +119,6 @@ namespace Frotz.Generic
 
             return true;
         }
-
 
         /* Read one word from file; return TRUE if OK. */
         private static bool TryReadWord(FileStream fs, out zword result)
@@ -182,8 +184,8 @@ namespace Frotz.Generic
             {
                 /* Read chunk header. */
                 if (ifzslen < 8) /* Couldn't contain a chunk. */	return 0;
-                if (!TryReadLong(svf, out tmpl)
-                    || !TryReadLong(svf, out currlen))
+                if (!TryReadLong(svf, out tmpl) ||
+                    !TryReadLong(svf, out currlen))
                 {
                     return 0;
                 }
@@ -594,7 +596,7 @@ namespace Frotz.Generic
                 /* Write the main part of the frame... */
                 if (!WriteLong(svf, pc) ||
                     !WriteByte(svf, var) ||
-                    !WriteByte(svf, nargs) ||
+                    !WriteByte(svf, (byte)nargs) ||
                     !WriteWord(svf, nstk))
                 {
                     return 0;

@@ -100,12 +100,12 @@ namespace Frotz.Generic
 
                     /* Flush the buffer before a whitespace or after a hyphen */
 
-                    if (c == ' ' || c == CharCodes.ZC_INDENT || c == CharCodes.ZC_GAP || (prev_c == '-' && c != '-'))
+                    if ((c is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP) || (prev_c == '-' && c != '-'))
                         FlushBuffer();
 
                     /* Set the flag if this is part one of a style or font change */
 
-                    if (c == CharCodes.ZC_NEW_FONT || c == CharCodes.ZC_NEW_STYLE)
+                    if (c is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
                         PrintCharFlag = true;
 
                     /* Remember the current character code */

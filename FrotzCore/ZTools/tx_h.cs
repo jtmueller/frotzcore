@@ -254,7 +254,7 @@ namespace ZTools
 
         ///* Grammar related defines */
 
-        internal enum ParserTypes
+        internal enum ParserTypes : uint
         {
             InfocomFixed,
             InfocomVariable,
@@ -269,16 +269,16 @@ namespace ZTools
 
         // internal static int VERB_NUM(index, = parser_type) (((parser_type) >= inform_gv2a)?(index):((uint)(255-(index))));
 
-        internal static uint PREP = 0x08;
-        internal static uint DESC = 0x20;   	/* infocom V1-5 only -- actually an adjective. */
-        internal static uint NOUN = 0x80;
-        internal static uint VERB = 0x40;   	/* infocom V1-5 only */
-        internal static uint DIR = 0x10;    	/* infocom V1-5 only */
-        internal static uint VERB_INFORM = 0x01;
-        internal static uint VERB_V6 = 0x01;
-        internal static uint PLURAL = 0x04; 	/* inform only */
-        internal static uint SPECIAL = 0x04; 	/* infocom V1-5 only */
-        internal static uint META = 0x02;   	/* infocom V1-5 only */
+        internal const uint PREP = 0x08;
+        internal const uint DESC = 0x20;   	/* infocom V1-5 only -- actually an adjective. */
+        internal const uint NOUN = 0x80;
+        internal const uint VERB = 0x40;   	/* infocom V1-5 only */
+        internal const uint DIR = 0x10;    	/* infocom V1-5 only */
+        internal const uint VERB_INFORM = 0x01;
+        internal const uint VERB_V6 = 0x01;
+        internal const uint PLURAL = 0x04; 	/* inform only */
+        internal const uint SPECIAL = 0x04; 	/* infocom V1-5 only */
+        internal const uint META = 0x02;   	/* infocom V1-5 only */
         internal const uint DATA_FIRST = 0x03; 	/* infocom V1-5 only */
         internal const uint DIR_FIRST = 0x03;  	/* infocom V1-5 only */
         internal const uint ADJ_FIRST = 0x02;  	/* infocom V1-5 only */

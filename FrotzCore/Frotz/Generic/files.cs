@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 using Frotz.Constants;
+using Microsoft.Toolkit.Diagnostics;
 using System;
 using zword = System.UInt16;
 
@@ -165,7 +166,7 @@ namespace Frotz.Generic
 
             for (i = pos, width = 0; i < s.Length && s[i] != 0; i++)
             {
-                if (s[i] == CharCodes.ZC_NEW_STYLE || s[i] == CharCodes.ZC_NEW_FONT)
+                if (s[i] is CharCodes.ZC_NEW_STYLE or CharCodes.ZC_NEW_FONT)
                     i++;
                 else if (s[i] == CharCodes.ZC_GAP)
                     width += 3;
@@ -177,8 +178,7 @@ namespace Frotz.Generic
 
             if (Main.option_script_cols != 0 && ScriptWidth + width > Main.option_script_cols)
             {
-
-                if (s[pos] == ' ' || s[pos] == CharCodes.ZC_INDENT || s[pos] == CharCodes.ZC_GAP)
+                if (s[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
                     pos++;
 
                 ScriptNewLine();
@@ -186,7 +186,7 @@ namespace Frotz.Generic
 
             for (i = pos; i < s.Length && s[i] != 0; i++)
             {
-                if (s[i] == CharCodes.ZC_NEW_FONT || s[i] == CharCodes.ZC_NEW_STYLE)
+                if (s[i] is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
                     i++;
                 else
                     ScriptChar(s[i]);
@@ -320,10 +320,10 @@ namespace Frotz.Generic
 
         private static void RecordCode(int c, bool force_encoding)
         {
-            if (Rfp == null)
-                throw new InvalidOperationException("Rfp not initialized.");
+            if (Rfp is null)
+                ThrowHelper.ThrowInvalidOperationException("Rfp not initialized.");
 
-            if (force_encoding || c == '[' || c < 0x20 || c > 0x7e)
+            if (force_encoding || (c is '[' or < 0x20 or > 0x7e))
             {
                 int i;
 
@@ -356,11 +356,11 @@ namespace Frotz.Generic
 
             if (c != CharCodes.ZC_RETURN)
             {
-                if (c < CharCodes.ZC_HKEY_MIN || c > CharCodes.ZC_HKEY_MAX)
+                if (c is < CharCodes.ZC_HKEY_MIN or > CharCodes.ZC_HKEY_MAX)
                 {
                     RecordCode(Text.TranslateToZscii(c), false);
 
-                    if (c == CharCodes.ZC_SINGLE_CLICK || c == CharCodes.ZC_DOUBLE_CLICK)
+                    if (c is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
                     {
                         RecordCode(Main.MouseX, true);
                         RecordCode(Main.MouseY, true);
@@ -469,8 +469,8 @@ namespace Frotz.Generic
 
         private static int ReplayCode()
         {
-            if (Pfp == null)
-                throw new InvalidOperationException("Pfp not initialized.");
+            if (Pfp is null)
+                ThrowHelper.ThrowInvalidOperationException("Pfp not initialized");
 
             int c;
 
@@ -478,7 +478,7 @@ namespace Frotz.Generic
             {
                 int c2;
                 c = 0;
-                while ((c2 = Pfp.ReadByte()) != -1 && c2 >= '0' && c2 <= '9')
+                while ((c2 = Pfp.ReadByte()) is not -1 and >= '0' and <= '9')
                     c = 10 * c + c2 - '0';
 
                 return (c2 == ']') ? c : -1;
@@ -498,8 +498,8 @@ namespace Frotz.Generic
 
         private static zword ReplayChar()
         {
-            if (Pfp == null)
-                throw new InvalidOperationException("Pfp not initialized.");
+            if (Pfp is null)
+                ThrowHelper.ThrowInvalidOperationException("Pfp not initialized.");
 
             int c;
             if ((c = ReplayCode()) != -1)
@@ -510,7 +510,7 @@ namespace Frotz.Generic
                     {
                         c = Text.TranslateFromZscii((byte)c);
 
-                        if (c == CharCodes.ZC_SINGLE_CLICK || c == CharCodes.ZC_DOUBLE_CLICK)
+                        if (c is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
                         {
                             Main.MouseX = (zword)ReplayCode();
                             Main.MouseY = (zword)ReplayCode();

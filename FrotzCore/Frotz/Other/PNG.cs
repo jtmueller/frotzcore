@@ -1,5 +1,6 @@
 ﻿// This is a very quick hack to allow me to use the Adaptive Palatte stuff
 
+using Microsoft.Toolkit.Diagnostics;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
@@ -45,7 +46,7 @@ namespace Frotz.Other
 
             if (!buffer.SequenceEqual(Header))
             {
-                throw new ArgumentException("Not a valid PNG file");
+                ThrowHelper.ThrowArgumentException("Not a valid PNG file");
             }
 
             while (stream.Position < stream.Length)

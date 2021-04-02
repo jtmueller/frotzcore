@@ -37,21 +37,21 @@ namespace WPFMachine.Absolute
             {
                 Content = "Copy Text To Clipboard"
             };
-            bCopyText.Click += new RoutedEventHandler(bCopyText_Click);
+            bCopyText.Click += new RoutedEventHandler(CopyText_Click);
             sp.Children.Add(bCopyText);
 
             var bSaveRtf = new Button
             {
                 Content = "Save RTF"
             };
-            bSaveRtf.Click += new RoutedEventHandler(bSaveRtf_Click);
+            bSaveRtf.Click += new RoutedEventHandler(SaveRtf_Click);
             sp.Children.Add(bSaveRtf);
 
             var bSaveText = new Button
             {
                 Content = "Save Text"
             };
-            bSaveText.Click += new RoutedEventHandler(bSaveText_Click);
+            bSaveText.Click += new RoutedEventHandler(SaveText_Click);
             sp.Children.Add(bSaveText);
 
             var sv = new ScrollViewer();
@@ -93,11 +93,11 @@ namespace WPFMachine.Absolute
             range.Save(fs, Format, true);
         }
 
-        private void bSaveText_Click(object sender, RoutedEventArgs e) => SaveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
+        private void SaveText_Click(object sender, RoutedEventArgs e) => SaveFile("Text (*.txt)|*.txt", System.Windows.DataFormats.Text);
 
-        private void bSaveRtf_Click(object sender, RoutedEventArgs e) => SaveFile("Rich Text Format (*.rtf)|*.rtf", System.Windows.DataFormats.Rtf);
+        private void SaveRtf_Click(object sender, RoutedEventArgs e) => SaveFile("Rich Text Format (*.rtf)|*.rtf", System.Windows.DataFormats.Rtf);
 
-        private void bCopyText_Click(object sender, RoutedEventArgs e)
+        private void CopyText_Click(object sender, RoutedEventArgs e)
         {
             var range = new TextRange(_RTB.Document.ContentStart, _RTB.Document.ContentEnd);
             Clipboard.SetText(range.Text);

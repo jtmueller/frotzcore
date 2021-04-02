@@ -1,4 +1,5 @@
 ﻿using Collections.Pooled;
+using Microsoft.Toolkit.Diagnostics;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Collections.Generic;
@@ -7,8 +8,8 @@ namespace Frotz.Screen
 {
     public class LineInfo : IDisposable
     {
-        private MemoryOwner<char> _chars;
-        private MemoryOwner<CharDisplayInfo> _styles;
+        private readonly MemoryOwner<char> _chars;
+        private readonly MemoryOwner<CharDisplayInfo> _styles;
         private readonly int _width;
         private readonly object _lockObj = new();
         private PooledList<FontChanges>? _changes;
@@ -33,7 +34,7 @@ namespace Frotz.Screen
         public void SetChar(int pos, char c, CharDisplayInfo FandS = default)
         {
             if ((uint)pos >= (uint)_width)
-                throw new IndexOutOfRangeException(nameof(pos));
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(pos));
 
             lock (_lockObj)
             {
@@ -49,10 +50,10 @@ namespace Frotz.Screen
         public void SetChars(int pos, ReadOnlySpan<char> chars, CharDisplayInfo FandS = default)
         {
             if ((uint)pos >= (uint)_width)
-                throw new IndexOutOfRangeException(nameof(pos));
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(pos));
 
             if ((uint)pos + chars.Length >= (uint)_width)
-                throw new ArgumentOutOfRangeException(nameof(chars), "Too many charse to fit in line.");
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(chars), "Too many chars to fit in line.");
 
             lock (_lockObj)
             {

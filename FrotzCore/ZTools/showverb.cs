@@ -189,12 +189,12 @@ namespace ZTools
 
             var header = txio.header;
 
-            if (header.serial[0] >= '0' && header.serial[0] <= '9' &&
-                header.serial[1] >= '0' && header.serial[1] <= '9' &&
-                header.serial[2] >= '0' && header.serial[2] <= '1' &&
-                header.serial[3] >= '0' && header.serial[3] <= '9' &&
-                header.serial[4] >= '0' && header.serial[4] <= '3' &&
-                header.serial[5] >= '0' && header.serial[5] <= '9' &&
+            if (header.serial[0] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[1] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[2] is >= (byte)'0' and <= (byte)'1' &&
+                header.serial[3] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[4] is >= (byte)'0' and <= (byte)'3' &&
+                header.serial[5] is >= (byte)'0' and <= (byte)'9' &&
                 header.serial[0] != '8')
             {
                 parser_type = (uint)TxH.ParserTypes.Inform5Grammar;
@@ -417,7 +417,7 @@ namespace ZTools
                         for (j = 0; j < 6; j++)
                         {
                             val = txio.ReadDataByte(ref verb_entry);
-                            if (val < 16 || val >= 112)
+                            if (val is < 16 or >= 112)
                                 continue;
                             parse_index = (val - 16) % 32;
                             if (parse_index > parse_count)
@@ -1157,7 +1157,7 @@ namespace ZTools
             if (word_address == 0)
             {
                 txio.TxPrint(" no-");
-                if ((type == TxH.VERB) || (type == TxH.VERB_V6))
+                if (type is TxH.VERB or TxH.VERB_V6)
                     txio.TxPrint("verb");
                 if (type == TxH.PREP)
                     txio.TxPrint("preposition");
@@ -1382,19 +1382,19 @@ namespace ZTools
                         {
                             txio.TxPrint("NUMBER");
                         }
-                        else if (val >= 16 && val < 48)
+                        else if (val is >= 16 and < 48)
                         {
                             txio.TxPrintf("NOUN [parse {0}]", val - 16);
                         }
-                        else if (val >= 48 && val < 80)
+                        else if (val is >= 48 and < 80)
                         {
                             txio.TxPrintf("TEXT [parse {0}]", val - 48);
                         }
-                        else if (val >= 80 && val < 112)
+                        else if (val is >= 80 and < 112)
                         {
                             txio.TxPrintf("SCOPE [parse {0}]", val - 80);
                         }
-                        else if (val >= 128 && val < 176)
+                        else if (val is >= 128 and < 176)
                         {
                             txio.TxPrint("ATTRIBUTE(");
                             if (Symbols.PrintAttributeName(attr_names_base, (int)(val - 128)) == 0)
@@ -1617,11 +1617,11 @@ namespace ZTools
                 if ((flags & mask) > 0)
                 {
 
-                    if ((parser_type == (int)TxH.ParserTypes.Infocom6Grammar) || (parser_type >= (int)TxH.ParserTypes.InformGV2a))
+                    if (parser_type is (uint)TxH.ParserTypes.Infocom6Grammar or >= (uint)TxH.ParserTypes.InformGV2a)
                     {
                         data = txio.ReadDataWord(ref address);
                     }
-                    else if (parser_type <= (int)TxH.ParserTypes.InformGV1)
+                    else if (parser_type <= (uint)TxH.ParserTypes.InformGV1)
                     {
                         /* Infocom, Inform 5, GV1.	Verbs only for Inform */
                         /* Read the data for the word */

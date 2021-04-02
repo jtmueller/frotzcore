@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 using Frotz.Constants;
+using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.Text;
 using zbyte = System.Byte;
@@ -273,8 +274,8 @@ namespace Frotz.Generic
 
         internal static void LoadString(zword addr, zword length)
         {
-            if (Decoded == null)
-                throw new InvalidOperationException("Decoded not initailized");
+            if (Decoded is null)
+                ThrowHelper.ThrowInvalidOperationException("Decoded not initialized");
 
             int i = 0;
 
@@ -325,8 +326,8 @@ namespace Frotz.Generic
 
             if (Resolution == 0) FindResolution();
 
-            if (Decoded == null || Encoded == null)
-                throw new InvalidOperationException("Encoding not initailized");
+            if (Decoded is null || Encoded is null)
+                ThrowHelper.ThrowInvalidOperationException("Decoded or Endoded not initialized");
 
             Span<zbyte> zchars = stackalloc zbyte[3 * (Resolution + 1)];
             //                ptr = decoded;
@@ -427,7 +428,7 @@ namespace Frotz.Generic
 
             if (c <= 0x1f)
             {
-                if ((c == 0x08) || (c == 0x0d) || (c == 0x1b))
+                if (c is 0x08 or 0x0d or 0x1b)
                     result = 2;
             }
             else
@@ -457,8 +458,8 @@ namespace Frotz.Generic
             LoadString((zword)(Process.zargs[0] + Process.zargs[2]), Process.zargs[1]);
             EncodeText(0x05);
 
-            if (Encoded == null)
-                throw new InvalidOperationException("Encoding not initailized");
+            if (Encoded is null)
+                ThrowHelper.ThrowInvalidOperationException("Encoding not initialized.");
 
             for (int i = 0; i < Resolution; i++)
                 FastMem.StoreW((zword)(Process.zargs[3] + 2 * i), Encoded[i]);
@@ -531,12 +532,12 @@ namespace Frotz.Generic
                 int i;
                 /* Fetch the next 16bit word */
 
-                if (st == StringType.LOW_STRING || st == StringType.VOCABULARY)
+                if (st is StringType.LOW_STRING or StringType.VOCABULARY)
                 {
                     FastMem.LowWord(addr, out code);
                     addr += 2;
                 }
-                else if (st == StringType.HIGH_STRING || st == StringType.ABBREVIATION)
+                else if (st is StringType.HIGH_STRING or StringType.ABBREVIATION)
                 {
                     FastMem.HighWord(byte_addr, out code);
                     byte_addr += 2;
@@ -868,8 +869,8 @@ namespace Frotz.Generic
 
             Text.EncodeText(padding);
 
-            if (Encoded == null)
-                throw new InvalidOperationException("Encoding not initailized");
+            if (Encoded is null)
+                ThrowHelper.ThrowInvalidOperationException("Encoding not initialized.");
 
             FastMem.LowByte(dct, out zbyte sep_count);		/* skip word separators */
             dct += (zword)(1 + sep_count);
@@ -1129,8 +1130,8 @@ namespace Frotz.Generic
             int len;
             int i;
 
-            if (Decoded == null)
-                throw new InvalidOperationException("Encoding not initialized");
+            if (Decoded is null)
+                ThrowHelper.ThrowInvalidOperationException("Decoded not initialized.");
 
             for (int j = 0; j < Decoded.Length; j++)
             {
@@ -1262,9 +1263,9 @@ namespace Frotz.Generic
                 c = 0x00FF;	/* Capital Y diaeresis -> lower case y diaeresis */
             else if (c < 0x0180)
                 c = (zword)(tolower_latin_extended_a[c - 0x100] + 0x100);
-            else if (c >= 0x380 && c < 0x3D0)
+            else if (c is >= 0x380 and < 0x3D0)
                 c = (zword)(tolower_greek[c - 0x380] + 0x300);
-            else if (c >= 0x400 && c < 0x460)
+            else if (c is >= 0x400 and < 0x460)
                 c = (zword)(tolower_cyrillic[c - 0x400] + 0x400);
 
             return c;

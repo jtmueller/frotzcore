@@ -36,12 +36,12 @@ namespace ZTools
             if (header == null)
                 throw new InvalidOperationException("txio header was not initialized");
 
-            if (header.serial[0] >= '0' && header.serial[0] <= '9' &&
-                header.serial[1] >= '0' && header.serial[1] <= '9' &&
-                header.serial[2] >= '0' && header.serial[2] <= '1' &&
-                header.serial[3] >= '0' && header.serial[3] <= '9' &&
-                header.serial[4] >= '0' && header.serial[4] <= '3' &&
-                header.serial[5] >= '0' && header.serial[5] <= '9' &&
+            if (header.serial[0] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[1] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[2] is >= (byte)'0' and <= (byte)'1' &&
+                header.serial[3] is >= (byte)'0' and <= (byte)'9' &&
+                header.serial[4] is >= (byte)'0' and <= (byte)'3' &&
+                header.serial[5] is >= (byte)'0' and <= (byte)'9' &&
                 header.serial[0] != '8')
             {
                 if (header.name[4] >= '6')
