@@ -882,13 +882,16 @@ namespace ZTools
 
         internal static string GetTextFromStringBuilder()
         {
-            for (int i = sb.Length - 1; i >= 0; --i)
+            int len = sb.Length;
+            for (int i = len - 1; i >= 0; --i)
             {
                 if (sb[i] == '\0')
-                    sb.Length--;
+                    len--;
                 else
                     break;
             }
+            if (len < sb.Length)
+                sb.Length = len;
 
             string text = sb.ToString();
             sb.Length = 0;
