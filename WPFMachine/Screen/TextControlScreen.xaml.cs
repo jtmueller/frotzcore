@@ -602,7 +602,8 @@ namespace WPFMachine.Screen
                      "Infocom Blorb File (*.zblorb)|*.zblorb",
                      "Infocom Games (*.dat)|*.dat",
                      "Z-Code Files (*.z?)|*.z?",
-                     "Blorb File (*.blorb)|*.blorb")
+                     "Blorb File (*.blorb)|*.blorb"
+                    )
                 };
 
 

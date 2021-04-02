@@ -23,7 +23,7 @@ namespace Microsoft.Samples.CustomControls
         private static readonly string s_colorSliderName = "PART_ColorSlider";
         private FrameworkElement _colorDetail;
         private static readonly string s_colorDetailName = "PART_ColorDetail";
-        private readonly TranslateTransform _markerTransform = new TranslateTransform();
+        private readonly TranslateTransform _markerTransform = new();
         private Path _colorMarker;
         private static readonly string s_colorMarkerName = "PART_ColorMarker";
         private Point? _colorPosition;

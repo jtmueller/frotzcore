@@ -2,6 +2,7 @@
 using Frotz.Blorb;
 using Frotz.Constants;
 using Frotz.Screen;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -661,7 +662,7 @@ namespace WPFMachine.Absolute
 
                 byte[] buffer = image;
 
-                if (OS.BlorbFile.AdaptivePalatte != null && OS.BlorbFile.AdaptivePalatte.Count > 0)
+                if (OS.BlorbFile.AdaptivePalette?.Count > 0)
                 {
                     try
                     {
@@ -669,7 +670,7 @@ namespace WPFMachine.Absolute
                         using var readMS = new MemoryStream(image);
                         var p = new Frotz.Other.PNG(readMS);
 
-                        if (OS.BlorbFile.AdaptivePalatte.Contains(picture))
+                        if (OS.BlorbFile.AdaptivePalette.Contains(picture))
                         {
                             if (PaletteChunk == null) throw new ArgumentException("No last palette");
                             p.Chunks["PLTE"] = PaletteChunk;

@@ -1,14 +1,14 @@
 ﻿using Collections.Pooled;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 
 namespace Frotz.Screen
 {
     public class LineInfo : IDisposable
     {
-        private char[] _chars;
-        private CharDisplayInfo[] _styles;
+        private MemoryOwner<char> _chars;
+        private MemoryOwner<CharDisplayInfo> _styles;
         private readonly int _width;
         private readonly object _lockObj = new();
         private PooledList<FontChanges>? _changes;
@@ -19,14 +19,11 @@ namespace Frotz.Screen
 
         public LineInfo(int lineWidth)
         {
-            _chars = ArrayPool<char>.Shared.Rent(lineWidth);
-            _styles = ArrayPool<CharDisplayInfo>.Shared.Rent(lineWidth);
+            _chars = MemoryOwner<char>.Allocate(lineWidth);
+            _styles = MemoryOwner<CharDisplayInfo>.Allocate(lineWidth);
 
-            for (int i = 0; i < lineWidth; i++)
-            {
-                _chars[i] = ' ';
-                _styles[i] = default;
-            }
+            _chars.Span.Fill(' ');
+            _styles.Span.Fill(default);
 
             _width = lineWidth;
 
@@ -40,10 +37,30 @@ namespace Frotz.Screen
 
             lock (_lockObj)
             {
-                _chars[pos] = c;
-                _styles[pos] = FandS;
+                _chars.Span[pos] = c;
+                _styles.Span[pos] = FandS;
                 LastCharSet = Math.Max(pos, LastCharSet);
 
+                _changes?.Dispose();
+                _changes = null;
+            }
+        }
+
+        public void SetChars(int pos, ReadOnlySpan<char> chars, CharDisplayInfo FandS = default)
+        {
+            if ((uint)pos >= (uint)_width)
+                throw new IndexOutOfRangeException(nameof(pos));
+
+            if ((uint)pos + chars.Length >= (uint)_width)
+                throw new ArgumentOutOfRangeException(nameof(chars), "Too many charse to fit in line.");
+
+            lock (_lockObj)
+            {
+                chars.CopyTo(_chars.Span[pos..]);
+                _styles.Span[pos..].Fill(FandS);
+                LastCharSet = Math.Max(pos + chars.Length, LastCharSet);
+
+                _changes?.Dispose();
                 _changes = null;
             }
         }
@@ -72,17 +89,11 @@ namespace Frotz.Screen
 
         public void ClearChar(int pos) => SetChar(pos, ' ');
 
-        public ReadOnlySpan<char> CurrentChars => _chars.AsSpan(0, LastCharSet + 1);
+        public ReadOnlySpan<char> CurrentChars => _chars.Span[..(LastCharSet + 1)];
 
         public void Replace(int start, ReadOnlySpan<char> newString)
         {
-            lock (_lockObj)
-            {
-                for (int i = 0; i < newString.Length; i++)
-                {
-                    SetChar(start + i, newString[i]);
-                }
-            }
+            SetChars(start, newString);
         }
 
         public IReadOnlyList<FontChanges> GetTextWithFontInfo()
@@ -97,11 +108,12 @@ namespace Frotz.Screen
                         var chars = CurrentChars;
 
                         var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
+                        var styles = _styles.Span;
                         for (int i = 0; i < _width; i++)
                         {
-                            if (!_styles[i].Equals(fc.FontAndStyle))
+                            if (!styles[i].Equals(fc.FontAndStyle))
                             {
-                                fc = new FontChanges(i, _width, _styles[i]);
+                                fc = new FontChanges(i, _width, styles[i]);
                                 fc.AddChar(chars[i]);
                                 _changes.Add(fc);
                             }
@@ -117,30 +129,20 @@ namespace Frotz.Screen
             return _changes;
         }
 
-        public ReadOnlySpan<char> GetChars() => _chars.AsSpan(0, _width);
+        public ReadOnlySpan<char> GetChars() => _chars.Span[.._width];
 
-        public ReadOnlySpan<char> GetChars(int start, int length) => _chars.AsSpan(start, length);
+        public ReadOnlySpan<char> GetChars(int start, int length) => _chars.Span.Slice(start, length);
 
         public override string ToString() => GetChars().ToString();
 
-        public CharDisplayInfo GetFontAndStyle(int column) => _styles[column];
+        public CharDisplayInfo GetFontAndStyle(int column) => _styles.Span[column];
 
         public void Dispose()
         {
             GC.SuppressFinalize(this);
 
-            if (_styles.Length > 0)
-            {
-                ArrayPool<CharDisplayInfo>.Shared.Return(_styles);
-                _styles = Array.Empty<CharDisplayInfo>();
-            }
-
-            if (_chars.Length > 0)
-            {
-                ArrayPool<char>.Shared.Return(_chars);
-                _chars = Array.Empty<char>();
-            }
-
+            _styles.Dispose();
+            _chars.Dispose();
             _changes?.Dispose();
         }
     }

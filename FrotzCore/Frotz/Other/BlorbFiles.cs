@@ -1,6 +1,7 @@
 ﻿using Collections.Pooled;
 using Frotz.Constants;
 using Frotz.Screen;
+using Microsoft.Toolkit.HighPerformance;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -18,7 +19,7 @@ namespace Frotz.Blorb
         {
             Pictures = new Dictionary<int, BlorbPicture>();
             Sounds = new Dictionary<int, byte[]>();
-            AdaptivePalatte = new List<int>();
+            AdaptivePalette = new List<int>();
 
             ReleaseNumber = 0;
 
@@ -43,7 +44,7 @@ namespace Frotz.Blorb
         public ZSize MaxSize { get; set; }
         public ZSize MinSize { get; set; }
 
-        public List<int> AdaptivePalatte { get; private init; }
+        public List<int> AdaptivePalette { get; private init; }
     }
 
     public class BlorbPicture
@@ -138,7 +139,7 @@ namespace Frotz.Blorb
                             break;
                         case BlorbUsage.Snd:
                             {
-                                if (buffer[..4].Matches("AIFF"))
+                                if (buffer[..4].Matches(stackalloc char[] { 'A', 'I', 'F', 'F' }))
                                 {
                                     byte[] temp = new byte[buffer.Length + 8];
 
@@ -163,13 +164,13 @@ namespace Frotz.Blorb
                 }
                 else
                 {
-                    if (type.SequenceEqual("FORM"))
+                    if (type.SequenceEqual(stackalloc char[] { 'F', 'O', 'R', 'M' }))
                     {
                         Span<char> chars = stackalloc char[4];
                         ReadChars(stream, chars);
                         HandleForm(blorb, stream, start, length);
                     }
-                    else if (type.SequenceEqual("RIdx"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'R', 'I', 'd', 'x' }))
                     {
                         stream.Position = start;
                         int numResources = ReadInt(stream);
@@ -183,7 +184,7 @@ namespace Frotz.Blorb
                             _chunks.Add(c.Start, c);
                         }
                     }
-                    else if (type.SequenceEqual("IFmd")) // Metadata
+                    else if (type.SequenceEqual(stackalloc char[] { 'I', 'F', 'm', 'd' })) // Metadata
                     {
                         blorb.MetaData = Encoding.UTF8.GetString(buffer);
                         if (blorb.MetaData[0] != '<')
@@ -193,18 +194,18 @@ namespace Frotz.Blorb
                             blorb.MetaData = blorb.MetaData[index..];
                         }
                     }
-                    else if (type.SequenceEqual("Fspc"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'F', 's', 'p', 'c' }))
                     {
                         stream.Position = start;
                         ReadInt(stream);
                     }
-                    else if (type.SequenceEqual("SNam"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'S', 'N', 'a', 'm' }))
                     {
                         // TODO It seems that when it gets the story name, it is actually stored as 2 byte words,
                         // not one byte chars
                         blorb.StoryName = Encoding.UTF8.GetString(buffer);
                     }
-                    else if (type.SequenceEqual("APal"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'A', 'P', 'a', 'l' }))
                     {
                         int len = buffer.Length / 4;
                         for (int i = 0; i < len; i++)
@@ -212,18 +213,18 @@ namespace Frotz.Blorb
                             int pos = i * 4;
 
                             uint result = Other.ZMath.MakeInt(buffer.Slice(pos, 4));
-                            blorb.AdaptivePalatte.Add((int)result);
+                            blorb.AdaptivePalette.Add((int)result);
                         }
                     }
-                    else if (type.SequenceEqual("IFhd"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'I', 'F', 'h', 'd' }))
                     {
                         blorb.IFhd = buffer.ToArray();
                     }
-                    else if (type.SequenceEqual("RelN"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'R', 'e', 'l', 'N' }))
                     {
                         blorb.ReleaseNumber = BinaryPrimitives.ReadInt16BigEndian(buffer);
                     }
-                    else if (type.SequenceEqual("Reso"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'R', 'e', 's', 'o' }))
                     {
                         stream.Position = start;
                         int px = ReadInt(stream);
@@ -252,7 +253,7 @@ namespace Frotz.Blorb
                             if (maxden != 0) blorb.Pictures[number].MaxRatio = maxnum / maxden;
                         }
                     }
-                    else if (type.SequenceEqual("Plte"))
+                    else if (type.SequenceEqual(stackalloc char[] { 'P', 'l', 't', 'e' }))
                     {
                         Debug.WriteLine("Palette");
                     }
@@ -273,11 +274,11 @@ namespace Frotz.Blorb
 
         private static BlorbUsage GetBlorbUsage(ReadOnlySpan<char> chars)
         {
-            if (chars.SequenceEqual("Exec"))
+            if (chars.SequenceEqual(stackalloc char[] { 'E', 'x', 'e', 'c' }))
                 return BlorbUsage.Exec;
-            if (chars.SequenceEqual("Pict"))
+            if (chars.SequenceEqual(stackalloc char[] { 'P', 'i', 'c', 't' }))
                 return BlorbUsage.Pict;
-            if (chars.SequenceEqual("Snd "))
+            if (chars.SequenceEqual(stackalloc char[] { 'S', 'n', 'd', ' ' }))
                 return BlorbUsage.Snd;
 
             OS.Fatal("Unknown usage chunk in blorb file: " + chars.ToString());
@@ -290,6 +291,12 @@ namespace Frotz.Blorb
             return ReadBlorbFile(stream);
         }
 
+        internal static Blorb ReadBlorbFile(IMemoryOwner<byte> storyData)
+        {
+            using var stream = storyData.AsStream();
+            return ReadBlorbFile(stream);
+        }
+
         internal static Blorb ReadBlorbFile(Stream stream)
         {
             var blorb = new Blorb();
@@ -299,7 +306,7 @@ namespace Frotz.Blorb
             Span<char> chars = stackalloc char[4];
 
             ReadChars(stream, chars);
-            if (!chars.SequenceEqual("FORM"))
+            if (!chars.SequenceEqual(stackalloc char[] { 'F', 'O', 'R', 'M' }))
             {
                 throw new Exception("Not a FORM");
             }
@@ -307,7 +314,7 @@ namespace Frotz.Blorb
             int len = ReadInt(stream);
             ReadChars(stream, chars);
 
-            if (!chars.SequenceEqual("IFRS"))
+            if (!chars.SequenceEqual(stackalloc char[] { 'I', 'F', 'R', 'S' }))
             {
                 throw new Exception("Not an IFRS FORM");
             }

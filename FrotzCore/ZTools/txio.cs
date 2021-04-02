@@ -6,7 +6,9 @@
  *
  */
 
+using Microsoft.Toolkit.HighPerformance;
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using zbyte_t = System.Byte;
@@ -230,6 +232,12 @@ namespace ZTools
         {
             gfp?.Dispose();
             gfp = new MemoryStream(story);
+        }
+
+        internal static void OpenStory(IMemoryOwner<byte> story)
+        {
+            gfp?.Dispose();
+            gfp = story.AsStream();
         }
 
         internal static void OpenStory(string storyname)

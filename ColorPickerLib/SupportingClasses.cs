@@ -121,21 +121,18 @@ namespace Microsoft.Samples.CustomControls
         /// Generates a list of colors with hues ranging from 0 360
         /// and a saturation and value of 1. 
         /// </summary>
-        public static List<Color> GenerateHsvSpectrum()
+        public static Color[] GenerateHsvSpectrum()
         {
-
-            var colorsList = new List<Color>(8);
+            var colors = new Color[30];
 
             for (int i = 0; i < 29; i++)
             {
-                colorsList.Add(new HsvColor(i * 12, 1, 1).ToRgbColor());
+                colors[i] = new HsvColor(i * 12, 1, 1).ToRgbColor();
             }
-            colorsList.Add(new HsvColor(0, 1, 1).ToRgbColor());
+            colors[29] = new HsvColor(0, 1, 1).ToRgbColor();
 
-            return colorsList;
-
+            return colors;
         }
-
     }
 
     #endregion ColorUtilities
@@ -294,13 +291,11 @@ namespace Microsoft.Samples.CustomControls
     #region ColorThumb
     public class ColorThumb : System.Windows.Controls.Primitives.Thumb
     {
-
         static ColorThumb()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ColorThumb),
                 new FrameworkPropertyMetadata(typeof(ColorThumb)));
         }
-
 
         public static readonly DependencyProperty ThumbColorProperty =
             DependencyProperty.Register("ThumbColor", typeof(Color), typeof(ColorThumb),

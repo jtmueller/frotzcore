@@ -26,7 +26,7 @@ namespace Frotz.Generic
 {
     internal static class Buffer
     {
-        internal static zword[] buffer_var = Array.Empty<zword>(); // TODO Was a zword
+        internal static zword[] buffer_var = Array.Empty<zword>();
         internal static int bufpos = 0;
         internal static bool locked = false;
 
