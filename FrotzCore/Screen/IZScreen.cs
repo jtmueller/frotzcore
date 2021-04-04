@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using zword = System.UInt16;
 
@@ -21,7 +22,7 @@ namespace Frotz.Screen
         string OpenExistingFile(string defaultName, string title, string filter);
         string OpenNewOrExistingFile(string defaultName, string title, string filter, string defaultExtension);
 
-        (string FileName, byte[] FileData)? SelectGameFile();
+        (string FileName, MemoryOwner<byte> FileData)? SelectGameFile();
 
         ZSize GetImageInfo(byte[] image);
 

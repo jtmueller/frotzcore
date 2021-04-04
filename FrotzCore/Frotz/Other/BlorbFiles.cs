@@ -99,10 +99,8 @@ namespace Frotz.Blorb
         }
 
         private static int _level = 0;
-        private static readonly PooledDictionary<int, Chunk> _chunks = new();
-        //private static readonly PooledDictionary<int, Resource> _resources = new PooledDictionary<int, Resource>();
 
-        private static void HandleForm(Blorb blorb, Stream stream, int start, int length)
+        private static void HandleForm(Blorb blorb, Stream stream, int start, int length, IDictionary<int, Chunk> chunks)
         {
             _level++;
             Span<char> type = stackalloc char[4];
@@ -112,12 +110,12 @@ namespace Frotz.Blorb
                 int len = ReadInt(stream);
                 // ReadBuffer(len);
 
-                ReadChunk(blorb, stream, (int)stream.Position, len, type);
+                ReadChunk(blorb, stream, (int)stream.Position, len, type, chunks);
             }
             _level--;
         }
 
-        private static void ReadChunk(Blorb blorb, Stream stream, int start, int length, ReadOnlySpan<char> type)
+        private static void ReadChunk(Blorb blorb, Stream stream, int start, int length, ReadOnlySpan<char> type, IDictionary<int, Chunk> chunks)
         {
             byte[]? rentedFromPool = null;
             Span<byte> buffer = length > 0xff
@@ -127,9 +125,9 @@ namespace Frotz.Blorb
             {
                 int bytesRead = stream.Read(buffer[..length]);
                 buffer = buffer[..bytesRead];
-                if (_chunks.ContainsKey(start - 8))
+                if (chunks.ContainsKey(start - 8))
                 {
-                    var c = _chunks[start - 8];
+                    var c = chunks[start - 8];
                     switch (c.Usage)
                     {
                         case BlorbUsage.Exec:
@@ -169,7 +167,7 @@ namespace Frotz.Blorb
                     {
                         Span<char> chars = stackalloc char[4];
                         ReadChars(stream, chars);
-                        HandleForm(blorb, stream, start, length);
+                        HandleForm(blorb, stream, start, length, chunks);
                     }
                     else if (type.SequenceEqual(stackalloc char[] { 'R', 'I', 'd', 'x' }))
                     {
@@ -182,7 +180,7 @@ namespace Frotz.Blorb
                             ReadChars(stream, chars);
                             var usage = GetBlorbUsage(chars);
                             var c = new Chunk(usage, ReadInt(stream), ReadInt(stream));
-                            _chunks.Add(c.Start, c);
+                            chunks.Add(c.Start, c);
                         }
                     }
                     else if (type.SequenceEqual(stackalloc char[] { 'I', 'F', 'm', 'd' })) // Metadata
@@ -300,8 +298,8 @@ namespace Frotz.Blorb
 
         internal static Blorb ReadBlorbFile(Stream stream)
         {
-            var blorb = new Blorb();
-            _chunks.Clear();
+            Blorb blorb = new();
+            using PooledDictionary<int, Chunk> chunks = new();
             //_resources.Clear();
 
             Span<char> chars = stackalloc char[4];
@@ -320,7 +318,7 @@ namespace Frotz.Blorb
                 ThrowHelper.ThrowInvalidDataException("Not an IFRS FORM");
             }
 
-            HandleForm(blorb, stream, (int)stream.Position - 4, len); // Backup over the Form ID so that handle form can read it
+            HandleForm(blorb, stream, (int)stream.Position - 4, len, chunks); // Backup over the Form ID so that handle form can read it
 
             if (!string.IsNullOrEmpty(blorb.MetaData))
             {

@@ -2,6 +2,7 @@
 using Frotz.Blorb;
 using Frotz.Constants;
 using Frotz.Screen;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -589,9 +590,9 @@ namespace WPFMachine.Screen
         public new void Focus() => base.Focus();
 
 #nullable enable
-        public (string FileName, byte[] FileData)? SelectGameFile()
+        public (string FileName, MemoryOwner<byte> FileData)? SelectGameFile()
         {
-            byte[]? buffer = null;
+            MemoryOwner<byte>? buffer = null;
             string? fName = null;
             Dispatcher.Invoke(() =>
             {
@@ -613,13 +614,13 @@ namespace WPFMachine.Screen
                 {
                     fName = ofd.FileName;
                     using var s = ofd.OpenFile();
-                    buffer = new byte[s.Length];
-                    s.Read(buffer, 0, buffer.Length);
+                    buffer = MemoryOwner<byte>.Allocate((int)s.Length);
+                    s.Read(buffer.Span);
                 }
 
             });
             
-            if (fName != null && buffer != null)
+            if (fName is not null && buffer is not null)
             {
                 return (fName, buffer);
             }

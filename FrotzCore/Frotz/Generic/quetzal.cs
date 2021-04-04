@@ -153,7 +153,7 @@ namespace Frotz.Generic
          * occurred before any damage was done, -1 on a fatal error.
          */
 
-        internal static zword RestoreQuetzal(FileStream svf, MemoryStream stf)
+        internal static zword RestoreQuetzal(FileStream svf, System.IO.Stream stf)
         {
             zlong pc;
             zword i, tmpw;
@@ -472,7 +472,7 @@ namespace Frotz.Generic
          * Save a game using Quetzal format. Return 1 if OK, 0 if failed.
          */
 
-        internal static zword SaveQuetzal(FileStream svf, MemoryStream stf)
+        internal static zword SaveQuetzal(FileStream svf, System.IO.Stream stf)
         {
             zlong stkslen = 0;
             zword i, j, n;

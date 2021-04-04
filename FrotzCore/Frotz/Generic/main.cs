@@ -27,6 +27,7 @@
  */
 
 using Frotz.Constants;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using zbyte = System.Byte;
 using zword = System.UInt16;
@@ -37,7 +38,7 @@ namespace Frotz.Generic
     {
         public static string? StoryName { get; internal set; } = null;
 
-        internal static byte[]? StoryData = null; // TODO: Make this a ReadOnlyMemory, replace class-level stream?
+        internal static MemoryOwner<byte>? StoryData = null;
 
         internal static Story StoryId = Story.UNKNOWN;
         internal static long StorySize = 0;
@@ -54,7 +55,7 @@ namespace Frotz.Generic
         internal static zword h_globals = 0;
         internal static zword h_dynamic_size = 0;
         internal static zword h_flags = 0;
-        internal static readonly zbyte[] h_serial = new zbyte[6] { 0, 0, 0, 0, 0, 0 };
+        internal static readonly zbyte[] h_serial = new zbyte[6];
         internal static zword h_abbreviations = 0;
         internal static zword h_file_size = 0;
         internal static zword h_checksum = 0;
@@ -76,7 +77,7 @@ namespace Frotz.Generic
         internal static zbyte h_standard_low = 1;
         internal static zword h_alphabet = 0;
         internal static zword h_extension_table = 0;
-        internal static readonly zbyte[] h_user_name = new zbyte[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        internal static readonly zbyte[] h_user_name = new zbyte[8];
 
         internal static zword hx_table_size = 0;
         internal static zword hx_mouse_x = 0;
@@ -89,8 +90,8 @@ namespace Frotz.Generic
         /* Stack data */
 
         internal static zword[] Stack = new zword[General.STACK_SIZE];
-        internal static long sp = 0;
-        internal static long fp = 0;
+        internal static int sp = 0;
+        internal static int fp = 0;
         internal static zword frame_count = 0;
 
         /* IO streams */

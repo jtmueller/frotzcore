@@ -111,7 +111,7 @@ namespace Frotz.Generic
         internal static long Zmp = 0;
         internal static long Pcp = 0;
 
-        private static System.IO.MemoryStream? StoryFp = null;
+        private static System.IO.Stream? StoryFp = null;
         private static bool FirstRestart = true;
         private static long InitFpPos = 0;
 
@@ -180,7 +180,7 @@ namespace Frotz.Generic
         internal readonly struct UndoStruct : IDisposable
         {
             public UndoStruct(long pc, long diffSize, zword frameCount, zword stackSize,
-                zword frameOffset, long sp, MemoryOwner<zword> stack, MemoryOwner<byte> undoData)
+                zword frameOffset, int sp, MemoryOwner<zword> stack, MemoryOwner<byte> undoData)
             {
                 Pc = pc; DiffSize = diffSize; FrameCount = frameCount; StackSize = stackSize;
                 FrameOffset = frameOffset; Sp = sp; Stack = stack; UndoData = undoData;
@@ -193,7 +193,7 @@ namespace Frotz.Generic
             public readonly zword FrameOffset;
             /* undo diff and stack data follow */
 
-            public readonly long Sp;
+            public readonly int Sp;
             public readonly MemoryOwner<zword> Stack;
             public readonly MemoryOwner<byte> UndoData;
 
@@ -1170,8 +1170,8 @@ namespace Frotz.Generic
             var undoData = MemoryOwner<zbyte>.Allocate(diff_size);
             UndoDiff.Span[..diff_size].CopyTo(undoData.Span);
 
-            var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - (int)Main.sp);
-            Main.Stack.AsSpan((int)Main.sp, Main.Stack.Length - (int)Main.sp).CopyTo(stack.Span);
+            var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - Main.sp);
+            Main.Stack.AsSpan(Main.sp, Main.Stack.Length - Main.sp).CopyTo(stack.Span);
 
             UndoMem.Add(new(
                 pc, diffSize: diff_size, frameCount: Main.frame_count,

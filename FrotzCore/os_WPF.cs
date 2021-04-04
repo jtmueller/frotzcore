@@ -5,6 +5,8 @@ using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
 using Microsoft.Toolkit.Diagnostics;
+using Microsoft.Toolkit.HighPerformance;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -454,20 +456,22 @@ namespace Frotz
          */
         public static bool ProcessArguments(ReadOnlySpan<string> args)
         {
+            Main.StoryData?.Dispose();
+
             if (args.Length == 0)
             {
                 var file = Screen?.SelectGameFile();
-                if (file == null)
+                if (!file.HasValue)
                     return false;
 
-                (Main.StoryName, Main.StoryData) = file.Value;
+                (Main.StoryName, Main.StoryData) = file.GetValueOrDefault();
             }
             else
             {
                 Main.StoryName = args[0];
                 using var fs = new FileStream(args[0], FileMode.Open);
-                var data = new zbyte[fs.Length];
-                fs.Read(data, 0, data.Length);
+                var data = MemoryOwner<byte>.Allocate((int)fs.Length);
+                fs.Read(data.Span);
                 Main.StoryData = data;
             }
 
@@ -1162,16 +1166,15 @@ namespace Frotz
          * -- Szurgot: Changed this to return a Memory stream, and also has Blorb Logic.. May need to refine
          * -- Changed this again to take a byte[] to allow the data to be loaded further up the chain
          */
-        public static MemoryStream PathOpen(zbyte[] story_data)
+        public static System.IO.Stream PathOpen(MemoryOwner<byte> story_data)
         {
-            Guard.HasSizeGreaterThanOrEqualTo(story_data, 4, nameof(story_data));
+            Guard.HasSizeGreaterThanOrEqualTo(story_data.Span, 4, nameof(story_data));
 
-            if (story_data.AsSpan(..4).SequenceEqual(General.FormBytes))
+            if (story_data.Span[..4].SequenceEqual(General.FormBytes))
             {
                 BlorbFile = Blorb.BlorbReader.ReadBlorbFile(story_data);
 
-                var stream = new MemoryStream(BlorbFile.ZCode);
-                return stream;
+                return new MemoryStream(BlorbFile.ZCode);
             }
             else
             {
@@ -1182,10 +1185,11 @@ namespace Frotz
                 {
                     using var fs = File.OpenRead(temp);
                     BlorbFile = Blorb.BlorbReader.ReadBlorbFile(fs);
+
+                    return new MemoryStream(BlorbFile.ZCode);
                 }
 
-                var stream = new MemoryStream(story_data);
-                return stream;
+                return story_data.AsStream();
             }
         }
 
