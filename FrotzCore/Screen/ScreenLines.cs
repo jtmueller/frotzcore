@@ -17,7 +17,7 @@ namespace Frotz.Screen
             _lines = new PooledList<LineInfo>(rows);
             for (int i = 0; i < rows; i++)
             {
-                _lines.Add(new LineInfo(columns * 3));
+                _lines.Add(new (columns * 3));
             }
         }
 
@@ -90,7 +90,7 @@ namespace Frotz.Screen
             {
                 while (_lines.Count <= Rows * 2)
                 {
-                    _lines.Add(new LineInfo(Columns * 3));
+                    _lines.Add(new (Columns * 3));
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace Frotz.Screen
         {
             int pos = 0;
 
-            changes = new List<FontChanges>();
+            changes = new List<FontChanges>(line * Columns * 3);
             using var sb = new ValueStringBuilder();
             for (int i = 0; i < line; i++)
             {

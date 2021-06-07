@@ -10,12 +10,12 @@ namespace Frotz.Screen
     {
         private readonly MemoryOwner<char> _chars;
         private readonly MemoryOwner<CharDisplayInfo> _styles;
-        private readonly int _width;
         private readonly object _lockObj = new();
         private PooledList<FontChanges>? _changes;
 
         public int X { get; set; }
         public int Y { get; set; }
+        public int Width { get; }
         public int LastCharSet { get; private set; }
 
         public LineInfo(int lineWidth)
@@ -26,14 +26,14 @@ namespace Frotz.Screen
             _chars.Span.Fill(' ');
             _styles.Span.Fill(default);
 
-            _width = lineWidth;
+            Width = lineWidth;
 
             LastCharSet = -1;
         }
 
         public void SetChar(int pos, char c, CharDisplayInfo FandS = default)
         {
-            if ((uint)pos >= (uint)_width)
+            if ((uint)pos >= (uint)Width)
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(pos));
 
             lock (_lockObj)
@@ -49,10 +49,10 @@ namespace Frotz.Screen
 
         public void SetChars(int pos, ReadOnlySpan<char> chars, CharDisplayInfo FandS = default)
         {
-            if ((uint)pos >= (uint)_width)
+            if ((uint)pos >= (uint)Width)
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(pos));
 
-            if ((uint)pos + chars.Length >= (uint)_width)
+            if ((uint)pos + chars.Length >= (uint)Width)
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(chars), "Too many chars to fit in line.");
 
             lock (_lockObj)
@@ -72,7 +72,7 @@ namespace Frotz.Screen
         {
             lock (_lockObj)
             {
-                for (int i = 0; i < _width; i++)
+                for (int i = 0; i < Width; i++)
                 {
                     ClearChar(i);
                 }
@@ -105,16 +105,16 @@ namespace Frotz.Screen
                 {
                     if (_changes == null)
                     {
-                        _changes = new PooledList<FontChanges>(_width);
+                        _changes = new PooledList<FontChanges>(Width);
                         var chars = CurrentChars;
 
                         var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
                         var styles = _styles.Span;
-                        for (int i = 0; i < _width; i++)
+                        for (int i = 0; i < Width; i++)
                         {
                             if (!styles[i].Equals(fc.FontAndStyle))
                             {
-                                fc = new FontChanges(i, _width, styles[i]);
+                                fc = new FontChanges(i, Width, styles[i]);
                                 fc.AddChar(chars[i]);
                                 _changes.Add(fc);
                             }
@@ -130,7 +130,7 @@ namespace Frotz.Screen
             return _changes;
         }
 
-        public ReadOnlySpan<char> GetChars() => _chars.Span[.._width];
+        public ReadOnlySpan<char> GetChars() => _chars.Span[..Width];
 
         public ReadOnlySpan<char> GetChars(int start, int length) => _chars.Span.Slice(start, length);
 

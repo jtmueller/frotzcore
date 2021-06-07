@@ -56,7 +56,7 @@ namespace Frotz.Generic
 
             if (Main.h_version >= ZMachine.V5 || !ScriptValid)
             {
-                if (!OS.ReadFileName(out var new_name, General.DEFAULT_SCRIPT_NAME, FileTypes.FILE_SCRIPT))
+                if (!OS.ReadFileName(out string? new_name, General.DEFAULT_SCRIPT_NAME, FileTypes.FILE_SCRIPT))
                     goto done;
 
                 ScriptName = new_name;
@@ -262,12 +262,7 @@ namespace Frotz.Generic
          *
          */
 
-        internal static void ScriptMssgOff()
-        {
-
-            ScriptNewLine();
-
-        }/* script_mssg_off */
+        internal static void ScriptMssgOff() => ScriptNewLine();/* script_mssg_off */
         #endregion
 
         #region Record
@@ -280,7 +275,7 @@ namespace Frotz.Generic
         internal static void RecordOpen()
         {
 
-            if (OS.ReadFileName(out var new_name, CommandName, FileTypes.FILE_RECORD))
+            if (OS.ReadFileName(out string? new_name, CommandName, FileTypes.FILE_RECORD))
             {
                 CommandName = new_name;
 
@@ -424,7 +419,7 @@ namespace Frotz.Generic
         internal static void ReplayOpen()
         {
 
-            if (OS.ReadFileName(out var new_name, CommandName, FileTypes.FILE_PLAYBACK))
+            if (OS.ReadFileName(out string? new_name, CommandName, FileTypes.FILE_PLAYBACK))
             {
                 CommandName = new_name;
 

@@ -427,7 +427,7 @@ namespace ZTools
 
             /* Sort areas */
 
-            areas.Sort(new AreaComparer());
+            areas.Sort(default(AreaComparer));
 
             /* Print area map */
 

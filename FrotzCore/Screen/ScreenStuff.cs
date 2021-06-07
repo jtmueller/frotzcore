@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Frotz.Screen
 {
-    public class ZKeyPressEventArgs : EventArgs
+    public sealed class ZKeyPressEventArgs : EventArgs
     {
         public char KeyPressed { get; private set; }
 
