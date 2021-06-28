@@ -264,7 +264,7 @@ namespace WPFMachine.Absolute
 
                 var dv = new DrawingVisual();
                 var dc = dv.RenderOpen();
-                using (Utilities.Dispose(dc, x => x.Close()))
+                using (Utilities.Dispose(dc.Close))
                 {
                     dc.DrawRectangle(brush, null, new Rect(0, 0, ft.WidthIncludingTrailingWhitespace, charHeight));
                     dc.DrawText(ft, new(0, 0));
@@ -321,7 +321,7 @@ namespace WPFMachine.Absolute
         {
             Scrollback.AddString("\r\n", _currentInfo);
 
-            var r = new Rect(left, top, right - left, bottom - top);
+            Rect r = new(left, top, right - left, bottom - top);
 
             Invoke(() =>
             {
@@ -336,8 +336,8 @@ namespace WPFMachine.Absolute
                         double iBottom = iTop + img.ActualHeight;
                         double iRight = iLeft + img.ActualWidth;
 
-                        var iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
-                        var p = new Point(iLeft, iTop);
+                        Rect iRect = new(iLeft, iTop, iRight - iLeft, iBottom - iTop);
+                        Point p = new(iLeft, iTop);
 
                         if (r.Contains(p)) // what is iRect for?
                         {
@@ -355,7 +355,7 @@ namespace WPFMachine.Absolute
 
             Scrollback.AddString("\r\n", _currentInfo);
 
-            var r = new Rect(left, top, right - left, bottom - top);
+            Rect r = new(left, top, right - left, bottom - top);
 
             Invoke(() =>
             {
@@ -370,8 +370,8 @@ namespace WPFMachine.Absolute
                         double iBottom = iTop + img.ActualHeight;
                         double iRight = iLeft + img.ActualWidth;
 
-                        var iRect = new Rect(iLeft, iTop, iRight - iLeft, iBottom - iTop);
-                        var p = new Point(iLeft, iTop);
+                        Rect iRect = new(iLeft, iTop, iRight - iLeft, iBottom - iTop);
+                        Point p = new(iLeft, iTop);
 
                         if (r.Contains(p)) // what is iRect for?
                         {
@@ -599,7 +599,7 @@ namespace WPFMachine.Absolute
             {
                 var sfd = new Microsoft.Win32.SaveFileDialog();
 
-                var fi = new System.IO.FileInfo(defaultName);
+                var fi = new FileInfo(defaultName);
                 sfd.FileName = fi.Name;
 
                 // sfd.FileName = defaultName;

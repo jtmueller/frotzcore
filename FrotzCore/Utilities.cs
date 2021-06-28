@@ -11,6 +11,8 @@ namespace Frotz
         /// <returns></returns>
         public static DisposableWrapper<T> Dispose<T>(T obj, Action<T> onDispose) => new(obj, onDispose);
 
+        public static DisposableWrapper Dispose(Action onDispose) => new(onDispose);
+
         public ref struct DisposableWrapper<T>
         {
             private Action<T>? _onDispose;
@@ -27,8 +29,26 @@ namespace Frotz
                 if (_onDispose is not null)
                 {
                     _onDispose.Invoke(_obj);
-                    _onDispose = null;
-                    _obj = default!;
+                    this = default;
+                }
+            }
+        }
+
+        public ref struct DisposableWrapper
+        {
+            private Action? _onDispose;
+
+            internal DisposableWrapper(Action onDispose)
+            {
+                _onDispose = onDispose;
+            }
+
+            public void Dispose()
+            {
+                if (_onDispose is not null)
+                {
+                    _onDispose.Invoke();
+                    this = default;
                 }
             }
         }
