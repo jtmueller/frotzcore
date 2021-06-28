@@ -287,26 +287,7 @@ namespace ZTools
             areas.Add(a);
         }
 
-        private readonly struct AreaT : IEquatable<AreaT>
-        {
-            public readonly ulong AreaBase;
-            public readonly ulong End;
-            public readonly string Name;
-
-            public AreaT(ulong areaBase, ulong end, string name)
-            {
-                AreaBase = areaBase;
-                End = end;
-                Name = name;
-            }
-
-            public bool Equals(AreaT other) => other.AreaBase == AreaBase && other.End == End && other.Name == Name;
-            public override bool Equals(object? obj) => obj is AreaT a && Equals(a);
-            public override int GetHashCode() => HashCode.Combine(AreaBase, End, Name);
-
-            public static bool operator ==(AreaT x, AreaT y) => x.Equals(y);
-            public static bool operator !=(AreaT x, AreaT y) => !x.Equals(y);
-        }
+        private readonly record struct AreaT(ulong AreaBase, ulong End, string Name);
 
         /*
          * show_map

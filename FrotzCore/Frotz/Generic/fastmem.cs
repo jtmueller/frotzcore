@@ -29,19 +29,7 @@ using zword = System.UInt16;
 
 namespace Frotz.Generic
 {
-    internal readonly struct RecordStruct
-    {
-        public readonly Story StoryId;
-        public readonly zword Release;
-        public readonly string Serial;
-
-        public RecordStruct(Story story_id, zword release, string serial)
-        {
-            StoryId = story_id;
-            Release = release;
-            Serial = serial;
-        }
-    }
+    internal readonly record struct RecordStruct(Story StoryId, zword Release, string Serial);
 
     internal static class FastMem
     {

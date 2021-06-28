@@ -255,7 +255,7 @@ namespace WPFMachine
             if (ActualHeight > 0 && ActualWidth > 0)
             {
                 _screen.SetCharsAndLines();
-                var (rows, cols) = _screen.Metrics;
+                var (rows, cols) = _screen.Metrics.Dimensions;
                 stsItemSize.Content = $"{rows}x{cols}";
             }
         }

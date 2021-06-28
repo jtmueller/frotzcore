@@ -28,21 +28,7 @@ namespace Frotz.Generic
     {
         private const int current_window = 100;
 
-        private readonly struct StoryInfo
-        {
-            public readonly Story story_id;
-            public readonly int pic;
-            public readonly int pic1;
-            public readonly int pic2;
-
-            internal StoryInfo(Story story_id, int pic, int pic1, int pic2)
-            {
-                this.story_id = story_id;
-                this.pic = pic;
-                this.pic1 = pic1;
-                this.pic2 = pic2;
-            }
-        }
+        private readonly record struct StoryInfo(Story story_id, int pic, int pic1, int pic2);
 
         private static readonly StoryInfo[] mapper = new[] {
             new StoryInfo(Story.ZORK_ZERO, 5, 497, 498),

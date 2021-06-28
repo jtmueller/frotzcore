@@ -628,7 +628,7 @@ namespace Frotz
                             var bc = buffer[^1];
                             buffer.RemoveAt(^1);
 
-                            p = p.WithX(p.X - bc.Width);
+                            p = p with { X = p.X - bc.Width };
                             Screen.SetCursorPosition(p.X, p.Y);
 
                             Screen.RemoveChars(1);
@@ -644,7 +644,7 @@ namespace Frotz
                         // buf[pos++] = c;
 
                         int w = Screen.GetStringWidth(((char)c).ToString(), new CharDisplayInfo(ZFont.TEXT_FONT, ZStyles.NORMAL_STYLE, -1, -1));
-                        p = p.WithX(p.X + w);
+                        p = p with { X = p.X + w };
                         Screen.SetCursorPosition(p.X, p.Y);
 
                         buffer.Add(new(c, w));
@@ -1345,21 +1345,8 @@ namespace Frotz
         }
     }
 
-    internal readonly struct BufferChar : IEquatable<BufferChar>
+    internal record struct BufferChar(zword Char, int Width)
     {
-        public readonly zword Char;
-        public readonly int Width;
-
-        internal BufferChar(zword character, int width)
-        {
-            Char = character;
-            Width = width;
-        }
-
-        public bool Equals(BufferChar other) => other.Char == Char && other.Width == Width;
-        public override bool Equals(object? obj) => obj is BufferChar bc && Equals(bc);
-        public override int GetHashCode() => HashCode.Combine(Char, Width);
-
         public static implicit operator char(BufferChar bc) => (char)bc.Char;
     }
 }

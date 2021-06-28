@@ -3,8 +3,6 @@
 //
 // 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -141,32 +139,8 @@ namespace Microsoft.Samples.CustomControls
     // Describes a color in terms of
     // Hue, Saturation, and Value (brightness)
     #region HsvColor
-    internal readonly struct HsvColor : IEquatable<HsvColor>
+    internal readonly record struct HsvColor(double H, double S, double V)
     {
-        public readonly double H;
-        public readonly double S;
-        public readonly double V;
-
-        public HsvColor(double h, double s, double v)
-        {
-            H = h;
-            S = s;
-            V = v;
-        }
-
-        public void Deconstruct(out double h, out double s, out double v)
-        {
-            h = H;
-            s = S;
-            v = V;
-        }
-
-        public bool Equals(HsvColor other) => other.H == H && other.S == S && other.V == V;
-
-        public override bool Equals(object obj) => obj is HsvColor other && Equals(other);
-
-        public override int GetHashCode() => HashCode.Combine(H, S, V);
-
         /// <summary>
         /// Converts an HSV color to an RGB color.
         /// </summary>
