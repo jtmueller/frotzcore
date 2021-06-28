@@ -112,7 +112,6 @@ namespace WPFMachine.Support
         {
             _initialPath = initialPath;
             var sb = new StringBuilder(MAX_PATH);
-            var bufferAddress = Marshal.AllocHGlobal(MAX_PATH); ;
             var pidl = IntPtr.Zero;
             var bi = new BROWSEINFO
             {
@@ -124,6 +123,8 @@ namespace WPFMachine.Support
                 lParam = IntPtr.Zero,
                 iImage = 0
             };
+
+            var bufferAddress = Marshal.AllocHGlobal(MAX_PATH);
 
             try
             {
@@ -138,6 +139,7 @@ namespace WPFMachine.Support
             {
                 // Caller is responsible for freeing this memory.
                 Marshal.FreeCoTaskMem(pidl);
+                Marshal.FreeHGlobal(bufferAddress);
             }
 
             return sb.ToString();
