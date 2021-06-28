@@ -51,9 +51,6 @@
  *    Add Inform and user symbol table support
  */
 
-using Collections.Pooled;
-using System;
-
 namespace ZTools
 {
     public static class InfoDump

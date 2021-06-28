@@ -1,5 +1,4 @@
-﻿using Frotz.Constants;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using zword = System.UInt16;
 
 namespace Frotz.Other

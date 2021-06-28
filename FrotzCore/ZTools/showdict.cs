@@ -1,10 +1,8 @@
-
 /*
  * showdict - part of infodump
  *
  * Dictionary and abbreviation table routines.
  */
-using System;
 
 namespace ZTools
 {

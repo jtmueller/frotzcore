@@ -26,9 +26,6 @@
  *
  */
 
-using Frotz.Constants;
-using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
 using zbyte = System.Byte;
 using zword = System.UInt16;
 

@@ -18,11 +18,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-using Frotz.Constants;
 using Frotz.Other;
-using System;
-using zword = System.UInt16;
 using zbyte = System.Byte;
+using zword = System.UInt16;
 
 namespace Frotz.Generic
 {

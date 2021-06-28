@@ -1,6 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using zword = System.UInt16;
 
 namespace Frotz.Screen

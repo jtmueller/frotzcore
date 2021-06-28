@@ -1,8 +1,4 @@
-﻿using Collections.Pooled;
-using Microsoft.Toolkit.Diagnostics;
-using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Frotz.Screen
 {

@@ -4,7 +4,6 @@
  * Verb and grammar display routines.
  */
 
-using System;
 using zword_t = System.UInt16;
 
 internal enum gv2_tokentype { TT_ILLEGAL, TT_ELEMENTARY, TT_PREPOSITION, TT_NOUNR, TT_ATTRIBUTE, TT_SCOPER, TT_ROUTINE };

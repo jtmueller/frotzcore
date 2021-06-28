@@ -54,7 +54,6 @@
  *    Add Inform and user symbol table support
  */
 
-using System;
 using zbyte_t = System.Byte;
 using zword_t = System.UInt16;
 

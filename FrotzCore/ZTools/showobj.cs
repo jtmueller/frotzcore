@@ -4,8 +4,6 @@
  * Object display routines.
  */
 
-using System;
-
 namespace ZTools
 {
     internal static class ShowObj

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Frotz.Screen
+﻿namespace Frotz.Screen
 {
     public struct CharInfo : IEquatable<CharInfo>
     {

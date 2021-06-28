@@ -6,7 +6,6 @@
  * Header display routines.
  */
 
-using System;
 using zword_t = System.UInt16;
 namespace ZTools
 {

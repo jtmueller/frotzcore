@@ -1,13 +1,7 @@
-﻿using Collections.Pooled;
-using Frotz.Constants;
-using Frotz.Generic;
+﻿using Frotz.Generic;
 using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
-using Microsoft.Toolkit.Diagnostics;
-using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -23,12 +17,12 @@ namespace Frotz
 {
     public static class OS
     {
-        public static readonly RecyclableMemoryStreamManager StreamManger = new RecyclableMemoryStreamManager();
+        public static readonly RecyclableMemoryStreamManager StreamManger = new();
 
         private const int MaxStack = 0xff;
         private static int HistoryPos = 0;
         // TODO This really needs to get wired up when a new game is started
-        private static readonly List<string> History = new List<string>();
+        private static readonly List<string> History = new();
 
         private static long ReadLong(ReadOnlySpan<byte> buffer) => BinaryPrimitives.ReadInt64BigEndian(buffer);
 

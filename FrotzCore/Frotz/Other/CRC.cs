@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Frotz.Other
+﻿namespace Frotz.Other
 {
     public static class CRC
     {

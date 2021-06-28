@@ -8,7 +8,6 @@
  * Future:  Add property type (e.g. name property contains dictionary words)
  *          Finish user-defined symbol table
  */
-using System;
 
 namespace ZTools
 {

@@ -22,12 +22,6 @@
  * New undo mechanism added by Jim Dunleavy <jim.dunleavy@erha.ie>
  */
 
-using Collections.Pooled;
-using Frotz.Constants;
-using Microsoft.Toolkit.Diagnostics;
-using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using zbyte = System.Byte;

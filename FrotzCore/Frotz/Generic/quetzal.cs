@@ -17,10 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-using Frotz.Constants;
 using Frotz.Other;
-using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;

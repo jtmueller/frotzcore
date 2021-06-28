@@ -1,5 +1,3 @@
-using System;
-
 namespace Frotz.Constants
 {
     // typedef unsigned char zbyte;

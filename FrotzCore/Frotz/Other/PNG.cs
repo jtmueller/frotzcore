@@ -1,8 +1,5 @@
 ﻿// This is a very quick hack to allow me to use the Adaptive Palatte stuff
 
-using Microsoft.Toolkit.Diagnostics;
-using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;

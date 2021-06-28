@@ -1,6 +1,4 @@
-﻿using Frotz.Constants;
-
-namespace Frotz.Generic
+﻿namespace Frotz.Generic
 {
     public static class GameControl
     {
