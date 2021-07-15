@@ -207,7 +207,9 @@ namespace Frotz
          *
          */
         [DoesNotReturn]
+#pragma warning disable CS8763 // A method marked [DoesNotReturn] should not return.
         public static void Fatal(string s) => OnFatalError(s);
+#pragma warning restore CS8763 // A method marked [DoesNotReturn] should not return.
 
         /*
          * os_font_data

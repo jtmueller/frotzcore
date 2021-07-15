@@ -24,16 +24,10 @@ namespace Frotz.Generic
     internal static class Redirect
     {
 
-        private static readonly byte MAX_NESTING = 16;
+        private const byte MAX_NESTING = 16;
         private static int depth = -1;
 
-        private struct RedirectStruct
-        {
-            public zword XSize;
-            public zword Table;
-            public zword Width;
-            public zword Total;
-        }
+        private record struct RedirectStruct(zword XSize, zword Table, zword Width, zword Total);
 
         private static readonly RedirectStruct[] redirect = new RedirectStruct[MAX_NESTING];
 
@@ -55,10 +49,7 @@ namespace Frotz.Generic
 
                 FastMem.StoreW(table, 0);
 
-                redirect[depth].Table = table;
-                redirect[depth].Width = 0;
-                redirect[depth].Total = 0;
-                redirect[depth].XSize = xsize;
+                redirect[depth] = new(xsize, table, 0, 0);
 
                 Main.ostream_memory = true;
             }
@@ -123,7 +114,7 @@ namespace Frotz.Generic
                     if (redirect[depth].Width + width > redirect[depth].XSize)
                     {
                         if (s[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
-                            width = OS.StringWidth(s.Slice(++pos));
+                            width = OS.StringWidth(s[++pos..]);
 
                         MemoryNewline();
                     }

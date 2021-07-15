@@ -179,22 +179,25 @@ namespace Frotz.Generic
 
         internal static zbyte TranslateToZscii(zword c)
         {
+            switch (c)
+            {
+                case CharCodes.ZC_SINGLE_CLICK:
+                    return 0xfe;
+                case CharCodes.ZC_DOUBLE_CLICK:
+                    return 0xfd;
+                case CharCodes.ZC_MENU_CLICK:
+                    return 0xfc;
+                case 0:
+                    return 0;
+                default:
+                    {
+                        c = UnicodeToZscii(c);
+                        if (c == 0)
+                            c = '?';
 
-            if (c == CharCodes.ZC_SINGLE_CLICK)
-                return 0xfe;
-            if (c == CharCodes.ZC_DOUBLE_CLICK)
-                return 0xfd;
-            if (c == CharCodes.ZC_MENU_CLICK)
-                return 0xfc;
-            if (c == 0)
-                return 0;
-
-            c = UnicodeToZscii(c);
-            if (c == 0)
-                c = '?';
-
-            return (zbyte)c;
-
+                        return (zbyte)c;
+                    }
+            }
         }/* translate_to_zscii */
 
         /*
