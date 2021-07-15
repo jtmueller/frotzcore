@@ -73,46 +73,44 @@ namespace Frotz.Generic
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool WriteBytx(FileStream fp, int b)
-        {
-            WriteByte(fp, (byte)(b & 0xFF));
-            return true;
-        }
-
         private static bool WriteWord(FileStream fp, zword w)
         {
-            WriteByte(fp, (byte)(w >> 8));
-            WriteByte(fp, (byte)(w & 0xFF));
-            return true;
-        }
+            Span<byte> bytes = stackalloc byte[2];
+            BinaryPrimitives.WriteUInt16BigEndian(bytes, w);
+            fp.Write(bytes);
 
-        private static bool WriteWord(FileStream fp, int w)
-        {
-            WriteByte(fp, (byte)(w >> 8));
-            WriteByte(fp, (byte)(w & 0xFF));
             return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool WriteBytx(FileStream fp, long b)
+        private static bool WriteWord(FileStream fp, int w)
         {
-            WriteByte(fp, (byte)(b & 0xFF));
+            Span<byte> bytes = stackalloc byte[2];
+            BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)w);
+            fp.Write(bytes);
+
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool WriteLong(FileStream fp, long x)
         {
-            WriteByte(fp, (byte)(x >> 24));
-            WriteByte(fp, (byte)(x >> 16));
-            WriteByte(fp, (byte)(x >> 8));
-            WriteByte(fp, (byte)(x & 0xFF));
+            Span<byte> bytes = stackalloc byte[4];
+            BinaryPrimitives.WriteUInt32BigEndian(bytes, (uint)x);
+            fp.Write(bytes);
+
             return true;
         }
 
-        internal static bool WriteChunk(FileStream fs, long id, long len)
+        internal static bool WriteChunk(FileStream fp, long id, long len)
         {
-            WriteLong(fs, id);
-            WriteLong(fs, len);
+            Span<byte> bytes = stackalloc byte[4];
+
+            BinaryPrimitives.WriteUInt32BigEndian(bytes, (uint)id);
+            fp.Write(bytes);
+
+            BinaryPrimitives.WriteUInt32BigEndian(bytes, (uint)len);
+            fp.Write(bytes);
 
             return true;
         }

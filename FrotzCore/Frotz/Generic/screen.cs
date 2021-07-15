@@ -30,14 +30,14 @@ namespace Frotz.Generic
 
         private readonly record struct StoryInfo(Story story_id, int pic, int pic1, int pic2);
 
-        private static readonly StoryInfo[] mapper = new[] {
-            new StoryInfo(Story.ZORK_ZERO, 5, 497, 498),
-            new StoryInfo(Story.ZORK_ZERO, 6, 501, 502),
-            new StoryInfo(Story.ZORK_ZERO, 7, 499, 500),
-            new StoryInfo(Story.ZORK_ZERO, 8, 503, 504),
-            new StoryInfo(Story.ARTHUR, 54, 170, 171),
-            new StoryInfo(Story.SHOGUN, 50, 61,62),
-            new StoryInfo(Story.UNKNOWN, 0,0,0),
+        private static readonly StoryInfo[] mapper = new StoryInfo[] {
+            new(Story.ZORK_ZERO, 5, 497, 498),
+            new(Story.ZORK_ZERO, 6, 501, 502),
+            new(Story.ZORK_ZERO, 7, 499, 500),
+            new(Story.ZORK_ZERO, 8, 503, 504),
+            new(Story.ARTHUR, 54, 170, 171),
+            new(Story.SHOGUN, 50, 61,62),
+            new(Story.UNKNOWN, 0,0,0)
         };
 
         private static zword font_height = 1;
