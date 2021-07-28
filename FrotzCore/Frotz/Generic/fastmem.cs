@@ -23,6 +23,7 @@
  */
 
 using System.Buffers.Binary;
+using System.IO;
 using System.Runtime.CompilerServices;
 using zbyte = System.Byte;
 using zword = System.UInt16;
@@ -159,26 +160,11 @@ namespace Frotz.Generic
          */
 
         //typedef struct undo_struct undo_t;
-        internal readonly struct UndoStruct : IDisposable
+
+        internal readonly record struct
+            UndoStruct(long Pc, long DiffSize, zword FrameCount, zword StackSize, zword FrameOffset, int Sp,
+                       MemoryOwner<zword> Stack, MemoryOwner<byte> UndoData) : IDisposable
         {
-            public UndoStruct(long pc, long diffSize, zword frameCount, zword stackSize,
-                zword frameOffset, int sp, MemoryOwner<zword> stack, MemoryOwner<byte> undoData)
-            {
-                Pc = pc; DiffSize = diffSize; FrameCount = frameCount; StackSize = stackSize;
-                FrameOffset = frameOffset; Sp = sp; Stack = stack; UndoData = undoData;
-            }
-
-            public readonly long Pc;
-            public readonly long DiffSize;
-            public readonly zword FrameCount;
-            public readonly zword StackSize;
-            public readonly zword FrameOffset;
-            /* undo diff and stack data follow */
-
-            public readonly int Sp;
-            public readonly MemoryOwner<zword> Stack;
-            public readonly MemoryOwner<byte> UndoData;
-
             public void Dispose()
             {
                 Stack?.Dispose();
@@ -747,7 +733,7 @@ namespace Frotz.Generic
                     ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
 
                 /* Open game file */
-                using (var gfp = new System.IO.FileStream(new_name, System.IO.FileMode.Open))
+                using (var gfp = new FileStream(new_name, FileMode.Open))
                 {
                     if (gfp is null) goto finished;
 
@@ -1058,7 +1044,7 @@ namespace Frotz.Generic
 
                 /* Open game file */
 
-                using (var gfp = new System.IO.FileStream(new_name, System.IO.FileMode.OpenOrCreate))
+                using (var gfp = new FileStream(new_name, FileMode.OpenOrCreate))
                 {
                     if (Main.option_save_quetzal == true)
                     {
@@ -1155,11 +1141,9 @@ namespace Frotz.Generic
             var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - Main.sp);
             Main.Stack.AsSpan(Main.sp, Main.Stack.Length - Main.sp).CopyTo(stack.Span);
 
-            UndoMem.Add(new(
-                pc, diffSize: diff_size, frameCount: Main.frame_count,
-                stackSize: (zword)stack_size, frameOffset: (zword)Main.fp, sp: Main.sp,  //    p->frame_offset = fp - stack;
-                stack, undoData
-            ));
+            //    p->frame_offset = fp - stack;
+            UndoMem.Add(new(pc, diff_size, Main.frame_count, (zword)stack_size,
+                (zword)Main.fp, Main.sp, stack, undoData));
 
             return 1;
         }

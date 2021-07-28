@@ -32,8 +32,8 @@ namespace Frotz.Generic
 
         private const string _alphabet = " ^0123456789.,!?_#'\"/\\-:()";
 
-        private static zword[]? Decoded = null;
-        private static zword[]? Encoded = null;
+        private static MemoryOwner<zword> Decoded = MemoryOwner<zword>.Empty;
+        private static MemoryOwner<zword> Encoded = MemoryOwner<zword>.Empty;
         private static int Resolution;
 
 
@@ -63,8 +63,16 @@ namespace Frotz.Generic
 
         internal static void InitText()
         {
-            Decoded = null;
-            Encoded = null;
+            if (Decoded.Length > 0)
+            {
+                Decoded.Dispose();
+                Decoded = MemoryOwner<zword>.Empty;
+            }
+            if (Encoded.Length > 0)
+            {
+                Encoded.Dispose();
+                Encoded = MemoryOwner<zword>.Empty;
+            }
 
             Resolution = 0;
         }
@@ -261,8 +269,10 @@ namespace Frotz.Generic
                 Err.RuntimeError(ErrorCodes.ERR_DICT_LEN);
             }
 
-            Decoded = new zword[3 * Resolution + 1];
-            Encoded = new zword[Resolution];
+            Decoded.Dispose();
+            Decoded = MemoryOwner<zword>.Allocate(3 * Resolution + 1);
+            Encoded.Dispose();
+            Encoded = MemoryOwner<zword>.Allocate(Resolution);
         }/* find_resolution */
 
         /*
@@ -274,13 +284,14 @@ namespace Frotz.Generic
 
         internal static void LoadString(zword addr, zword length)
         {
-            if (Decoded is null)
+            if (Resolution == 0) FindResolution();
+
+            if (Decoded.Length == 0)
                 ThrowHelper.ThrowInvalidOperationException("Decoded not initialized");
 
             int i = 0;
 
-            if (Resolution == 0) FindResolution();
-
+            var decoded = Decoded.Span;
             while (i < 3 * Resolution)
             {
                 if (i < length)
@@ -288,11 +299,11 @@ namespace Frotz.Generic
                     FastMem.LowByte(addr, out zbyte c);
                     addr++;
 
-                    Decoded[i++] = Text.TranslateFromZscii(c);
+                    decoded[i++] = TranslateFromZscii(c);
                 }
                 else
                 {
-                    Decoded[i++] = 0;
+                    decoded[i++] = 0;
                 }
             }
         }/* load_string */
@@ -326,7 +337,10 @@ namespace Frotz.Generic
 
             if (Resolution == 0) FindResolution();
 
-            if (Decoded is null || Encoded is null)
+            var decoded = Decoded.Span;
+            var encoded = Encoded.Span;
+
+            if (decoded.IsEmpty || encoded.IsEmpty)
                 ThrowHelper.ThrowInvalidOperationException("Decoded or Endoded not initialized");
 
             Span<zbyte> zchars = stackalloc zbyte[3 * (Resolution + 1)];
@@ -336,13 +350,22 @@ namespace Frotz.Generic
 
             if (Main.option_expand_abbreviations && Main.h_version <= ZMachine.V8)
             {
-                if (padding == 0x05 && Decoded[1] == 0)
+                if (padding == 0x05 && decoded[1] == 0)
                 {
-                    switch (Decoded[0])
+                    switch (decoded[0])
                     {
-                        case 'g': Decoded = again; break;
-                        case 'x': Decoded = examine; break;
-                        case 'z': Decoded = wait; break;
+                        case 'g':
+                            decoded.Clear();
+                            again.CopyTo(decoded);
+                            break;
+                        case 'x': 
+                            decoded.Clear();
+                            examine.CopyTo(decoded);
+                            break;
+                        case 'z':
+                            decoded.Clear();
+                            wait.CopyTo(decoded);
+                            break;
                     }
                 }
             }
@@ -351,7 +374,7 @@ namespace Frotz.Generic
 
             while (i < 3 * Resolution)
             {
-                if ((ptr < Decoded.Length) && (c = Decoded[ptr++]) != 0)
+                if ((ptr < Decoded.Length) && (c = decoded[ptr++]) != 0)
                 {
                     int index, set;
                     zbyte c2;
@@ -404,13 +427,13 @@ namespace Frotz.Generic
 
             for (i = 0; i < Resolution; i++)
             {
-                Encoded[i] = (zword)(
+                encoded[i] = (zword)(
                     (zchars[3 * i + 0] << 10) |
                     (zchars[3 * i + 1] << 5) |
                     (zchars[3 * i + 2]));
             }
 
-            Encoded[Resolution - 1] |= 0x8000;
+            encoded[Resolution - 1] |= 0x8000;
 
         }/* encode_text */
 
@@ -458,11 +481,13 @@ namespace Frotz.Generic
             LoadString((zword)(Process.zargs[0] + Process.zargs[2]), Process.zargs[1]);
             EncodeText(0x05);
 
-            if (Encoded is null)
+            var encoded = Encoded.Span;
+
+            if (encoded.IsEmpty)
                 ThrowHelper.ThrowInvalidOperationException("Encoding not initialized.");
 
             for (int i = 0; i < Resolution; i++)
-                FastMem.StoreW((zword)(Process.zargs[3] + 2 * i), Encoded[i]);
+                FastMem.StoreW((zword)(Process.zargs[3] + 2 * i), encoded[i]);
 
         }/* z_encode_text */
 
@@ -891,6 +916,7 @@ namespace Frotz.Generic
 
             lower = 0;
             upper = entry_count - 1;
+            var encoded = Encoded.Span;
 
             while (lower <= upper)
             {
@@ -907,7 +933,7 @@ namespace Frotz.Generic
                 for (i = 0; i < Resolution; i++)
                 {
                     FastMem.LowWord(addr, out entry);
-                    if (Encoded[i] != entry)
+                    if (encoded[i] != entry)
                         goto continuing;
                     addr += 2;
                 }
@@ -918,7 +944,7 @@ namespace Frotz.Generic
 
                 if (sorted)             /* binary search */
                 {
-                    if (Encoded[i] > entry)
+                    if (encoded[i] > entry)
                         lower = entry_number + 1;
                     else
                         upper = entry_number - 1;
@@ -1130,13 +1156,12 @@ namespace Frotz.Generic
             int len;
             int i;
 
-            if (Decoded is null)
+            var decoded = Decoded.Span;
+
+            if (decoded.IsEmpty)
                 ThrowHelper.ThrowInvalidOperationException("Decoded not initialized.");
 
-            for (int j = 0; j < Decoded.Length; j++)
-            {
-                Decoded[j] = 0;
-            }
+            decoded.Clear();
 
             result = string.Empty;
 
@@ -1152,14 +1177,14 @@ namespace Frotz.Generic
                 if (c != ' ')
                 {
                     if (len < 3 * Resolution)
-                        Decoded[len++] = c;
+                        decoded[len++] = c;
                 }
                 else
                 {
                     len = 0;
                 }
             }
-            Decoded[len] = 0;
+            decoded[len] = 0;
 
             /* Search the dictionary for first and last possible extensions */
 
@@ -1176,7 +1201,7 @@ namespace Frotz.Generic
             // ptr = result;
             var temp = new StringBuilder(len);
 
-            for (i = len; (c = (char)Decoded[i]) != 0; i++)
+            for (i = len; (c = (char)decoded[i]) != 0; i++)
                 temp.Append(c);
 
             /* Merge second extension with "result" string */
@@ -1185,7 +1210,7 @@ namespace Frotz.Generic
 
             int ptr = 0;
 
-            for (i = len; (c = (char)Decoded[i]) != 0; i++, ptr++)
+            for (i = len; (c = (char)decoded[i]) != 0; i++, ptr++)
             {
                 if (ptr < temp.Length - 1 && temp[ptr] != c)
                     break;
@@ -1253,29 +1278,22 @@ namespace Frotz.Generic
             0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x5C,0x5D,0x5E,0x5F
         };
 
-        internal static zword UnicodeToLower(zword c)
+        internal static zword UnicodeToLower(zword c) => c switch
         {
-            if (c < 0x0100)
-                c = tolower_basic_latin[c];
-            else if (c == 0x0130)
-                c = 0x0069;	/* Capital I with dot -> lower case i */
-            else if (c == 0x0178)
-                c = 0x00FF;	/* Capital Y diaeresis -> lower case y diaeresis */
-            else if (c < 0x0180)
-                c = (zword)(tolower_latin_extended_a[c - 0x100] + 0x100);
-            else if (c is >= 0x380 and < 0x3D0)
-                c = (zword)(tolower_greek[c - 0x380] + 0x300);
-            else if (c is >= 0x400 and < 0x460)
-                c = (zword)(tolower_cyrillic[c - 0x400] + 0x400);
-
-            return c;
-        }
+            < 0x0100 => tolower_basic_latin[c],
+            0x0130 => 0x0069,
+            0x0178 => 0x00FF,
+            < 0x0180 => (zword)(tolower_latin_extended_a[c - 0x100] + 0x100),
+            >= 0x380 and < 0x3D0 => (zword)(tolower_greek[c - 0x380] + 0x300),
+            >= 0x400 and < 0x460 => (zword)(tolower_cyrillic[c - 0x400] + 0x400),
+            _ => c
+        };
 
         private static void OutChar(StringType st, zword c)
         {
             if (st == StringType.VOCABULARY)
             {
-                Decoded![ptrDt++] = c;
+                Decoded.Span[ptrDt++] = c;
             }
             else
             {
