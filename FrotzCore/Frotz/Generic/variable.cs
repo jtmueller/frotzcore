@@ -18,308 +18,216 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+namespace Frotz.Generic;
+
 using zword = System.UInt16;
 
-namespace Frotz.Generic
+internal static class Variable
 {
-    internal static class Variable
+    /*
+     * z_dec, decrement a variable.
+     *
+     * 	zargs[0] = variable to decrement
+     *
+     */
+
+    internal static void ZDec()
     {
-        /*
-         * z_dec, decrement a variable.
-         *
-         * 	zargs[0] = variable to decrement
-         *
-         */
-
-        internal static void ZDec()
+        if (Process.zargs[0] == 0)
         {
-            if (Process.zargs[0] == 0)
-            {
-                Main.Stack[Main.sp]--;
-            }
-            else if (Process.zargs[0] < 16)
-            {
-                Main.Stack[Main.fp - Process.zargs[0]]--;
-            }
-            else
-            {
-                zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out ushort value);
-                value--;
-                FastMem.SetWord(addr, value);
-            }
-
-        }/* z_dec */
-
-        /*
-         * z_dec_chk, decrement a variable and branch if now less than value.
-         *
-         * 	zargs[0] = variable to decrement
-         * 	zargs[1] = value to check variable against
-         *
-         */
-
-        internal static void ZDecChk()
+            Main.Stack[Main.sp]--;
+        }
+        else if (Process.zargs[0] < 16)
         {
-            zword value;
-
-            if (Process.zargs[0] == 0)
-            {
-                value = --Main.Stack[Main.sp];
-            }
-            else if (Process.zargs[0] < 16)
-            {
-                value = --Main.Stack[Main.fp - Process.zargs[0]];
-            }
-            else
-            {
-                zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out value);
-                value--;
-                FastMem.SetWord(addr, value);
-            }
-
-            Process.Branch((short)value < (short)Process.zargs[1]);
-
-        }/* z_dec_chk */
-
-        /*
-         * z_inc, increment a variable.
-         *
-         * 	zargs[0] = variable to increment
-         *
-         */
-
-        internal static void ZInc()
+            Main.Stack[Main.fp - Process.zargs[0]]--;
+        }
+        else
         {
-            if (Process.zargs[0] == 0)
-            {
-                Main.Stack[Main.sp]++; // (*sp)++;
-            }
-            else if (Process.zargs[0] < 16)
-            {
-                (Main.Stack[Main.fp - Process.zargs[0]])++;
-            }
-            else
-            {
-                zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out ushort value);
-                value++;
-                FastMem.SetWord(addr, value);
-            }
+            zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
+            FastMem.LowWord(addr, out ushort value);
+            value--;
+            FastMem.SetWord(addr, value);
+        }
 
-        }/* z_inc */
+    }/* z_dec */
 
-        /*
-         * z_inc_chk, increment a variable and branch if now greater than value.
-         *
-         * 	zargs[0] = variable to increment
-         * 	zargs[1] = value to check variable against
-         *
-         */
+    /*
+     * z_dec_chk, decrement a variable and branch if now less than value.
+     *
+     * 	zargs[0] = variable to decrement
+     * 	zargs[1] = value to check variable against
+     *
+     */
 
-        internal static void ZIncChk()
+    internal static void ZDecChk()
+    {
+        zword value;
+
+        if (Process.zargs[0] == 0)
         {
-            zword value;
-
-            if (Process.zargs[0] == 0)
-            {
-                value = ++(Main.Stack[Main.sp]);
-            }
-            else if (Process.zargs[0] < 16)
-            {
-                value = ++(Main.Stack[Main.fp - Process.zargs[0]]);
-            }
-            else
-            {
-                zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out value);
-                value++;
-                FastMem.SetWord(addr, value);
-            }
-
-            Process.Branch((short)value > (short)Process.zargs[1]);
-
-        }/* z_inc_chk */
-
-        /*
-         * z_load, store the value of a variable.
-         *
-         *	zargs[0] = variable to store
-         *
-         */
-
-        internal static void ZLoad()
+            value = --Main.Stack[Main.sp];
+        }
+        else if (Process.zargs[0] < 16)
         {
-            zword value;
-
-            if (Process.zargs[0] == 0)
-            {
-                value = Main.Stack[Main.sp];
-            }
-            else if (Process.zargs[0] < 16)
-            {
-                value = Main.Stack[Main.fp - Process.zargs[0]];
-            }
-            else
-            {
-                zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out value);
-            }
-
-            Process.Store(value);
-
-        }/* z_load */
-
-        /*
-         * z_pop, pop a value off the game stack and discard it.
-         *
-         *	no zargs used
-         *
-         */
-
-        internal static void ZPop() => Main.sp++; /* z_pop */
-
-        /*
-         * z_pop_stack, pop n values off the game or user stack and discard them.
-         *
-         *	zargs[0] = number of values to discard
-         *	zargs[1] = address of user stack (optional)
-         *
-         */
-
-        internal static void ZPopStack()
+            value = --Main.Stack[Main.fp - Process.zargs[0]];
+        }
+        else
         {
+            zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
+            FastMem.LowWord(addr, out value);
+            value--;
+            FastMem.SetWord(addr, value);
+        }
 
-            if (Process.zargc == 2)
-            {       /* it's a user stack */
+        Process.Branch((short)value < (short)Process.zargs[1]);
 
-                zword addr = Process.zargs[1];
+    }/* z_dec_chk */
 
-                FastMem.LowWord(addr, out ushort size);
+    /*
+     * z_inc, increment a variable.
+     *
+     * 	zargs[0] = variable to increment
+     *
+     */
 
-                size += Process.zargs[0];
-                FastMem.StoreW(addr, size);
-
-            }
-            else
-            {
-                Main.sp += Process.zargs[0];    /* it's the game stack */
-            }
-        }/* z_pop_stack */
-
-        /*
-         * z_pull, pop a value off...
-         *
-         * a) ...the game or a user stack and store it (V6)
-         *
-         *	zargs[0] = address of user stack (optional)
-         *
-         * b) ...the game stack and write it to a variable (other than V6)
-         *
-         *	zargs[0] = variable to write value to
-         *
-         */
-
-        internal static void ZPull()
+    internal static void ZInc()
+    {
+        if (Process.zargs[0] == 0)
         {
-            zword value;
-
-            if (Main.h_version != ZMachine.V6)
-            {	/* not a V6 game, pop stack and write */
-                value = Main.Stack[Main.sp++];
-
-                if (Process.zargs[0] == 0)
-                {
-                    Main.Stack[Main.sp] = value;
-                }
-                else if (Process.zargs[0] < 16)
-                {
-                    // *(fp - Process.zargs[0]) = value;
-                    Main.Stack[Main.fp - Process.zargs[0]] = value;
-                }
-                else
-                {
-                    zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                    FastMem.SetWord(addr, value);
-                }
-            }
-            else
-            {   /* it's V6, but is there a user stack? */
-                if (Process.zargc == 1)
-                {	/* it's a user stack */
-
-                    zword addr = Process.zargs[0];
-
-                    FastMem.LowWord(addr, out ushort size);
-
-                    size++;
-                    FastMem.StoreW(addr, size);
-
-                    addr += (zword)(2 * size);
-                    FastMem.LowWord(addr, out value);
-                }
-                else
-                {
-                    value = Main.Stack[Main.sp++];// value = *sp++;	/* it's the game stack */
-                }
-
-                Process.Store(value);
-
-            }
-
-        }/* z_pull */
-
-        /*
-         * z_push, push a value onto the game stack.
-         *
-         *	zargs[0] = value to push onto the stack
-         *
-         */
-
-        internal static void ZPush()
+            Main.Stack[Main.sp]++; // (*sp)++;
+        }
+        else if (Process.zargs[0] < 16)
         {
-            // *--sp = zargs[0];
-            Main.Stack[--Main.sp] = Process.zargs[0];
-        }/* z_push */
-
-        /*
-         * z_push_stack, push a value onto a user stack then branch if successful.
-         *
-         *	zargs[0] = value to push onto the stack
-         *	zargs[1] = address of user stack
-         *
-         */
-
-        internal static void ZPushStack()
+            (Main.Stack[Main.fp - Process.zargs[0]])++;
+        }
+        else
         {
+            zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
+            FastMem.LowWord(addr, out ushort value);
+            value++;
+            FastMem.SetWord(addr, value);
+        }
+
+    }/* z_inc */
+
+    /*
+     * z_inc_chk, increment a variable and branch if now greater than value.
+     *
+     * 	zargs[0] = variable to increment
+     * 	zargs[1] = value to check variable against
+     *
+     */
+
+    internal static void ZIncChk()
+    {
+        zword value;
+
+        if (Process.zargs[0] == 0)
+        {
+            value = ++(Main.Stack[Main.sp]);
+        }
+        else if (Process.zargs[0] < 16)
+        {
+            value = ++(Main.Stack[Main.fp - Process.zargs[0]]);
+        }
+        else
+        {
+            zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
+            FastMem.LowWord(addr, out value);
+            value++;
+            FastMem.SetWord(addr, value);
+        }
+
+        Process.Branch((short)value > (short)Process.zargs[1]);
+
+    }/* z_inc_chk */
+
+    /*
+     * z_load, store the value of a variable.
+     *
+     *	zargs[0] = variable to store
+     *
+     */
+
+    internal static void ZLoad()
+    {
+        zword value;
+
+        if (Process.zargs[0] == 0)
+        {
+            value = Main.Stack[Main.sp];
+        }
+        else if (Process.zargs[0] < 16)
+        {
+            value = Main.Stack[Main.fp - Process.zargs[0]];
+        }
+        else
+        {
+            zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
+            FastMem.LowWord(addr, out value);
+        }
+
+        Process.Store(value);
+
+    }/* z_load */
+
+    /*
+     * z_pop, pop a value off the game stack and discard it.
+     *
+     *	no zargs used
+     *
+     */
+
+    internal static void ZPop() => Main.sp++; /* z_pop */
+
+    /*
+     * z_pop_stack, pop n values off the game or user stack and discard them.
+     *
+     *	zargs[0] = number of values to discard
+     *	zargs[1] = address of user stack (optional)
+     *
+     */
+
+    internal static void ZPopStack()
+    {
+
+        if (Process.zargc == 2)
+        {       /* it's a user stack */
+
             zword addr = Process.zargs[1];
 
             FastMem.LowWord(addr, out ushort size);
 
-            if (size != 0)
-            {
-                FastMem.StoreW((zword)(addr + 2 * size), Process.zargs[0]);
+            size += Process.zargs[0];
+            FastMem.StoreW(addr, size);
 
-                size--;
-                FastMem.StoreW(addr, size);
-            }
-
-            Process.Branch(size > 0); // TODO I think that's what's expected here
-
-        }/* z_push_stack */
-
-        /*
-         * z_store, write a value to a variable.
-         *
-         * 	zargs[0] = variable to be written to
-         *      zargs[1] = value to write
-         *
-         */
-
-        internal static void ZStore()
+        }
+        else
         {
-            zword value = Process.zargs[1];
+            Main.sp += Process.zargs[0];    /* it's the game stack */
+        }
+    }/* z_pop_stack */
+
+    /*
+     * z_pull, pop a value off...
+     *
+     * a) ...the game or a user stack and store it (V6)
+     *
+     *	zargs[0] = address of user stack (optional)
+     *
+     * b) ...the game stack and write it to a variable (other than V6)
+     *
+     *	zargs[0] = variable to write value to
+     *
+     */
+
+    internal static void ZPull()
+    {
+        zword value;
+
+        if (Main.h_version != ZMachine.V6)
+        {   /* not a V6 game, pop stack and write */
+            value = Main.Stack[Main.sp++];
 
             if (Process.zargs[0] == 0)
             {
@@ -327,6 +235,7 @@ namespace Frotz.Generic
             }
             else if (Process.zargs[0] < 16)
             {
+                // *(fp - Process.zargs[0]) = value;
                 Main.Stack[Main.fp - Process.zargs[0]] = value;
             }
             else
@@ -334,7 +243,97 @@ namespace Frotz.Generic
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
                 FastMem.SetWord(addr, value);
             }
+        }
+        else
+        {   /* it's V6, but is there a user stack? */
+            if (Process.zargc == 1)
+            {   /* it's a user stack */
 
-        }/* z_store */
-    }
+                zword addr = Process.zargs[0];
+
+                FastMem.LowWord(addr, out ushort size);
+
+                size++;
+                FastMem.StoreW(addr, size);
+
+                addr += (zword)(2 * size);
+                FastMem.LowWord(addr, out value);
+            }
+            else
+            {
+                value = Main.Stack[Main.sp++];// value = *sp++;	/* it's the game stack */
+            }
+
+            Process.Store(value);
+
+        }
+
+    }/* z_pull */
+
+    /*
+     * z_push, push a value onto the game stack.
+     *
+     *	zargs[0] = value to push onto the stack
+     *
+     */
+
+    internal static void ZPush()
+    {
+        // *--sp = zargs[0];
+        Main.Stack[--Main.sp] = Process.zargs[0];
+    }/* z_push */
+
+    /*
+     * z_push_stack, push a value onto a user stack then branch if successful.
+     *
+     *	zargs[0] = value to push onto the stack
+     *	zargs[1] = address of user stack
+     *
+     */
+
+    internal static void ZPushStack()
+    {
+        zword addr = Process.zargs[1];
+
+        FastMem.LowWord(addr, out ushort size);
+
+        if (size != 0)
+        {
+            FastMem.StoreW((zword)(addr + 2 * size), Process.zargs[0]);
+
+            size--;
+            FastMem.StoreW(addr, size);
+        }
+
+        Process.Branch(size > 0); // TODO I think that's what's expected here
+
+    }/* z_push_stack */
+
+    /*
+     * z_store, write a value to a variable.
+     *
+     * 	zargs[0] = variable to be written to
+     *      zargs[1] = value to write
+     *
+     */
+
+    internal static void ZStore()
+    {
+        zword value = Process.zargs[1];
+
+        if (Process.zargs[0] == 0)
+        {
+            Main.Stack[Main.sp] = value;
+        }
+        else if (Process.zargs[0] < 16)
+        {
+            Main.Stack[Main.fp - Process.zargs[0]] = value;
+        }
+        else
+        {
+            zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
+            FastMem.SetWord(addr, value);
+        }
+
+    }/* z_store */
 }

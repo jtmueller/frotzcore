@@ -1,15 +1,14 @@
-﻿namespace Frotz
+﻿namespace Frotz;
+
+public enum Story
 {
-    public enum Story
-    {
-        BEYOND_ZORK,
-        SHERLOCK,
-        ZORK_ZERO,
-        SHOGUN,
-        ARTHUR,
-        JOURNEY,
-        LURKING_HORROR,
-        AMFV,
-        UNKNOWN
-    }
+    BEYOND_ZORK,
+    SHERLOCK,
+    ZORK_ZERO,
+    SHOGUN,
+    ARTHUR,
+    JOURNEY,
+    LURKING_HORROR,
+    AMFV,
+    UNKNOWN
 }

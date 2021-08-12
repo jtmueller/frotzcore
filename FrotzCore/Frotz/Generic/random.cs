@@ -17,78 +17,76 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+namespace Frotz.Generic;
 
 using zword = System.UInt16;
 
-namespace Frotz.Generic
+internal static class Random
 {
-    internal static class Random
+    private static int A = 1; // TODO This was a long originally
+
+    private static int interval = 0;
+    private static int counter = 0;
+
+    /*
+     * seed_random
+     *         * Set the seed value for the random number generator.
+     *
+     */
+
+    internal static void SeedRandom(int value)
     {
-        private static int A = 1; // TODO This was a long originally
 
-        private static int interval = 0;
-        private static int counter = 0;
+        if (value == 0)
+        {       /* ask interface for seed value */
+            A = OS.RandomSeed();
+            interval = 0;
+        }
+        else if (value < 1000)
+        {   /* special seed value */
+            counter = 0;
+            interval = value;
+        }
+        else
+        {           /* standard seed value */
+            A = value;
+            interval = 0;
+        }
 
-        /*
-         * seed_random
-         *         * Set the seed value for the random number generator.
-         *
-         */
+    }/* seed_random */
 
-        internal static void SeedRandom(int value)
-        {
+    /*
+     * z_random, store a random number or set the random number seed.
+     *
+     *	zargs[0] = range (positive) or seed value (negative)
+     *
+     */
 
-            if (value == 0)
-            {       /* ask interface for seed value */
-                A = OS.RandomSeed();
-                interval = 0;
-            }
-            else if (value < 1000)
-            {   /* special seed value */
-                counter = 0;
-                interval = value;
-            }
-            else
-            {           /* standard seed value */
-                A = value;
-                interval = 0;
-            }
+    internal static void ZRandom()
+    {
+        if ((short)Process.zargs[0] <= 0)
+        {   /* set random seed */
 
-        }/* seed_random */
+            SeedRandom(-(short)Process.zargs[0]);
+            Process.Store(0);
 
-        /*
-         * z_random, store a random number or set the random number seed.
-         *
-         *	zargs[0] = range (positive) or seed value (negative)
-         *
-         */
+        }
+        else
+        {               /* generate random number */
+            zword result;
 
-        internal static void ZRandom()
-        {
-            if ((short)Process.zargs[0] <= 0)
-            {	/* set random seed */
-
-                SeedRandom(-(short)Process.zargs[0]);
-                Process.Store(0);
-
+            if (interval != 0)
+            {       /* ...in special mode */
+                result = (zword)counter++;
+                if (counter == interval) counter = 0;
             }
             else
-            {				/* generate random number */
-                zword result;
-
-                if (interval != 0)
-                {		/* ...in special mode */
-                    result = (zword)counter++;
-                    if (counter == interval) counter = 0;
-                }
-                else
-                {			/* ...in standard mode */
-                    A = 0x015a4e35 * A + 1;
-                    result = (zword)((A >> 16) & 0x7fff);
-                }
-
-                Process.Store((zword)(result % Process.zargs[0] + 1));
+            {           /* ...in standard mode */
+                A = 0x015a4e35 * A + 1;
+                result = (zword)((A >> 16) & 0x7fff);
             }
-        }/* z_random */
-    }
+
+            Process.Store((zword)(result % Process.zargs[0] + 1));
+        }
+    }/* z_random */
 }

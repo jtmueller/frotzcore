@@ -1,53 +1,52 @@
-﻿namespace Frotz
+﻿namespace Frotz;
+
+public static class Utilities
 {
-    public static class Utilities
+    /// <summary>
+    /// Returns a disposable object that will call the given action upon being disposed.
+    /// </summary>
+    /// <param name="onDispose">The action to call on disposing.</param>
+    /// <returns></returns>
+    public static DisposableWrapper<T> Dispose<T>(T obj, Action<T> onDispose) => new(obj, onDispose);
+
+    public static DisposableWrapper Dispose(Action onDispose) => new(onDispose);
+
+    public ref struct DisposableWrapper<T>
     {
-        /// <summary>
-        /// Returns a disposable object that will call the given action upon being disposed.
-        /// </summary>
-        /// <param name="onDispose">The action to call on disposing.</param>
-        /// <returns></returns>
-        public static DisposableWrapper<T> Dispose<T>(T obj, Action<T> onDispose) => new(obj, onDispose);
+        private Action<T>? _onDispose;
+        private T _obj;
 
-        public static DisposableWrapper Dispose(Action onDispose) => new(onDispose);
-
-        public ref struct DisposableWrapper<T>
+        internal DisposableWrapper(T obj, Action<T> onDispose)
         {
-            private Action<T>? _onDispose;
-            private T _obj;
-
-            internal DisposableWrapper(T obj, Action<T> onDispose)
-            {
-                _obj = obj;
-                _onDispose = onDispose;
-            }
-
-            public void Dispose()
-            {
-                if (_onDispose is not null)
-                {
-                    _onDispose.Invoke(_obj);
-                    this = default;
-                }
-            }
+            _obj = obj;
+            _onDispose = onDispose;
         }
 
-        public ref struct DisposableWrapper
+        public void Dispose()
         {
-            private Action? _onDispose;
-
-            internal DisposableWrapper(Action onDispose)
+            if (_onDispose is not null)
             {
-                _onDispose = onDispose;
+                _onDispose.Invoke(_obj);
+                this = default;
             }
+        }
+    }
 
-            public void Dispose()
+    public ref struct DisposableWrapper
+    {
+        private Action? _onDispose;
+
+        internal DisposableWrapper(Action onDispose)
+        {
+            _onDispose = onDispose;
+        }
+
+        public void Dispose()
+        {
+            if (_onDispose is not null)
             {
-                if (_onDispose is not null)
-                {
-                    _onDispose.Invoke();
-                    this = default;
-                }
+                _onDispose.Invoke();
+                this = default;
             }
         }
     }

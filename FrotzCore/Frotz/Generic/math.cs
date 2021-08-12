@@ -17,193 +17,191 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+namespace Frotz.Generic;
 
 using zword = System.UInt16;
 
-namespace Frotz.Generic
+internal static class Math
 {
-    internal static class Math
+    /*
+     * z_add, 16bit addition.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZAdd()
+        => Process.Store((zword)((short)Process.zargs[0] + (short)Process.zargs[1])); /* z_add */
+
+    /*
+     * z_and, bitwise AND operation.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZAnd()
+        => Process.Store((zword)(Process.zargs[0] & Process.zargs[1])); /* z_and */
+
+    /*
+     * z_art_shift, arithmetic SHIFT operation.
+     *
+     *	zargs[0] = value
+     *	zargs[1] = #positions to shift left (positive) or right
+     *
+     */
+
+    internal static void ZArtShift()
     {
-        /*
-         * z_add, 16bit addition.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZAdd() 
-            => Process.Store((zword)((short)Process.zargs[0] + (short)Process.zargs[1])); /* z_add */
+        // TODO This code has never been hit... I need to find something that will hit it
+        if ((short)Process.zargs[1] > 0)
+            Process.Store((zword)((short)Process.zargs[0] << (short)Process.zargs[1]));
+        else
+            Process.Store((zword)((short)Process.zargs[0] >> -(short)Process.zargs[1]));
 
-        /*
-         * z_and, bitwise AND operation.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZAnd() 
-            => Process.Store((zword)(Process.zargs[0] & Process.zargs[1])); /* z_and */
+    }/* z_art_shift */
 
-        /*
-         * z_art_shift, arithmetic SHIFT operation.
-         *
-         *	zargs[0] = value
-         *	zargs[1] = #positions to shift left (positive) or right
-         *
-         */
+    /*
+     * z_div, signed 16bit division.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZDiv()
+    {
+        if (Process.zargs[1] == 0)
+            Err.RuntimeError(ErrorCodes.ERR_DIV_ZERO);
 
-        internal static void ZArtShift()
-        {
-            // TODO This code has never been hit... I need to find something that will hit it
-            if ((short)Process.zargs[1] > 0)
-                Process.Store((zword)((short)Process.zargs[0] << (short)Process.zargs[1]));
-            else
-                Process.Store((zword)((short)Process.zargs[0] >> -(short)Process.zargs[1]));
+        Process.Store((zword)((short)Process.zargs[0] / (short)Process.zargs[1]));
+    }/* z_div */
 
-        }/* z_art_shift */
+    /*
+     * z_je, branch if the first value equals any of the following.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value (optional)
+     *	...
+     *	zargs[3] = fourth value (optional)
+     *
+     */
+    internal static void ZJe()
+    {
+        Process.Branch(
+            Process.zargc > 1 && (Process.zargs[0] == Process.zargs[1] || (
+            Process.zargc > 2 && (Process.zargs[0] == Process.zargs[2] || (
+            Process.zargc > 3 && (Process.zargs[0] == Process.zargs[3]))))));
 
-        /*
-         * z_div, signed 16bit division.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZDiv()
-        {
-            if (Process.zargs[1] == 0)
-                Err.RuntimeError(ErrorCodes.ERR_DIV_ZERO);
+    } /* z_je */
 
-            Process.Store((zword)((short)Process.zargs[0] / (short)Process.zargs[1]));
-        }/* z_div */
+    /*
+     * z_jg, branch if the first value is greater than the second.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZJg()
+        => Process.Branch((short)Process.zargs[0] > (short)Process.zargs[1]); /* z_jg */
 
-        /*
-         * z_je, branch if the first value equals any of the following.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value (optional)
-         *	...
-         *	zargs[3] = fourth value (optional)
-         *
-         */
-        internal static void ZJe()
-        {
-            Process.Branch(
-                Process.zargc > 1 && (Process.zargs[0] == Process.zargs[1] || (
-                Process.zargc > 2 && (Process.zargs[0] == Process.zargs[2] || (
-                Process.zargc > 3 && (Process.zargs[0] == Process.zargs[3]))))));
+    /*
+     * z_jl, branch if the first value is less than the second.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZJl()
+        => Process.Branch((short)Process.zargs[0] < (short)Process.zargs[1]); /* z_jl */
 
-        } /* z_je */
+    /*
+     * z_jz, branch if value is zero.
+     *
+     * 	zargs[0] = value
+     *
+     */
+    internal static void ZJz()
+        => Process.Branch((short)Process.zargs[0] == 0); /* z_jz */
 
-        /*
-         * z_jg, branch if the first value is greater than the second.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZJg() 
-            => Process.Branch((short)Process.zargs[0] > (short)Process.zargs[1]); /* z_jg */
+    /*
+     * z_log_shift, logical SHIFT operation.
+     *
+     * 	zargs[0] = value
+     *	zargs[1] = #positions to shift left (positive) or right (negative)
+     *
+     */
+    internal static void ZLogShift()
+    {
+        if ((short)Process.zargs[1] > 0)
+            Process.Store((zword)(Process.zargs[0] << (short)Process.zargs[1]));
+        else
+            Process.Store((zword)(Process.zargs[0] >> -(short)Process.zargs[1]));
+    } /* z_log_shift */
 
-        /*
-         * z_jl, branch if the first value is less than the second.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZJl() 
-            => Process.Branch((short)Process.zargs[0] < (short)Process.zargs[1]); /* z_jl */
+    /*
+     * z_mod, remainder after signed 16bit division.
+     *
+     * 	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZMod()
+    {
+        if (Process.zargs[1] == 0)
+            Err.RuntimeError(ErrorCodes.ERR_DIV_ZERO);
 
-        /*
-         * z_jz, branch if value is zero.
-         *
-         * 	zargs[0] = value
-         *
-         */
-        internal static void ZJz() 
-            => Process.Branch((short)Process.zargs[0] == 0); /* z_jz */
+        Process.Store((zword)((short)Process.zargs[0] % (short)Process.zargs[1]));
+    } /* z_mod */
 
-        /*
-         * z_log_shift, logical SHIFT operation.
-         *
-         * 	zargs[0] = value
-         *	zargs[1] = #positions to shift left (positive) or right (negative)
-         *
-         */
-        internal static void ZLogShift()
-        {
-            if ((short)Process.zargs[1] > 0)
-                Process.Store((zword)(Process.zargs[0] << (short)Process.zargs[1]));
-            else
-                Process.Store((zword)(Process.zargs[0] >> -(short)Process.zargs[1]));
-        } /* z_log_shift */
+    /*
+     * z_mul, 16bit multiplication.
+     *
+     * 	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
+    internal static void ZMul()
+        => Process.Store((zword)((short)Process.zargs[0] * (short)Process.zargs[1])); /* z_mul */
 
-        /*
-         * z_mod, remainder after signed 16bit division.
-         *
-         * 	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZMod()
-        {
-            if (Process.zargs[1] == 0)
-                Err.RuntimeError(ErrorCodes.ERR_DIV_ZERO);
+    /*
+     * z_not, bitwise NOT operation.
+     *
+     * 	zargs[0] = value
+     *
+     */
+    internal static void ZNot()
+        => Process.Store((zword)~Process.zargs[0]); /* z_not */
 
-            Process.Store((zword)((short)Process.zargs[0] % (short)Process.zargs[1]));
-        } /* z_mod */
+    /*
+     * z_or, bitwise OR operation.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
 
-        /*
-         * z_mul, 16bit multiplication.
-         *
-         * 	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-        internal static void ZMul() 
-            => Process.Store((zword)((short)Process.zargs[0] * (short)Process.zargs[1])); /* z_mul */
+    internal static void ZOr()
+        => Process.Store((zword)(Process.zargs[0] | Process.zargs[1])); /* z_or */
 
-        /*
-         * z_not, bitwise NOT operation.
-         *
-         * 	zargs[0] = value
-         *
-         */
-        internal static void ZNot() 
-            => Process.Store((zword)~Process.zargs[0]); /* z_not */
+    /*
+     * z_sub, 16bit substraction.
+     *
+     *	zargs[0] = first value
+     *	zargs[1] = second value
+     *
+     */
 
-        /*
-         * z_or, bitwise OR operation.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
+    internal static void ZSub()
+        => Process.Store((zword)((short)Process.zargs[0] - (short)Process.zargs[1])); /* z_sub */
 
-        internal static void ZOr()
-            => Process.Store((zword)(Process.zargs[0] | Process.zargs[1])); /* z_or */
+    /*
+     * z_test, branch if all the flags of a bit mask are set in a value.
+     *
+     *	zargs[0] = value to be examined
+     *	zargs[1] = bit mask
+     *
+     */
 
-        /*
-         * z_sub, 16bit substraction.
-         *
-         *	zargs[0] = first value
-         *	zargs[1] = second value
-         *
-         */
-
-        internal static void ZSub()
-            => Process.Store((zword)((short)Process.zargs[0] - (short)Process.zargs[1])); /* z_sub */
-
-        /*
-         * z_test, branch if all the flags of a bit mask are set in a value.
-         *
-         *	zargs[0] = value to be examined
-         *	zargs[1] = bit mask
-         *
-         */
-
-        internal static void ZTest()
-            => Process.Branch((Process.zargs[0] & Process.zargs[1]) == Process.zargs[1]); /* z_test */
-    }
+    internal static void ZTest()
+        => Process.Branch((Process.zargs[0] & Process.zargs[1]) == Process.zargs[1]); /* z_test */
 }

@@ -17,166 +17,158 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+namespace Frotz.Generic;
 
 using zbyte = System.Byte;
 using zword = System.UInt16;
 
-namespace Frotz.Generic
+internal static class Table
 {
-    internal static class Table
+
+    /*
+     * z_copy_table, copy a table or fill it with zeroes.
+     *
+     *	zargs[0] = address of table
+     * 	zargs[1] = destination address or 0 for fill
+     *	zargs[2] = size of table
+     *
+     * Note: Copying is safe even when source and destination overlap; but
+     *       if zargs[1] is negative the table _must_ be copied forwards.
+     *
+     */
+
+    internal static void ZCopyTable()
     {
+        zword addr;
+        zword size = Process.zargs[2];
+        zbyte value;
+        int i;
 
-        /*
-         * z_copy_table, copy a table or fill it with zeroes.
-         *
-         *	zargs[0] = address of table
-         * 	zargs[1] = destination address or 0 for fill
-         *	zargs[2] = size of table
-         *
-         * Note: Copying is safe even when source and destination overlap; but
-         *       if zargs[1] is negative the table _must_ be copied forwards.
-         *
-         */
-
-        internal static void ZCopyTable()
+        if (Process.zargs[1] == 0)                                          /* zero table */
         {
-            zword addr;
-            zword size = Process.zargs[2];
-            zbyte value;
-            int i;
-
-            if (Process.zargs[1] == 0)                                          /* zero table */
+            for (i = 0; i < size; i++)
+                FastMem.StoreB((zword)(Process.zargs[0] + i), 0);
+        }
+        else if ((short)size < 0 || Process.zargs[0] > Process.zargs[1])    /* copy forwards */
+        {
+            for (i = 0; i < (((short)size < 0) ? -(short)size : size); i++)
             {
-                for (i = 0; i < size; i++)
-                    FastMem.StoreB((zword)(Process.zargs[0] + i), 0);
+                addr = (zword)(Process.zargs[0] + i);
+                FastMem.LowByte(addr, out value);
+                FastMem.StoreB((zword)(Process.zargs[1] + i), value);
             }
-            else if ((short)size < 0 || Process.zargs[0] > Process.zargs[1])    /* copy forwards */
+        }
+        else                                                                /* copy backwards */
+        {
+            for (i = size - 1; i >= 0; i--)
             {
-                for (i = 0; i < (((short)size < 0) ? -(short)size : size); i++)
-                {
-                    addr = (zword)(Process.zargs[0] + i);
-                    FastMem.LowByte(addr, out value);
-                    FastMem.StoreB((zword)(Process.zargs[1] + i), value);
-                }
+                addr = (zword)(Process.zargs[0] + i);
+                FastMem.LowByte(addr, out value);
+                FastMem.StoreB((zword)(Process.zargs[1] + i), value);
             }
-            else                                                                /* copy backwards */
-            {
-                for (i = size - 1; i >= 0; i--)
-                {
-                    addr = (zword)(Process.zargs[0] + i);
-                    FastMem.LowByte(addr, out value);
-                    FastMem.StoreB((zword)(Process.zargs[1] + i), value);
-                }
+        }
+    } /* z_copy_table */
+
+    /*
+     * z_loadb, store a value from a table of bytes.
+     *
+     *	zargs[0] = address of table
+     *	zargs[1] = index of table entry to store
+     *
+     */
+    internal static void ZLoadB()
+    {
+        zword addr = (zword)(Process.zargs[0] + Process.zargs[1]);
+        FastMem.LowByte(addr, out byte value);
+        Process.Store(value);
+    } /* z_loadb */
+
+    /*
+     * z_loadw, store a value from a table of words.
+     *
+     *	zargs[0] = address of table
+     *	zargs[1] = index of table entry to store
+     *
+     */
+
+    internal static void ZLoadW()
+    {
+        zword addr = (zword)(Process.zargs[0] + 2 * Process.zargs[1]);
+        FastMem.LowWord(addr, out ushort value);
+        Process.Store(value);
+    } /* z_loadw */
+
+    /*
+     * z_scan_table, find and store the address of a target within a table.
+     *
+     *	zargs[0] = target value to be searched for
+     *	zargs[1] = address of table
+     *	zargs[2] = number of table entries to check value against
+     *	zargs[3] = type of table (optional, defaults to 0x82)
+     *
+     * Note: The table is a word array if bit 7 of zargs[3] is set; otherwise
+     *       it's a byte array. The lower bits hold the address step.
+     *
+     */
+
+    internal static void ZScanTable()
+    {
+        zword addr = Process.zargs[1];
+        int i;
+
+        /* Supply default arguments */
+        if (Process.zargc < 4)
+            Process.zargs[3] = 0x82;
+
+        /* Scan byte or word array */
+
+        for (i = 0; i < Process.zargs[2]; i++)
+        {
+            if ((Process.zargs[3] & 0x80) > 0)
+            {   /* scan word array */
+                FastMem.LowWord(addr, out ushort wvalue);
+
+                if (wvalue == Process.zargs[0])
+                    goto finished;
+
             }
-        } /* z_copy_table */
+            else
+            {   /* scan byte array */
+                FastMem.LowByte(addr, out byte bvalue);
 
-        /*
-         * z_loadb, store a value from a table of bytes.
-         *
-         *	zargs[0] = address of table
-         *	zargs[1] = index of table entry to store
-         *
-         */
-        internal static void ZLoadB()
-        {
-            zword addr = (zword)(Process.zargs[0] + Process.zargs[1]);
-            FastMem.LowByte(addr, out byte value);
-            Process.Store(value);
-        } /* z_loadb */
-
-        /*
-         * z_loadw, store a value from a table of words.
-         *
-         *	zargs[0] = address of table
-         *	zargs[1] = index of table entry to store
-         *
-         */
-
-        internal static void ZLoadW()
-        {
-            zword addr = (zword)(Process.zargs[0] + 2 * Process.zargs[1]);
-            FastMem.LowWord(addr, out ushort value);
-            Process.Store(value);
-        } /* z_loadw */
-
-        /*
-         * z_scan_table, find and store the address of a target within a table.
-         *
-         *	zargs[0] = target value to be searched for
-         *	zargs[1] = address of table
-         *	zargs[2] = number of table entries to check value against
-         *	zargs[3] = type of table (optional, defaults to 0x82)
-         *
-         * Note: The table is a word array if bit 7 of zargs[3] is set; otherwise
-         *       it's a byte array. The lower bits hold the address step.
-         *
-         */
-
-        internal static void ZScanTable()
-        {
-            zword addr = Process.zargs[1];
-            int i;
-
-            /* Supply default arguments */
-            if (Process.zargc < 4)
-                Process.zargs[3] = 0x82;
-
-            /* Scan byte or word array */
-
-            for (i = 0; i < Process.zargs[2]; i++)
-            {
-                if ((Process.zargs[3] & 0x80) > 0)
-                {   /* scan word array */
-                    FastMem.LowWord(addr, out ushort wvalue);
-
-                    if (wvalue == Process.zargs[0])
-                        goto finished;
-
-                }
-                else
-                {   /* scan byte array */
-                    FastMem.LowByte(addr, out byte bvalue);
-
-                    if (bvalue == Process.zargs[0])
-                        goto finished;
-                }
-
-                addr += (zword)(Process.zargs[3] & 0x7f);
+                if (bvalue == Process.zargs[0])
+                    goto finished;
             }
 
-            addr = 0;
+            addr += (zword)(Process.zargs[3] & 0x7f);
+        }
 
-        finished:
-            Process.Store(addr);
-            Process.Branch(addr > 0);
+        addr = 0;
 
-        }/* z_scan_table */
+    finished:
+        Process.Store(addr);
+        Process.Branch(addr > 0);
 
-        /*
-         * z_storeb, write a byte into a table of bytes.
-         *
-         *	zargs[0] = address of table
-         *	zargs[1] = index of table entry
-         *	zargs[2] = value to be written
-         *
-         */
+    }/* z_scan_table */
 
-        internal static void ZStoreB()
-        {
-            FastMem.StoreB((zword)(Process.zargs[0] + Process.zargs[1]), (byte)Process.zargs[2]);
-        } /* z_storeb */
+    /*
+     * z_storeb, write a byte into a table of bytes.
+     *
+     *	zargs[0] = address of table
+     *	zargs[1] = index of table entry
+     *	zargs[2] = value to be written
+     *
+     */
 
-        /*
-         * z_storew, write a word into a table of words.
-         *
-         *	zargs[0] = address of table
-         *	zargs[1] = index of table entry
-         *	zargs[2] = value to be written
-         *
-         */
-        internal static void ZStoreW()
-        {
-            FastMem.StoreW((zword)(Process.zargs[0] + 2 * Process.zargs[1]), Process.zargs[2]);
-        } /* z_storew */
-    }
+    internal static void ZStoreB() => FastMem.StoreB((zword)(Process.zargs[0] + Process.zargs[1]), (byte)Process.zargs[2]); /* z_storeb */
+
+    /*
+     * z_storew, write a word into a table of words.
+     *
+     *	zargs[0] = address of table
+     *	zargs[1] = index of table entry
+     *	zargs[2] = value to be written
+     *
+     */
+    internal static void ZStoreW() => FastMem.StoreW((zword)(Process.zargs[0] + 2 * Process.zargs[1]), Process.zargs[2]); /* z_storew */
 }

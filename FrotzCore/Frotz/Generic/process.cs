@@ -17,23 +17,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+namespace Frotz.Generic;
 
 using zbyte = System.Byte;
 using zword = System.UInt16;
 
-namespace Frotz.Generic
+internal static class Process
 {
-    internal static class Process
+    internal static readonly zword[] zargs = new zword[8];
+    internal static int zargc;
+
+    internal static int finished = 0;
+
+    public delegate void ZInstruction();
+
+    internal static readonly ZInstruction[] op0_opcodes = new ZInstruction[0x10]
     {
-        internal static readonly zword[] zargs = new zword[8];
-        internal static int zargc;
-
-        internal static int finished = 0;
-
-        public delegate void ZInstruction();
-
-        internal static readonly ZInstruction[] op0_opcodes = new ZInstruction[0x10] 
-        {
             new(ZRTrue),
             new(ZRFalse),
             new(Text.ZPrint),
@@ -50,10 +49,10 @@ namespace Frotz.Generic
             new(FastMem.ZVerify), // Not Tested or Implemented
             new(__extended__),
             new(Main.ZPiracy)
-        };
+    };
 
-        internal static readonly ZInstruction[] op1_opcodes = new ZInstruction[0x10] 
-        {
+    internal static readonly ZInstruction[] op1_opcodes = new ZInstruction[0x10]
+    {
             new(Math.ZJz),
             new(CObject.ZGetSibling),
             new(CObject.ZGetChild),
@@ -70,10 +69,10 @@ namespace Frotz.Generic
             new(Text.ZPrintPaddr),
             new(Variable.ZLoad),
             new(ZCallN),
-        };
+    };
 
-        internal static readonly ZInstruction[] var_opcodes = new ZInstruction[0x40] 
-        {
+    internal static readonly ZInstruction[] var_opcodes = new ZInstruction[0x40]
+    {
             new(__illegal__),
             new(Math.ZJe),
             new(Math.ZJl),
@@ -138,10 +137,10 @@ namespace Frotz.Generic
             new(Table.ZCopyTable),
             new(Screen.ZPrintTable),
             new(ZCheckArgCount),
-        };
+    };
 
-        internal static readonly ZInstruction[] ext_opcodes = new ZInstruction[0x1e]
-        {
+    internal static readonly ZInstruction[] ext_opcodes = new ZInstruction[0x1e]
+    {
             new(FastMem.ZSave),
             new(FastMem.ZRestore),
             new(Math.ZLogShift),
@@ -172,653 +171,621 @@ namespace Frotz.Generic
             new(Input.ZMakeMenu),//    z_make_menu,
             new(Screen.ZPictureTable),
             new(Screen.ZBufferScreen),   /* spec 1.1 */
-        };
-        private static int invokeCount = 0;
-        private static void PrivateInvoke(ZInstruction instruction, string array, int index, int opcode)
-        {
-            DebugState.LastCallMade = instruction.Method.Name + ":" + opcode;
-            DebugState.Output(false, "Invoking: {0:X} -> {1} -> {2}", opcode, instruction.Method.Name, invokeCount);
-            instruction.Invoke();
-            invokeCount++;
-        }
+    };
+    private static int invokeCount = 0;
+    private static void PrivateInvoke(ZInstruction instruction, string array, int index, int opcode)
+    {
+        DebugState.LastCallMade = instruction.Method.Name + ":" + opcode;
+        DebugState.Output(false, "Invoking: {0:X} -> {1} -> {2}", opcode, instruction.Method.Name, invokeCount);
+        instruction.Invoke();
+        invokeCount++;
+    }
+
+    /*
+     * init_process
+     *
+     * Initialize process variables.
+     *
+     */
+
+    internal static void InitProcess() => finished = 0;
+
+    /*
+     * load_operand
+     *
+     * Load an operand, either a variable or a constant.
+     *
+     */
+
+    private static void LoadOperand(zbyte type)
+    {
+        zword value;
+
+        if ((type & 2) > 0)
+        {           /* variable */
 
-        /*
-         * init_process
-         *
-         * Initialize process variables.
-         *
-         */
-
-        internal static void InitProcess() => finished = 0;
-
-        /*
-         * load_operand
-         *
-         * Load an operand, either a variable or a constant.
-         *
-         */
-
-        private static void LoadOperand(zbyte type)
-        {
-            zword value;
-
-            if ((type & 2) > 0)
-            { 			/* variable */
-
-                FastMem.CodeByte(out zbyte variable);
-
-                if (variable == 0)
-                {
-                    value = Main.Stack[Main.sp++];
-                }
-                else if (variable < 16)
-                {
-                    value = Main.Stack[Main.fp - variable];
-                }
-                else
-                {
-                    zword addr = (zword)(Main.h_globals + 2 * (variable - 16)); // TODO Make sure this logic
-                    FastMem.LowWord(addr, out value);
-                }
-
-            }
-            else if ((type & 1) > 0)
-            { 		/* small constant */
-
-                FastMem.CodeByte(out zbyte bvalue);
-                value = bvalue;
-            }
-            else
-            {
-                FastMem.CodeWord(out value);      /* large constant */
-            }
-
-            zargs[zargc++] = value;
-
-            DebugState.Output("  Storing operand: {0} -> {1}", zargc - 1, value);
-
-        }/* load_operand */
-
-        /*
-         * load_all_operands
-         *
-         * Given the operand specifier byte, load all (up to four) operands
-         * for a VAR or EXT opcode.
-         *
-         */
-
-        internal static void LoadAllOperands(zbyte specifier)
-        {
-            int i;
-
-            for (i = 6; i >= 0; i -= 2)
-            {
-
-                zbyte type = (zbyte)((specifier >> i) & 0x03); // TODO Check this conversion
-
-                if (type == 3)
-                    break;
-
-                LoadOperand(type);
-
-            }
-
-        }/* load_all_operands */
-
-        /*
-         * interpret
-         *
-         * Z-code interpreter main loop
-         *
-         */
-
-        internal static void Interpret()
-        {
-            do
-            {
-                FastMem.CodeByte(out zbyte opcode);
-
-                DebugState.Output("CODE: {0} -> {1:X}", FastMem.Pcp - 1, opcode);
-
-                if (Main.AbortGameLoop)
-                {
-                    Main.AbortGameLoop = false;
-                    return;
-                }
-
-                zargc = 0;
-                if (opcode < 0x80)
-                {			/* 2OP opcodes */
-                    LoadOperand((zbyte)((opcode & 0x40) > 0 ? 2 : 1));
-                    LoadOperand((zbyte)((opcode & 0x20) > 0 ? 2 : 1));
-
-                    PrivateInvoke(var_opcodes[opcode & 0x1f], "2OP", (opcode & 0x1f), opcode);
-                }
-                else if (opcode < 0xb0)
-                {	/* 1OP opcodes */
-                    LoadOperand((zbyte)(opcode >> 4));
-                    PrivateInvoke(op1_opcodes[opcode & 0x0f], "1OP", (opcode & 0x0f), opcode);
-                }
-                else if (opcode < 0xc0)
-                {	/* 0OP opcodes */
-                    PrivateInvoke(op0_opcodes[opcode - 0xb0], "0OP", (opcode - 0xb0), opcode);
-                }
-                else
-                {	/* VAR opcodes */
-                    zbyte specifier1;
-
-                    if (opcode is 0xec or 0xfa)
-                    {	/* opcodes 0xec */
-                        FastMem.CodeByte(out specifier1);                  /* and 0xfa are */
-                        FastMem.CodeByte(out zbyte specifier2);                  /* call opcodes */
-                        LoadAllOperands(specifier1);		/* with up to 8 */
-                        LoadAllOperands(specifier2);         /* arguments    */
-                    }
-                    else
-                    {
-                        FastMem.CodeByte(out specifier1);
-                        LoadAllOperands(specifier1);
-                    }
-
-                    PrivateInvoke(var_opcodes[opcode - 0xc0], "VAR", (opcode - 0xc0), opcode);
-                }
-
-                OS.Tick();
-            } while (finished == 0);
-
-            finished--;
-        }/* interpret */
-
-        /*
-         * call
-         *
-         * Call a subroutine. Save PC and FP then load new PC and initialise
-         * new stack frame. Note that the caller may legally provide less or
-         * more arguments than the function actually has. The call type "ct"
-         * can be 0 (z_call_s), 1 (z_call_n) or 2 (direct call).
-         *
-         */
-        internal static void Call(zword routine, int argc, int args_offset, int ct)
-        {
-            zword value;
-            int i;
-
-            if (Main.sp < 4)//if (sp - stack < 4)
-                Err.RuntimeError(ErrorCodes.ERR_STK_OVF);
-
-            FastMem.GetPc(out long pc);
-
-            Main.Stack[--Main.sp] = (zword)(pc >> 9);
-            Main.Stack[--Main.sp] = (zword)(pc & 0x1ff);
-            Main.Stack[--Main.sp] = (zword)(Main.fp - 1); // *--sp = (zword) (fp - stack - 1);
-            Main.Stack[--Main.sp] = (zword)(argc | (ct << (Main.option_save_quetzal == true ? 12 : 8)));
-
-            Main.fp = Main.sp;
-            Main.frame_count++;
-
-            DebugState.Output("Added Frame: {0} -> {1}:{2}:{3}:{4}",
-                Main.frame_count,
-                Main.Stack[Main.sp + 0],
-                Main.Stack[Main.sp + 1],
-                Main.Stack[Main.sp + 2],
-                Main.Stack[Main.sp + 3]);
-
-            /* Calculate byte address of routine */
-
-            pc = Main.h_version switch
-            {
-                <= ZMachine.V3 => (long)routine << 1,
-                <= ZMachine.V5 => (long)routine << 2,
-                <= ZMachine.V7 => ((long)routine << 2) + ((long)Main.h_functions_offset << 3),
-                _ => (long)routine << 3
-            };
-
-            if (pc >= Main.StorySize)
-                Err.RuntimeError(ErrorCodes.ERR_ILL_CALL_ADDR);
-
-            FastMem.SetPc(pc);
-
-            /* Initialise local variables */
-
-            FastMem.CodeByte(out zbyte count);
-
-            if (count > 15)
-                Err.RuntimeError(ErrorCodes.ERR_CALL_NON_RTN);
-            if (Main.sp < count)
-                Err.RuntimeError(ErrorCodes.ERR_STK_OVF);
-
-            if (Main.option_save_quetzal == true)
-                Main.Stack[Main.fp] |= (zword)(count << 8);	/* Save local var count for Quetzal. */
-
-            value = 0;
-
-            for (i = 0; i < count; i++)
-            {
-
-                if (Main.h_version <= ZMachine.V4)		/* V1 to V4 games provide default */
-                    FastMem.CodeWord(out value);		/* values for all local variables */
-
-                Main.Stack[--Main.sp] = (argc-- > 0) ? zargs[args_offset + i] : value;
-                //*--sp = (zword) ((argc-- > 0) ? args[i] : value);
-            }
-
-            /* Start main loop for direct calls */
-
-            if (ct == 2)
-                Interpret();
-        }/* call */
-
-        /*
-         * ret
-         *
-         * Return from the current subroutine and restore the previous stack
-         * frame. The result may be stored (0), thrown away (1) or pushed on
-         * the stack (2). In the latter case a direct call has been finished
-         * and we must exit the interpreter loop.
-         *
-         */
-
-        internal static void Ret(zword value)
-        {
-            long pc;
-            int ct;
-
-            if (Main.sp > Main.fp)
-                Err.RuntimeError(ErrorCodes.ERR_STK_UNDF);
-
-            Main.sp = Main.fp;
-
-            DebugState.Output("Removing Frame: {0}", Main.frame_count);
-
-            ct = Main.Stack[Main.sp++] >> (Main.option_save_quetzal == true ? 12 : 8);
-            Main.frame_count--;
-            Main.fp = 1 + Main.Stack[Main.sp++]; // fp = stack + 1 + *sp++;
-            pc = Main.Stack[Main.sp++];
-            pc = (Main.Stack[Main.sp++] << 9) | (int)pc; // TODO Really don't trust casting PC to int
-
-            FastMem.SetPc(pc);
-
-            /* Handle resulting value */
-
-            if (ct == 0)
-                Store(value);
-            if (ct == 2)
-                Main.Stack[--Main.sp] = value;
-
-            /* Stop main loop for direct calls */
-
-            if (ct == 2)
-                finished++;
-
-        }/* ret */
-
-        /*
-         * branch
-         *
-         * Take a jump after an instruction based on the flag, either true or
-         * false. The branch can be short or long; it is encoded in one or two
-         * bytes respectively. When bit 7 of the first byte is set, the jump
-         * takes place if the flag is true; otherwise it is taken if the flag
-         * is false. When bit 6 of the first byte is set, the branch is short;
-         * otherwise it is long. The offset occupies the bottom 6 bits of the
-         * first byte plus all the bits in the second byte for long branches.
-         * Uniquely, an offset of 0 means return false, and an offset of 1 is
-         * return true.
-         *
-         */
-        internal static void Branch(bool flag)
-        {
-            FastMem.CodeByte(out zbyte specifier);
-
-            zbyte off1 = (zbyte)(specifier & 0x3f);
-
-            if (!flag)
-                specifier ^= 0x80;
-
-            zword offset;
-            if ((specifier & 0x40) == 0)
-            { // if (!(specifier & 0x40)) {		/* it's a long branch */
-
-                if ((off1 & 0x20) > 0)		/* propagate sign bit */
-                    off1 |= 0xc0;
-
-                FastMem.CodeByte(out zbyte off2);
-
-                offset = (zword)((off1 << 8) | off2);
-            }
-            else
-            {
-                offset = off1;        /* it's a short branch */
-            }
-
-            if ((specifier & 0x80) > 0)
-            {
-
-                if (offset > 1)
-                {		/* normal branch */
-                    FastMem.GetPc(out long pc);
-                    pc += (short)offset - 2;
-                    FastMem.SetPc(pc);
-                }
-                else
-                {
-                    Ret(offset);      /* special case, return 0 or 1 */
-                }
-            }
-        }/* branch */
-
-        /*
-         * store
-         *
-         * Store an operand, either as a variable or pushed on the stack.
-         *
-         */
-        internal static void Store(zword value)
-        {
             FastMem.CodeByte(out zbyte variable);
 
             if (variable == 0)
             {
-                Main.Stack[--Main.sp] = value; // *--sp = value;
-                DebugState.Output("  Storing {0} on stack at {1}", value, Main.sp);
+                value = Main.Stack[Main.sp++];
             }
             else if (variable < 16)
             {
-                Main.Stack[Main.fp - variable] = value;  // *(fp - variable) = value;
-                DebugState.Output("  Storing {0} on stack as Variable {1} at {2}", value, variable, Main.sp);
+                value = Main.Stack[Main.fp - variable];
             }
             else
             {
-                zword addr = (zword)(Main.h_globals + 2 * (variable - 16));
-                FastMem.SetWord(addr, value);
-                DebugState.Output("  Storing {0} at {1}", value, addr);
+                zword addr = (zword)(Main.h_globals + 2 * (variable - 16)); // TODO Make sure this logic
+                FastMem.LowWord(addr, out value);
             }
 
-        }/* store */
+        }
+        else if ((type & 1) > 0)
+        {       /* small constant */
 
-        /*
-         * direct_call
-         *
-         * Call the interpreter loop directly. This is necessary when
-         *
-         * - a sound effect has been finished
-         * - a read instruction has timed out
-         * - a newline countdown has hit zero
-         *
-         * The interpreter returns the result value on the stack.
-         *
-         */
-        internal static int DirectCall(zword addr)
+            FastMem.CodeByte(out zbyte bvalue);
+            value = bvalue;
+        }
+        else
         {
-            Span<zword> saved_zargs = stackalloc zword[8];
-            int saved_zargc;
-            int i;
+            FastMem.CodeWord(out value);      /* large constant */
+        }
 
-            /* Calls to address 0 return false */
+        zargs[zargc++] = value;
 
-            if (addr == 0)
-                return 0;
+        DebugState.Output("  Storing operand: {0} -> {1}", zargc - 1, value);
 
-            /* Save operands and operand count */
+    }/* load_operand */
 
-            for (i = 0; i < 8; i++)
-                saved_zargs[i] = zargs[i];
+    /*
+     * load_all_operands
+     *
+     * Given the operand specifier byte, load all (up to four) operands
+     * for a VAR or EXT opcode.
+     *
+     */
 
-            saved_zargc = zargc;
+    internal static void LoadAllOperands(zbyte specifier)
+    {
+        int i;
 
-            /* Call routine directly */
+        for (i = 6; i >= 0; i -= 2)
+        {
 
-            Call(addr, 0, 0, 2);
+            zbyte type = (zbyte)((specifier >> i) & 0x03); // TODO Check this conversion
 
-            /* Restore operands and operand count */
+            if (type == 3)
+                break;
 
-            for (i = 0; i < 8; i++)
-                zargs[i] = saved_zargs[i];
+            LoadOperand(type);
 
-            zargc = saved_zargc;
+        }
 
-            /* Resulting value lies on top of the stack */
+    }/* load_all_operands */
 
-            return (short)Main.Stack[Main.sp++];
+    /*
+     * interpret
+     *
+     * Z-code interpreter main loop
+     *
+     */
 
-        }/* direct_call */
-
-        /*
-         * __extended__
-         *
-         * Load and execute an extended opcode.
-         *
-         */
-
-        private static void __extended__()
+    internal static void Interpret()
+    {
+        do
         {
             FastMem.CodeByte(out zbyte opcode);
-            FastMem.CodeByte(out zbyte specifier);
 
-            LoadAllOperands(specifier);
+            DebugState.Output("CODE: {0} -> {1:X}", FastMem.Pcp - 1, opcode);
 
-            if (opcode < 0x1e)			/* extended opcodes from 0x1e on */
-                // ext_opcodes[opcode] ();		/* are reserved for future spec' */
-                PrivateInvoke(ext_opcodes[opcode], "Extended", opcode, opcode);
-
-        }/* __extended__ */
-
-        /*
-         * __illegal__
-         *
-         * Exit game because an unknown opcode has been hit.
-         *
-         */
-
-        private static void __illegal__()
-        {
-
-            Err.RuntimeError(ErrorCodes.ERR_ILL_OPCODE);
-
-        }/* __illegal__ */
-
-        /*
-         * z_catch, store the current stack frame for later use with z_throw.
-         *
-         *	no zargs used
-         *
-         */
-
-        internal static void ZCatch() => 
-            Process.Store((zword)(Main.option_save_quetzal == true ? Main.frame_count : Main.fp));/* z_catch */
-
-        /*
-         * z_throw, go back to the given stack frame and return the given value.
-         *
-         *	zargs[0] = value to return
-         *	zargs[1] = stack frame
-         *
-         */
-
-        internal static void ZThrow()
-        {
-            // TODO This has never been tested
-            if (Main.option_save_quetzal == true)
+            if (Main.AbortGameLoop)
             {
-                if (zargs[1] > Main.frame_count)
-                    Err.RuntimeError(ErrorCodes.ERR_BAD_FRAME);
+                Main.AbortGameLoop = false;
+                return;
+            }
 
-                /* Unwind the stack a frame at a time. */
-                for (; Main.frame_count > zargs[1]; --Main.frame_count)
-                    //fp = stack + 1 + fp[1];
-                    Main.fp = 1 + Main.Stack[Main.fp + 1]; // TODO I think this is correct
+            zargc = 0;
+            if (opcode < 0x80)
+            {           /* 2OP opcodes */
+                LoadOperand((zbyte)((opcode & 0x40) > 0 ? 2 : 1));
+                LoadOperand((zbyte)((opcode & 0x20) > 0 ? 2 : 1));
+
+                PrivateInvoke(var_opcodes[opcode & 0x1f], "2OP", (opcode & 0x1f), opcode);
+            }
+            else if (opcode < 0xb0)
+            {   /* 1OP opcodes */
+                LoadOperand((zbyte)(opcode >> 4));
+                PrivateInvoke(op1_opcodes[opcode & 0x0f], "1OP", (opcode & 0x0f), opcode);
+            }
+            else if (opcode < 0xc0)
+            {   /* 0OP opcodes */
+                PrivateInvoke(op0_opcodes[opcode - 0xb0], "0OP", (opcode - 0xb0), opcode);
+            }
+            else
+            {   /* VAR opcodes */
+                zbyte specifier1;
+
+                if (opcode is 0xec or 0xfa)
+                {   /* opcodes 0xec */
+                    FastMem.CodeByte(out specifier1);                  /* and 0xfa are */
+                    FastMem.CodeByte(out zbyte specifier2);                  /* call opcodes */
+                    LoadAllOperands(specifier1);        /* with up to 8 */
+                    LoadAllOperands(specifier2);         /* arguments    */
+                }
+                else
+                {
+                    FastMem.CodeByte(out specifier1);
+                    LoadAllOperands(specifier1);
+                }
+
+                PrivateInvoke(var_opcodes[opcode - 0xc0], "VAR", (opcode - 0xc0), opcode);
+            }
+
+            OS.Tick();
+        } while (finished == 0);
+
+        finished--;
+    }/* interpret */
+
+    /*
+     * call
+     *
+     * Call a subroutine. Save PC and FP then load new PC and initialise
+     * new stack frame. Note that the caller may legally provide less or
+     * more arguments than the function actually has. The call type "ct"
+     * can be 0 (z_call_s), 1 (z_call_n) or 2 (direct call).
+     *
+     */
+    internal static void Call(zword routine, int argc, int args_offset, int ct)
+    {
+        zword value;
+        int i;
+
+        if (Main.sp < 4)//if (sp - stack < 4)
+            Err.RuntimeError(ErrorCodes.ERR_STK_OVF);
+
+        FastMem.GetPc(out long pc);
+
+        Main.Stack[--Main.sp] = (zword)(pc >> 9);
+        Main.Stack[--Main.sp] = (zword)(pc & 0x1ff);
+        Main.Stack[--Main.sp] = (zword)(Main.fp - 1); // *--sp = (zword) (fp - stack - 1);
+        Main.Stack[--Main.sp] = (zword)(argc | (ct << (Main.option_save_quetzal == true ? 12 : 8)));
+
+        Main.fp = Main.sp;
+        Main.frame_count++;
+
+        DebugState.Output("Added Frame: {0} -> {1}:{2}:{3}:{4}",
+            Main.frame_count,
+            Main.Stack[Main.sp + 0],
+            Main.Stack[Main.sp + 1],
+            Main.Stack[Main.sp + 2],
+            Main.Stack[Main.sp + 3]);
+
+        /* Calculate byte address of routine */
+
+        pc = Main.h_version switch
+        {
+            <= ZMachine.V3 => (long)routine << 1,
+            <= ZMachine.V5 => (long)routine << 2,
+            <= ZMachine.V7 => ((long)routine << 2) + ((long)Main.h_functions_offset << 3),
+            _ => (long)routine << 3
+        };
+
+        if (pc >= Main.StorySize)
+            Err.RuntimeError(ErrorCodes.ERR_ILL_CALL_ADDR);
+
+        FastMem.SetPc(pc);
+
+        /* Initialise local variables */
+
+        FastMem.CodeByte(out zbyte count);
+
+        if (count > 15)
+            Err.RuntimeError(ErrorCodes.ERR_CALL_NON_RTN);
+        if (Main.sp < count)
+            Err.RuntimeError(ErrorCodes.ERR_STK_OVF);
+
+        if (Main.option_save_quetzal == true)
+            Main.Stack[Main.fp] |= (zword)(count << 8); /* Save local var count for Quetzal. */
+
+        value = 0;
+
+        for (i = 0; i < count; i++)
+        {
+
+            if (Main.h_version <= ZMachine.V4)      /* V1 to V4 games provide default */
+                FastMem.CodeWord(out value);        /* values for all local variables */
+
+            Main.Stack[--Main.sp] = (argc-- > 0) ? zargs[args_offset + i] : value;
+            //*--sp = (zword) ((argc-- > 0) ? args[i] : value);
+        }
+
+        /* Start main loop for direct calls */
+
+        if (ct == 2)
+            Interpret();
+    }/* call */
+
+    /*
+     * ret
+     *
+     * Return from the current subroutine and restore the previous stack
+     * frame. The result may be stored (0), thrown away (1) or pushed on
+     * the stack (2). In the latter case a direct call has been finished
+     * and we must exit the interpreter loop.
+     *
+     */
+
+    internal static void Ret(zword value)
+    {
+        long pc;
+        int ct;
+
+        if (Main.sp > Main.fp)
+            Err.RuntimeError(ErrorCodes.ERR_STK_UNDF);
+
+        Main.sp = Main.fp;
+
+        DebugState.Output("Removing Frame: {0}", Main.frame_count);
+
+        ct = Main.Stack[Main.sp++] >> (Main.option_save_quetzal == true ? 12 : 8);
+        Main.frame_count--;
+        Main.fp = 1 + Main.Stack[Main.sp++]; // fp = stack + 1 + *sp++;
+        pc = Main.Stack[Main.sp++];
+        pc = (Main.Stack[Main.sp++] << 9) | (int)pc; // TODO Really don't trust casting PC to int
+
+        FastMem.SetPc(pc);
+
+        /* Handle resulting value */
+
+        if (ct == 0)
+            Store(value);
+        if (ct == 2)
+            Main.Stack[--Main.sp] = value;
+
+        /* Stop main loop for direct calls */
+
+        if (ct == 2)
+            finished++;
+
+    }/* ret */
+
+    /*
+     * branch
+     *
+     * Take a jump after an instruction based on the flag, either true or
+     * false. The branch can be short or long; it is encoded in one or two
+     * bytes respectively. When bit 7 of the first byte is set, the jump
+     * takes place if the flag is true; otherwise it is taken if the flag
+     * is false. When bit 6 of the first byte is set, the branch is short;
+     * otherwise it is long. The offset occupies the bottom 6 bits of the
+     * first byte plus all the bits in the second byte for long branches.
+     * Uniquely, an offset of 0 means return false, and an offset of 1 is
+     * return true.
+     *
+     */
+    internal static void Branch(bool flag)
+    {
+        FastMem.CodeByte(out zbyte specifier);
+
+        zbyte off1 = (zbyte)(specifier & 0x3f);
+
+        if (!flag)
+            specifier ^= 0x80;
+
+        zword offset;
+        if ((specifier & 0x40) == 0)
+        { // if (!(specifier & 0x40)) {		/* it's a long branch */
+
+            if ((off1 & 0x20) > 0)      /* propagate sign bit */
+                off1 |= 0xc0;
+
+            FastMem.CodeByte(out zbyte off2);
+
+            offset = (zword)((off1 << 8) | off2);
+        }
+        else
+        {
+            offset = off1;        /* it's a short branch */
+        }
+
+        if ((specifier & 0x80) > 0)
+        {
+
+            if (offset > 1)
+            {       /* normal branch */
+                FastMem.GetPc(out long pc);
+                pc += (short)offset - 2;
+                FastMem.SetPc(pc);
             }
             else
             {
-                if (zargs[1] > General.STACK_SIZE)
-                    Err.RuntimeError(ErrorCodes.ERR_BAD_FRAME);
-
-                Main.fp = zargs[1]; // fp = stack + zargs[1];
+                Ret(offset);      /* special case, return 0 or 1 */
             }
+        }
+    }/* branch */
 
-            Ret(zargs[0]);
+    /*
+     * store
+     *
+     * Store an operand, either as a variable or pushed on the stack.
+     *
+     */
+    internal static void Store(zword value)
+    {
+        FastMem.CodeByte(out zbyte variable);
 
-        }/* z_throw */
-
-        /*
-         * z_call_n, call a subroutine and discard its result.
-         *
-         * 	zargs[0] = packed address of subroutine
-         *	zargs[1] = first argument (optional)
-         *	...
-         *	zargs[7] = seventh argument (optional)
-         *
-         */
-
-        internal static void ZCallN()
+        if (variable == 0)
         {
-
-            if (Process.zargs[0] != 0)
-                Process.Call(zargs[0], zargc - 1, 1, 1);
-
-        }/* z_call_n */
-
-        /*
-         * z_call_s, call a subroutine and store its result.
-         *
-         * 	zargs[0] = packed address of subroutine
-         *	zargs[1] = first argument (optional)
-         *	...
-         *	zargs[7] = seventh argument (optional)
-         *
-         */
-
-        internal static void ZCallS()
+            Main.Stack[--Main.sp] = value; // *--sp = value;
+            DebugState.Output("  Storing {0} on stack at {1}", value, Main.sp);
+        }
+        else if (variable < 16)
         {
-
-            if (zargs[0] != 0)
-                Call(zargs[0], zargc - 1, 1, 0); // TODO Was "call (zargs[0], zargc - 1, zargs + 1, 0);"
-            else
-                Store(0);
-
-        }/* z_call_s */
-
-        /*
-         * z_check_arg_count, branch if subroutine was called with >= n arg's.
-         *
-         * 	zargs[0] = number of arguments
-         *
-         */
-
-        internal static void ZCheckArgCount()
+            Main.Stack[Main.fp - variable] = value;  // *(fp - variable) = value;
+            DebugState.Output("  Storing {0} on stack as Variable {1} at {2}", value, variable, Main.sp);
+        }
+        else
         {
+            zword addr = (zword)(Main.h_globals + 2 * (variable - 16));
+            FastMem.SetWord(addr, value);
+            DebugState.Output("  Storing {0} at {1}", value, addr);
+        }
 
-            if (Main.fp == General.STACK_SIZE)
-                Branch(zargs[0] == 0);
-            else
-                Branch(zargs[0] <= (zword)(Main.Stack[Main.fp] & 0xff)); //   (*fp & 0xff));
+    }/* store */
 
-        }/* z_check_arg_count */
+    /*
+     * direct_call
+     *
+     * Call the interpreter loop directly. This is necessary when
+     *
+     * - a sound effect has been finished
+     * - a read instruction has timed out
+     * - a newline countdown has hit zero
+     *
+     * The interpreter returns the result value on the stack.
+     *
+     */
+    internal static int DirectCall(zword addr)
+    {
+        Span<zword> saved_zargs = stackalloc zword[8];
+        int saved_zargc;
+        int i;
 
-        /*
-         * z_jump, jump unconditionally to the given address.
-         *
-         *	zargs[0] = PC relative address
-         *
-         */
+        /* Calls to address 0 return false */
 
-        internal static void ZJump()
+        if (addr == 0)
+            return 0;
+
+        /* Save operands and operand count */
+
+        for (i = 0; i < 8; i++)
+            saved_zargs[i] = zargs[i];
+
+        saved_zargc = zargc;
+
+        /* Call routine directly */
+
+        Call(addr, 0, 0, 2);
+
+        /* Restore operands and operand count */
+
+        for (i = 0; i < 8; i++)
+            zargs[i] = saved_zargs[i];
+
+        zargc = saved_zargc;
+
+        /* Resulting value lies on top of the stack */
+
+        return (short)Main.Stack[Main.sp++];
+
+    }/* direct_call */
+
+    /*
+     * __extended__
+     *
+     * Load and execute an extended opcode.
+     *
+     */
+
+    private static void __extended__()
+    {
+        FastMem.CodeByte(out zbyte opcode);
+        FastMem.CodeByte(out zbyte specifier);
+
+        LoadAllOperands(specifier);
+
+        if (opcode < 0x1e)          /* extended opcodes from 0x1e on */
+            // ext_opcodes[opcode] ();		/* are reserved for future spec' */
+            PrivateInvoke(ext_opcodes[opcode], "Extended", opcode, opcode);
+
+    }/* __extended__ */
+
+    /*
+     * __illegal__
+     *
+     * Exit game because an unknown opcode has been hit.
+     *
+     */
+
+    private static void __illegal__() => Err.RuntimeError(ErrorCodes.ERR_ILL_OPCODE);/* __illegal__ */
+
+    /*
+     * z_catch, store the current stack frame for later use with z_throw.
+     *
+     *	no zargs used
+     *
+     */
+
+    internal static void ZCatch() =>
+        Process.Store((zword)(Main.option_save_quetzal == true ? Main.frame_count : Main.fp));/* z_catch */
+
+    /*
+     * z_throw, go back to the given stack frame and return the given value.
+     *
+     *	zargs[0] = value to return
+     *	zargs[1] = stack frame
+     *
+     */
+
+    internal static void ZThrow()
+    {
+        // TODO This has never been tested
+        if (Main.option_save_quetzal == true)
         {
+            if (zargs[1] > Main.frame_count)
+                Err.RuntimeError(ErrorCodes.ERR_BAD_FRAME);
 
-            FastMem.GetPc(out long pc);
-
-            pc += (short)zargs[0] - 2; // TODO This actually counts on an overflow to work
-
-            if (pc >= Main.StorySize)
-                Err.RuntimeError(ErrorCodes.ERR_ILL_JUMP_ADDR);
-
-            FastMem.SetPc(pc);
-
-        }/* z_jump */
-
-        /*
-         * z_nop, no operation.
-         *
-         *	no zargs used
-         *
-         */
-
-        internal static void ZNoop()
+            /* Unwind the stack a frame at a time. */
+            for (; Main.frame_count > zargs[1]; --Main.frame_count)
+                //fp = stack + 1 + fp[1];
+                Main.fp = 1 + Main.Stack[Main.fp + 1]; // TODO I think this is correct
+        }
+        else
         {
+            if (zargs[1] > General.STACK_SIZE)
+                Err.RuntimeError(ErrorCodes.ERR_BAD_FRAME);
 
-            /* Do nothing */
+            Main.fp = zargs[1]; // fp = stack + zargs[1];
+        }
 
-        }/* z_nop */
+        Ret(zargs[0]);
 
-        /*
-         * z_quit, stop game and exit interpreter.
-         *
-         *	no zargs used
-         *
-         */
+    }/* z_throw */
 
-        internal static void ZQuit()
-        {
+    /*
+     * z_call_n, call a subroutine and discard its result.
+     *
+     * 	zargs[0] = packed address of subroutine
+     *	zargs[1] = first argument (optional)
+     *	...
+     *	zargs[7] = seventh argument (optional)
+     *
+     */
 
-            finished = 9999;
+    internal static void ZCallN()
+    {
 
-        }/* z_quit */
+        if (Process.zargs[0] != 0)
+            Process.Call(zargs[0], zargc - 1, 1, 1);
 
-        /*
-         * z_ret, return from a subroutine with the given value.
-         *
-         *	zargs[0] = value to return
-         *
-         */
+    }/* z_call_n */
 
-        internal static void ZRet()
-        {
+    /*
+     * z_call_s, call a subroutine and store its result.
+     *
+     * 	zargs[0] = packed address of subroutine
+     *	zargs[1] = first argument (optional)
+     *	...
+     *	zargs[7] = seventh argument (optional)
+     *
+     */
 
-            Ret(zargs[0]);
+    internal static void ZCallS()
+    {
 
-        }/* z_ret */
+        if (zargs[0] != 0)
+            Call(zargs[0], zargc - 1, 1, 0); // TODO Was "call (zargs[0], zargc - 1, zargs + 1, 0);"
+        else
+            Store(0);
 
-        /*
-         * z_ret_popped, return from a subroutine with a value popped off the stack.
-         *
-         *	no zargs used
-         *
-         */
+    }/* z_call_s */
 
-        internal static void ZRetPopped()
-        {
+    /*
+     * z_check_arg_count, branch if subroutine was called with >= n arg's.
+     *
+     * 	zargs[0] = number of arguments
+     *
+     */
 
-            Ret(Main.Stack[Main.sp++]);
-            // ret (*sp++);
+    internal static void ZCheckArgCount()
+    {
 
-        }/* z_ret_popped */
+        if (Main.fp == General.STACK_SIZE)
+            Branch(zargs[0] == 0);
+        else
+            Branch(zargs[0] <= (zword)(Main.Stack[Main.fp] & 0xff)); //   (*fp & 0xff));
 
-        /*
-         * z_rfalse, return from a subroutine with false (0).
-         *
-         * 	no zargs used
-         *
-         */
+    }/* z_check_arg_count */
 
-        internal static void ZRFalse()
-        {
+    /*
+     * z_jump, jump unconditionally to the given address.
+     *
+     *	zargs[0] = PC relative address
+     *
+     */
 
-            Ret(0);
+    internal static void ZJump()
+    {
 
-        }/* z_rfalse */
+        FastMem.GetPc(out long pc);
 
-        /*
-         * z_rtrue, return from a subroutine with true (1).
-         *
-         * 	no zargs used
-         *
-         */
+        pc += (short)zargs[0] - 2; // TODO This actually counts on an overflow to work
 
-        internal static void ZRTrue()
-        {
+        if (pc >= Main.StorySize)
+            Err.RuntimeError(ErrorCodes.ERR_ILL_JUMP_ADDR);
 
-            Ret(1);
+        FastMem.SetPc(pc);
 
-        }/* z_rtrue */
-    }
+    }/* z_jump */
+
+    /*
+     * z_nop, no operation.
+     *
+     *	no zargs used
+     *
+     */
+
+    internal static void ZNoop()
+    {
+
+        /* Do nothing */
+
+    }/* z_nop */
+
+    /*
+     * z_quit, stop game and exit interpreter.
+     *
+     *	no zargs used
+     *
+     */
+
+    internal static void ZQuit() => finished = 9999;/* z_quit */
+
+    /*
+     * z_ret, return from a subroutine with the given value.
+     *
+     *	zargs[0] = value to return
+     *
+     */
+
+    internal static void ZRet() => Ret(zargs[0]);/* z_ret */
+
+    /*
+     * z_ret_popped, return from a subroutine with a value popped off the stack.
+     *
+     *	no zargs used
+     *
+     */
+
+    internal static void ZRetPopped() => Ret(Main.Stack[Main.sp++]);// ret (*sp++);/* z_ret_popped */
+
+    /*
+     * z_rfalse, return from a subroutine with false (0).
+     *
+     * 	no zargs used
+     *
+     */
+
+    internal static void ZRFalse() => Ret(0);/* z_rfalse */
+
+    /*
+     * z_rtrue, return from a subroutine with true (1).
+     *
+     * 	no zargs used
+     *
+     */
+
+    internal static void ZRTrue() => Ret(1);/* z_rtrue */
 }

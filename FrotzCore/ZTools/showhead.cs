@@ -6,202 +6,203 @@
  * Header display routines.
  */
 
+namespace ZTools;
+
 using zword_t = System.UInt16;
-namespace ZTools
+
+internal class ShowHead
 {
-    internal class ShowHead
+    private static readonly string[] interpreter_flags1 = {
+        "Byte swapped data",
+        "Display time",
+        "Unknown (0x04)",
+        "Tandy",
+        "No status line",
+        "Windows available",
+        "Proportional fonts used",
+        "Unknown (0x80)"
+    };
+    private static readonly string[] interpreter_flags2 = {
+        "Colors",
+        "Pictures",
+        "Bold font",
+        "Emphasis",
+        "Fixed space font",
+        "Unknown (0x20)",
+        "Unknown (0x40)",
+        "Timed input"
+    };
+    private static readonly string[] game_flags1 = {
+        "Scripting",
+        "Use fixed font",
+        "Unknown (0x0004)",
+        "Unknown (0x0008)",
+        "Supports sound",
+        "Unknown (0x0010)",
+        "Unknown (0x0020)",
+        "Unknown (0x0040)",
+        "Unknown (0x0080)",
+        "Unknown (0x0200)",
+        "Unknown (0x0400)",
+        "Unknown (0x0800)",
+        "Unknown (0x1000)",
+        "Unknown (0x2000)",
+        "Unknown (0x4000)",
+        "Unknown (0x8000)"
+    };
+    private static readonly string[] game_flags2 = {
+        "Scripting",
+        "Use fixed font",
+        "Screen refresh required",
+        "Supports graphics",
+        "Supports undo",
+        "Supports mouse",
+        "Supports colour",
+        "Supports sound",
+        "Supports menus",
+        "Unknown (0x0200)",
+        "Printer error",
+        "Unknown (0x0800)",
+        "Unknown (0x1000)",
+        "Unknown (0x2000)",
+        "Unknown (0x4000)",
+        "Unknown (0x8000)"
+    };
+
+    /*
+     * show_header
+     *
+     * Format the header which is a 64 byte area at the front of the story file.
+     * The format of the header is described by the header structure.
+     */
+
+    internal static void ShowHeader()
     {
-        private static readonly string[] interpreter_flags1 = {
-            "Byte swapped data",
-            "Display time",
-            "Unknown (0x04)",
-            "Tandy",
-            "No status line",
-            "Windows available",
-            "Proportional fonts used",
-            "Unknown (0x80)"
-        };
-        private static readonly string[] interpreter_flags2 = {
-            "Colors",
-            "Pictures",
-            "Bold font",
-            "Emphasis",
-            "Fixed space font",
-            "Unknown (0x20)",
-            "Unknown (0x40)",
-            "Timed input"
-        };
-        private static readonly string[] game_flags1 = {
-            "Scripting",
-            "Use fixed font",
-            "Unknown (0x0004)",
-            "Unknown (0x0008)",
-            "Supports sound",
-            "Unknown (0x0010)",
-            "Unknown (0x0020)",
-            "Unknown (0x0040)",
-            "Unknown (0x0080)",
-            "Unknown (0x0200)",
-            "Unknown (0x0400)",
-            "Unknown (0x0800)",
-            "Unknown (0x1000)",
-            "Unknown (0x2000)",
-            "Unknown (0x4000)",
-            "Unknown (0x8000)"
-        };
-        private static readonly string[] game_flags2 = {
-            "Scripting",
-            "Use fixed font",
-            "Screen refresh required",
-            "Supports graphics",
-            "Supports undo",
-            "Supports mouse",
-            "Supports colour",
-            "Supports sound",
-            "Supports menus",
-            "Unknown (0x0200)",
-            "Printer error",
-            "Unknown (0x0800)",
-            "Unknown (0x1000)",
-            "Unknown (0x2000)",
-            "Unknown (0x4000)",
-            "Unknown (0x8000)"
-        };
+        ulong address;
+        int i, j, list;
+        int inform = 0; // TODO Was short
 
-        /*
-         * show_header
-         *
-         * Format the header which is a 64 byte area at the front of the story file.
-         * The format of the header is described by the header structure.
-         */
+        if (txio.header is null)
+            throw new InvalidOperationException("txio header was not initialized");
 
-        internal static void ShowHeader()
+        var header = txio.header;
+
+        if (header.serial[0] is >= (byte)'0' and <= (byte)'9' &&
+            header.serial[1] is >= (byte)'0' and <= (byte)'9' &&
+            header.serial[2] is >= (byte)'0' and <= (byte)'1' &&
+            header.serial[3] is >= (byte)'0' and <= (byte)'9' &&
+            header.serial[4] is >= (byte)'0' and <= (byte)'3' &&
+            header.serial[5] is >= (byte)'0' and <= (byte)'9' &&
+            header.serial[0] != '8')
         {
-            ulong address;
-            int i, j, list;
-            int inform = 0; // TODO Was short
+            inform = 5;
 
-            if (txio.header is null)
-                throw new InvalidOperationException("txio header was not initialized");
+            if (header.name[4] >= '6')
+                inform = header.name[4] - '0';
+        }
 
-            var header = txio.header;
+        txio.TxPrint("\n    **** Story file header ****\n\n");
 
-            if (header.serial[0] is >= (byte)'0' and <= (byte)'9' &&
-                header.serial[1] is >= (byte)'0' and <= (byte)'9' &&
-                header.serial[2] is >= (byte)'0' and <= (byte)'1' &&
-                header.serial[3] is >= (byte)'0' and <= (byte)'9' &&
-                header.serial[4] is >= (byte)'0' and <= (byte)'3' &&
-                header.serial[5] is >= (byte)'0' and <= (byte)'9' &&
-                header.serial[0] != '8')
+        /* Z-code version */
+
+        txio.TxPrintf("Z-code version:           {0:d}\n", header.version);
+
+        /* Interpreter flags */
+
+        Console.Write("Interpreter flags:        ");
+        txio.TxFixMargin(1);
+        list = 0;
+        for (i = 0; i < 8; i++)
+        {
+            if (((uint)header.config & (1 << i)) > 0)
             {
-                inform = 5;
-
-                if (header.name[4] >= '6')
-                    inform = header.name[4] - '0';
+                txio.TxPrintf("{0}{1}", (list++) > 0 ? ", " : "",
+                       ((uint)header.version < TxH.V4) ? interpreter_flags1[i] : interpreter_flags2[i]);
             }
-
-            txio.TxPrint("\n    **** Story file header ****\n\n");
-
-            /* Z-code version */
-
-            txio.TxPrintf("Z-code version:           {0:d}\n", header.version);
-
-            /* Interpreter flags */
-
-            Console.Write("Interpreter flags:        ");
-            txio.TxFixMargin(1);
-            list = 0;
-            for (i = 0; i < 8; i++)
-            {
-                if (((uint)header.config & (1 << i)) > 0)
-                {
-                    txio.TxPrintf("{0}{1}", (list++) > 0 ? ", " : "",
-                           ((uint)header.version < TxH.V4) ? interpreter_flags1[i] : interpreter_flags2[i]);
-                }
-                else
-                {
-                    if ((uint)header.version < TxH.V4 && i == 1)
-                        txio.TxPrintf("{0}Display score/moves", (list++) > 0 ? ", " : "");
-                }
-            }
-            if (list == 0)
-                txio.TxPrint("None");
-
-            txio.TxPrint("\n");
-            txio.TxFixMargin(0);
-
-            /* Release number */
-
-            txio.TxPrintf("Release number:           {0:d}\n", (int)header.release);
-
-            /* Size of resident memory */
-
-            txio.TxPrintf("Size of resident memory:  {0:X4}\n", (uint)header.resident_size);
-
-            /* Start PC */
-
-            if ((uint)header.version != TxH.V6)
-                txio.TxPrintf("Start PC:                 {0:X4}\n", (uint)header.start_pc);
             else
             {
-                txio.TxPrintf("Main routine address:     {0:X5}\n", (ulong)
-                       ((header.start_pc * txio.code_scaler) +
-                        (header.routines_offset * txio.story_scaler)));
+                if ((uint)header.version < TxH.V4 && i == 1)
+                    txio.TxPrintf("{0}Display score/moves", (list++) > 0 ? ", " : "");
             }
+        }
+        if (list == 0)
+            txio.TxPrint("None");
 
-            /* Dictionary address */
+        txio.TxPrint("\n");
+        txio.TxFixMargin(0);
 
-            txio.TxPrintf("Dictionary address:       {0:X4}\n", (uint)header.dictionary);
+        /* Release number */
 
-            /* Object table address */
+        txio.TxPrintf("Release number:           {0:d}\n", (int)header.release);
 
-            txio.TxPrintf("Object table address:     {0:X4}\n", (uint)header.objects);
+        /* Size of resident memory */
 
-            /* Global variables address */
+        txio.TxPrintf("Size of resident memory:  {0:X4}\n", (uint)header.resident_size);
 
-            txio.TxPrintf("Global variables address: {0:X4}\n", (uint)header.globals);
+        /* Start PC */
 
-            /* Size of dynamic memory */
+        if ((uint)header.version != TxH.V6)
+            txio.TxPrintf("Start PC:                 {0:X4}\n", (uint)header.start_pc);
+        else
+        {
+            txio.TxPrintf("Main routine address:     {0:X5}\n", (ulong)
+                   ((header.start_pc * txio.code_scaler) +
+                    (header.routines_offset * txio.story_scaler)));
+        }
 
-            txio.TxPrintf("Size of dynamic memory:   {0:X4}\n", (uint)header.dynamic_size);
+        /* Dictionary address */
 
-            /* Game flags */
+        txio.TxPrintf("Dictionary address:       {0:X4}\n", (uint)header.dictionary);
 
-            txio.TxPrint("Game flags:               ");
-            txio.TxFixMargin(1);
-            list = 0;
-            for (i = 0; i < 16; i++)
+        /* Object table address */
+
+        txio.TxPrintf("Object table address:     {0:X4}\n", (uint)header.objects);
+
+        /* Global variables address */
+
+        txio.TxPrintf("Global variables address: {0:X4}\n", (uint)header.globals);
+
+        /* Size of dynamic memory */
+
+        txio.TxPrintf("Size of dynamic memory:   {0:X4}\n", (uint)header.dynamic_size);
+
+        /* Game flags */
+
+        txio.TxPrint("Game flags:               ");
+        txio.TxFixMargin(1);
+        list = 0;
+        for (i = 0; i < 16; i++)
+        {
+            if (((uint)header.flags & (1 << i)) > 0)
             {
-                if (((uint)header.flags & (1 << i)) > 0)
-                {
-                    txio.TxPrintf("{0}{1}", (list++) > 0 ? ", " : "",
-                           ((uint)header.version < TxH.V4) ? game_flags1[i] : game_flags2[i]);
-                }
+                txio.TxPrintf("{0}{1}", (list++) > 0 ? ", " : "",
+                       ((uint)header.version < TxH.V4) ? game_flags1[i] : game_flags2[i]);
             }
-            if (list == 0)
-                txio.TxPrint("None");
-            txio.TxPrint("\n");
-            txio.TxFixMargin(0);
+        }
+        if (list == 0)
+            txio.TxPrint("None");
+        txio.TxPrint("\n");
+        txio.TxFixMargin(0);
 
-            /* Serial number */
+        /* Serial number */
 
-            txio.TxPrintf("Serial number:            {0}{1}{2}{3}{4}{5}\n",
-                (char)header.serial[0], (char)header.serial[1],
-                (char)header.serial[2], (char)header.serial[3],
-                (char)header.serial[4], (char)header.serial[5]);
+        txio.TxPrintf("Serial number:            {0}{1}{2}{3}{4}{5}\n",
+            (char)header.serial[0], (char)header.serial[1],
+            (char)header.serial[2], (char)header.serial[3],
+            (char)header.serial[4], (char)header.serial[5]);
 
-            /* Abbreviations address */
+        /* Abbreviations address */
 
-            if ((uint)header.abbreviations > 0)
-                txio.TxPrintf("Abbreviations address:    {0:X4}\n", (uint)header.abbreviations);
+        if ((uint)header.abbreviations > 0)
+            txio.TxPrintf("Abbreviations address:    {0:X4}\n", (uint)header.abbreviations);
 
-            /* File size and checksum */
+        /* File size and checksum */
 
-            if ((uint)header.file_size > 0)
-            {
-                txio.TxPrintf("File size:                {0:X5}\n", (ulong)txio.file_size);
-                txio.TxPrintf("Checksum:                 {0:X4}\n", (uint)header.checksum);
-            }
+        if ((uint)header.file_size > 0)
+        {
+            txio.TxPrintf("File size:                {0:X5}\n", (ulong)txio.file_size);
+            txio.TxPrintf("Checksum:                 {0:X4}\n", (uint)header.checksum);
+        }
 
 #if FULL_HEADER
 
@@ -246,12 +247,12 @@ namespace ZTools
 
 #endif // defined(FULL_HEADER)
 
-            /* V6 and V7 offsets */
+        /* V6 and V7 offsets */
 
-            if ((uint)header.routines_offset > 0)
-                txio.TxPrintf("Routines offset:          {0:X5}\n", header.routines_offset * txio.story_scaler);
-            if ((uint)header.strings_offset > 0)
-                txio.TxPrintf("Strings offset:           {0:X5}\n", header.strings_offset * txio.story_scaler);
+        if ((uint)header.routines_offset > 0)
+            txio.TxPrintf("Routines offset:          {0:X5}\n", header.routines_offset * txio.story_scaler);
+        if ((uint)header.strings_offset > 0)
+            txio.TxPrintf("Strings offset:           {0:X5}\n", header.strings_offset * txio.story_scaler);
 
 #if FULL_HEADER
 
@@ -262,47 +263,47 @@ namespace ZTools
         
 #endif // defined(FULL_HEADER)
 
-            /* Function keys address */
+        /* Function keys address */
 
-            if ((uint)header.terminating_keys > 0)
+        if ((uint)header.terminating_keys > 0)
+        {
+            txio.TxPrintf("Terminating keys address: {0:X4}\n", (uint)header.terminating_keys);
+            address = header.terminating_keys;
+            txio.TxPrint("    Keys used: ");
+            txio.TxFixMargin(1);
+            list = 0;
+            for (i = txio.ReadDataByte(ref address); i > 0;
+                 i = txio.ReadDataByte(ref address))
             {
-                txio.TxPrintf("Terminating keys address: {0:X4}\n", (uint)header.terminating_keys);
-                address = header.terminating_keys;
-                txio.TxPrint("    Keys used: ");
-                txio.TxFixMargin(1);
-                list = 0;
-                for (i = txio.ReadDataByte(ref address); i > 0;
-                     i = txio.ReadDataByte(ref address))
-                {
-                    if (list > 0)
-                        txio.TxPrint(", ");
-                    if (i == 0x81)
-                        txio.TxPrint("Up arrow"); /* Arrow keys */
-                    else if (i == 0x82)
-                        txio.TxPrint("Down arrow");
-                    else if (i == 0x83)
-                        txio.TxPrint("Left arrow");
-                    else if (i == 0x84)
-                        txio.TxPrint("Right arrow");
-                    else if (i is >= 0x85 and <= 0x90)
-                        txio.TxPrintf("F{0}", i - 0x84); /* Function keys */
-                    else if (i is >= 0x91 and <= 0x9a)
-                        txio.TxPrintf("KP{0}", i - 0x91); /* Keypad keys */
-                    else if (i == 0xfc)
-                        txio.TxPrint("Menu click");
-                    else if (i == 0xfd)
-                        txio.TxPrint("Single mouse click");
-                    else if (i == 0xfe)
-                        txio.TxPrint("Double mouse click");
-                    else if (i == 0xff)
-                        txio.TxPrint("Any function key");
-                    else
-                        txio.TxPrintf("Unknown key (0x{0:X2})", (uint)i);
-                    list++;
-                }
-                txio.TxPrint("\n");
-                txio.TxFixMargin(0);
+                if (list > 0)
+                    txio.TxPrint(", ");
+                if (i == 0x81)
+                    txio.TxPrint("Up arrow"); /* Arrow keys */
+                else if (i == 0x82)
+                    txio.TxPrint("Down arrow");
+                else if (i == 0x83)
+                    txio.TxPrint("Left arrow");
+                else if (i == 0x84)
+                    txio.TxPrint("Right arrow");
+                else if (i is >= 0x85 and <= 0x90)
+                    txio.TxPrintf("F{0}", i - 0x84); /* Function keys */
+                else if (i is >= 0x91 and <= 0x9a)
+                    txio.TxPrintf("KP{0}", i - 0x91); /* Keypad keys */
+                else if (i == 0xfc)
+                    txio.TxPrint("Menu click");
+                else if (i == 0xfd)
+                    txio.TxPrint("Single mouse click");
+                else if (i == 0xfe)
+                    txio.TxPrint("Double mouse click");
+                else if (i == 0xff)
+                    txio.TxPrint("Any function key");
+                else
+                    txio.TxPrintf("Unknown key (0x{0:X2})", (uint)i);
+                list++;
             }
+            txio.TxPrint("\n");
+            txio.TxFixMargin(0);
+        }
 
 #if FULL_HEADER
 
@@ -319,27 +320,27 @@ namespace ZTools
 
 #endif // defined(FULL_HEADER)
 
-            /* Alphabet address */
+        /* Alphabet address */
 
-            if ((uint)header.alphabet > 0)
+        if ((uint)header.alphabet > 0)
+        {
+            txio.TxPrintf("Alphabet address:         {0:4X}\n", (uint)header.alphabet);
+            txio.TxPrint("    ");
+            txio.TxFixMargin(1);
+            for (i = 0; i < 3; i++)
             {
-                txio.TxPrintf("Alphabet address:         {0:4X}\n", (uint)header.alphabet);
-                txio.TxPrint("    ");
-                txio.TxFixMargin(1);
-                for (i = 0; i < 3; i++)
-                {
-                    txio.TxPrint("\"");
-                    for (j = 0; j < 26; j++)
-                        txio.TxPrint((char)TxH.GetByte((ulong)((uint)header.alphabet + (i * 26) + j)));
-                    txio.TxPrint("\"\n");
-                }
-                txio.TxFixMargin(0);
+                txio.TxPrint("\"");
+                for (j = 0; j < 26; j++)
+                    txio.TxPrint((char)TxH.GetByte((ulong)((uint)header.alphabet + (i * 26) + j)));
+                txio.TxPrint("\"\n");
             }
+            txio.TxFixMargin(0);
+        }
 
-            /* Mouse table address */
+        /* Mouse table address */
 
-            if ((uint)header.mouse_table > 0)
-                txio.TxPrintf("Header extension address: {0:X4}\n", (uint)header.mouse_table);
+        if ((uint)header.mouse_table > 0)
+            txio.TxPrintf("Header extension address: {0:X4}\n", (uint)header.mouse_table);
 
 #if FULL_HEADER
 
@@ -356,35 +357,35 @@ namespace ZTools
 
 #endif // defined(FULL_HEADER)
 
-            /* Inform version -- overlaps name */
-            if (inform >= 6)
-            {
-                txio.TxPrint("Inform Version:           ");
-                for (i = 4; i < header.name.Length; i++)
-                    txio.TxPrint((char)header.name[i]);
-                txio.TxPrint('\n');
-            }
-
-            ShowHeaderExtension();
-
-        }/* show_header */
-
-        private static void ShowHeaderExtension()
+        /* Inform version -- overlaps name */
+        if (inform >= 6)
         {
-            zword_t tlen = 0;
+            txio.TxPrint("Inform Version:           ");
+            for (i = 4; i < header.name.Length; i++)
+                txio.TxPrint((char)header.name[i]);
+            txio.TxPrint('\n');
+        }
 
-            if (txio.header is null)
-                throw new InvalidOperationException("txio header was not initialized");
+        ShowHeaderExtension();
 
-            if ((uint)txio.header.mouse_table > 0)
-            {
-                tlen = TxH.GetWord(txio.header.mouse_table);
-                txio.TxPrintf("Header extension length:  {0:X4}\n", tlen);
-            }
-            else
-            {
-                return;
-            }
+    }/* show_header */
+
+    private static void ShowHeaderExtension()
+    {
+        zword_t tlen = 0;
+
+        if (txio.header is null)
+            throw new InvalidOperationException("txio header was not initialized");
+
+        if ((uint)txio.header.mouse_table > 0)
+        {
+            tlen = TxH.GetWord(txio.header.mouse_table);
+            txio.TxPrintf("Header extension length:  {0:X4}\n", tlen);
+        }
+        else
+        {
+            return;
+        }
 
 #if FULL_HEADER
         if (tlen > 0)
@@ -393,8 +394,7 @@ namespace ZTools
             txio.tx_printf("Mouse X coordinate:       {0:X4}\n", tx_h.get_word(txio.header.mouse_table + 4));
 #endif
 
-            if (tlen > 2)
-                txio.TxPrintf("Unicode table address:    {0:X4}\n", (ulong)TxH.GetWord(txio.header.mouse_table + 6));
-        }
+        if (tlen > 2)
+            txio.TxPrintf("Unicode table address:    {0:X4}\n", (ulong)TxH.GetWord(txio.header.mouse_table + 6));
     }
 }
