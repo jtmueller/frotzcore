@@ -3,20 +3,19 @@
 using System.Runtime.CompilerServices;
 using zword = System.UInt16;
 
-
 public static class TrueColorStuff
 {
     private const zword NON_STD_COLS = 238;
-    private static readonly long[] s_colours;
-    private static readonly long[] s_nonStdColours;
+    private static readonly int[] s_colours;
+    private static readonly int[] s_nonStdColours;
     private static zword s_nonStdIndex = 0;
-    private static readonly long s_defaultFore = -1;
-    private static readonly long s_defaultBack = -1;
+    private static readonly int s_defaultFore = -1;
+    private static readonly int s_defaultBack = -1;
 
     static TrueColorStuff()
     {
-        s_colours = new long[11];
-        s_nonStdColours = new long[NON_STD_COLS];
+        s_colours = new int[11];
+        s_nonStdColours = new int[NON_STD_COLS];
 
         // TODO Pass in the real default colors
         s_defaultFore = RGB(0xFF, 0xFF, 0xFF);
@@ -52,7 +51,7 @@ public static class TrueColorStuff
 
     // Convert from a true colour to 5-bit RGB
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static zword TrueToRGB5(long colour)
+    internal static zword TrueToRGB5(int colour)
     {
         int r = GetRValue(colour) >> 3;
         int g = GetGValue(colour) >> 3;
@@ -61,21 +60,21 @@ public static class TrueColorStuff
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static byte GetRValue(long rgb) => LoByte(rgb);
+    public static byte GetRValue(int rgb) => LoByte(rgb);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static byte GetGValue(long rgb) => LoByte(rgb >> 8);
+    public static byte GetGValue(int rgb) => LoByte(rgb >> 8);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static byte GetBValue(long rgb) => LoByte(rgb >> 16);
+    public static byte GetBValue(int rgb) => LoByte(rgb >> 16);
 
-    public static (byte r, byte g, byte b) GetRGB(long rgb) => (LoByte(rgb), LoByte(rgb >> 8), LoByte(rgb >> 16));
+    public static (byte r, byte g, byte b) GetRGB(int rgb) => (LoByte(rgb), LoByte(rgb >> 8), LoByte(rgb >> 16));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static byte LoByte(long w) => (byte)(w & 0xff);
+    internal static byte LoByte(int w) => (byte)(w & 0xff);
 
     // Get an index for a non-standard colour
-    internal static zword GetColourIndex(long colour)
+    internal static zword GetColourIndex(int colour)
     {
         // Is this a standard colour?
         for (int i = 0; i < 11; i++)
@@ -117,7 +116,7 @@ public static class TrueColorStuff
 
 
     // Get a color
-    public static long GetColor(int color)
+    public static int GetColor(int color)
     {
         // Standard colours
         if (color is >= ZColor.BLACK_COLOUR and <= ZColor.DARKGREY_COLOUR)
@@ -132,7 +131,7 @@ public static class TrueColorStuff
         // Non standard colours
         if (color is >= 18 and < 256)
         {
-            if (s_nonStdColours[color - 18] != 0xFFFFFFFF)
+            if (s_nonStdColours[color - 18] != 0xFFFFFF)
                 return s_nonStdColours[color - 18];
         }
         return s_colours[0];

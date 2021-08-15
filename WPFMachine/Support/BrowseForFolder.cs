@@ -1,6 +1,5 @@
 ﻿namespace WPFMachine.Support;
 
-using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -97,9 +96,15 @@ internal class BrowseForFolder
             case BFFM_SELCHANGED:
                 {
                     var pathPtr = Marshal.AllocHGlobal(260 * Marshal.SystemDefaultCharSize);
-                    if (SHGetPathFromIDList(lp, pathPtr))
-                        SendMessage(new HandleRef(null, hWnd), BFFM_SETSTATUSTEXTW, 0, pathPtr);
-                    Marshal.FreeHGlobal(pathPtr);
+                    try
+                    {
+                        if (SHGetPathFromIDList(lp, pathPtr))
+                            SendMessage(new HandleRef(null, hWnd), BFFM_SETSTATUSTEXTW, 0, pathPtr);
+                    }
+                    finally
+                    {
+                        Marshal.FreeHGlobal(pathPtr);
+                    }
                     break;
                 }
         }
@@ -111,16 +116,16 @@ internal class BrowseForFolder
     public string? SelectFolder(string caption, string initialPath, nint parentHandle)
     {
         _initialPath = initialPath;
-        var sb = new StringBuilder(MAX_PATH);
-        var pidl = IntPtr.Zero;
+        StringBuilder sb = new(MAX_PATH);
+        nint pidl = 0;
         var bi = new BROWSEINFO
         {
             hwndOwner = parentHandle,
-            pidlRoot = IntPtr.Zero,
+            pidlRoot = 0,
             lpszTitle = caption,
             ulFlags = BIF_NEWDIALOGSTYLE | BIF_SHAREABLE,
-            lpfn = new BrowseCallbackProc(OnBrowseEvent),
-            lParam = IntPtr.Zero,
+            lpfn = new(OnBrowseEvent),
+            lParam = 0,
             iImage = 0
         };
 

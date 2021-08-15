@@ -185,7 +185,7 @@ namespace WPFMachine.Screen
         {
             if (_currentDisplay.Style != new_style)
             {
-                _currentDisplay.Style = new_style;
+                _currentDisplay = _currentDisplay with { Style = new_style };
                 _currentParagraph.SetDisplayInfo(_currentDisplay);
             }
         }
@@ -194,8 +194,11 @@ namespace WPFMachine.Screen
         {
             if (_fColor != new_foreground || _bColor != new_background)
             {
-                _currentDisplay.ForegroundColor = new_foreground;
-                _currentDisplay.BackgroundColor = new_background;
+                _currentDisplay = _currentDisplay with
+                {
+                    ForegroundColor = new_foreground,
+                    BackgroundColor = new_background
+                };
 
                 // TODO Can this be removed?
                 _fColor = new_foreground;
@@ -209,7 +212,7 @@ namespace WPFMachine.Screen
         {
             if (_currentDisplay.Font != font)
             {
-                _currentDisplay.Font = font;
+                _currentDisplay = _currentDisplay with { Font = font };
                 _currentParagraph.SetDisplayInfo(_currentDisplay);
             }
         }

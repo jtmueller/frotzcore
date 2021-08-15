@@ -292,7 +292,7 @@ namespace WPFMachine.Absolute
             if (new_style != _currentInfo.Style)
             {
                 FlushCurrentString();
-                _currentInfo.Style = new_style;
+                _currentInfo = _currentInfo with { Style = new_style };
             }
         }
 
@@ -301,7 +301,7 @@ namespace WPFMachine.Absolute
             if (_currentInfo.Font != font)
             {
                 FlushCurrentString();
-                _currentInfo.Font = font;
+                _currentInfo = _currentInfo with { Font = font };
             }
         }
 
@@ -439,8 +439,7 @@ namespace WPFMachine.Absolute
             //long tempfg = Frotz.Other.TrueColorStuff.GetColour(new_foreground);
             //long tempbg = Frotz.Other.TrueColorStuff.GetColour(new_background);
 
-            _currentInfo.ForegroundColor = new_foreground;
-            _currentInfo.BackgroundColor = new_background;
+            _currentInfo = _currentInfo with { ForegroundColor = new_foreground, BackgroundColor = new_background };
         }
 
         public ushort PeekColor() => (ushort)_currentInfo.BackgroundColor;
@@ -478,7 +477,7 @@ namespace WPFMachine.Absolute
             });
         }
 
-        public void SetInputColor() => _currentInfo.ForegroundColor = 32;
+        public void SetInputColor() => _currentInfo = _currentInfo with { ForegroundColor = 32 };
 
         public void AddInputChar(char c)
         {
