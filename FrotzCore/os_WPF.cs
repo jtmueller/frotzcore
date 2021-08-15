@@ -1,4 +1,6 @@
-﻿using Frotz.Generic;
+﻿namespace Frotz;
+
+using Frotz.Generic;
 using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
@@ -10,7 +12,6 @@ using System.Runtime.CompilerServices;
 using zbyte = System.Byte;
 using zword = System.UInt16;
 
-namespace Frotz;
 public static class OS
 {
     public static readonly RecyclableMemoryStreamManager StreamManger = new();
@@ -164,7 +165,7 @@ public static class OS
         }
         finally
         {
-            if (pooled is object)
+            if (pooled is not null)
                 ArrayPool<zword>.Shared.Return(pooled);
         }
     }

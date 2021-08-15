@@ -956,7 +956,7 @@ public static class Txd
                 }
 
             default:
-                throw new NotImplementedException(string.Format("\nFatal: bad class ({0})\n", opcode.OpClass));
+                throw new NotImplementedException($"\nFatal: bad class ({opcode.OpClass})\n");
         }
 
     }/* decode_opcode */

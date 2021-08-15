@@ -8,6 +8,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using zbyte_t = System.Byte;
 using zword_t = System.UInt16;
 

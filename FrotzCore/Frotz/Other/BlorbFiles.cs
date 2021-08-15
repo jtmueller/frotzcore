@@ -247,7 +247,7 @@ public class BlorbReader
         }
         finally
         {
-            if (rentedFromPool != null)
+            if (rentedFromPool is not null)
                 ArrayPool<byte>.Shared.Return(rentedFromPool);
         }
     }

@@ -7,8 +7,7 @@ public static class Extensions
     public static StringBuilder Remove(this StringBuilder sb, Range range)
     {
         var (offset, length) = range.GetOffsetAndLength(sb.Length);
-        sb.Remove(offset, length);
-        return sb;
+        return sb.Remove(offset, length);
     }
 
     public static bool Matches(this Span<byte> bytes, ReadOnlySpan<char> chars)

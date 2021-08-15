@@ -53,10 +53,13 @@ public class LineInfo : IDisposable
         {
             chars.CopyTo(_chars.Span[pos..]);
             _styles.Span[pos..].Fill(FandS);
-            LastCharSet = Math.Max(pos + chars.Length, LastCharSet);
+            LastCharSet = Math.Max(pos + chars.Length, Width);
 
-            _changes?.Dispose();
-            _changes = null;
+            if (_changes is not null)
+            {
+                _changes.Dispose();
+                _changes = null;
+            }
         }
     }
 
@@ -64,25 +67,31 @@ public class LineInfo : IDisposable
 
     public void ClearLine()
     {
-        lock (_lockObj)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                ClearChar(i);
-            }
-            LastCharSet = -1;
-        }
+        ClearChars(0, Width);
+        LastCharSet = -1;
     }
 
-    public void RemoveChars(int count)
+    public void ClearChars(int left, int right)
     {
+        if ((uint)left >= (uint)Width)
+            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(left));
+
+        if ((uint)left + right >= (uint)Width)
+            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(right), "Too many chars to fit in line.");
+
         lock (_lockObj)
         {
-            LastCharSet -= count;
+            _chars.Span[left..right].Fill(' ');
+            _styles.Span[left..right].Fill(default);
+            LastCharSet = Math.Max(left + right, Width);
+
+            if (_changes is not null)
+            {
+                _changes.Dispose();
+                _changes = null;
+            }
         }
     }
-
-    public void ClearChar(int pos) => SetChar(pos, ' ');
 
     public ReadOnlySpan<char> CurrentChars => _chars.Span[..(LastCharSet + 1)];
 

@@ -50,15 +50,24 @@ public class ScreenLines : IDisposable
         // TODO Do something with units
         // TODO Check Boundaries
         int numchars = right - left + 1;
-        Span<char> replace = numchars > 0xff ? new char[numchars] : stackalloc char[numchars];
-        Span<char> temp = numchars > 0xff ? new char[numchars] : stackalloc char[numchars];
-        replace.Fill(' ');
-
-        for (int i = bottom - 1; i >= top; i--)
+        MemoryOwner<char>? replaceOwner = null, tempOwner = null;
+        Span<char> replace = numchars > 0xff ? (replaceOwner = MemoryOwner<char>.Allocate(numchars)).Span : stackalloc char[numchars];
+        Span<char> temp = numchars > 0xff ? (tempOwner = MemoryOwner<char>.Allocate(numchars)).Span : stackalloc char[numchars];
+        try
         {
-            _lines[i].GetChars(left, numchars).CopyTo(temp);
-            _lines[i].Replace(left, replace);
-            temp.CopyTo(replace);
+            replace.Fill(' ');
+
+            for (int i = bottom - 1; i >= top; i--)
+            {
+                _lines[i].GetChars(left, numchars).CopyTo(temp);
+                _lines[i].Replace(left, replace);
+                temp.CopyTo(replace);
+            }
+        }
+        finally
+        {
+            replaceOwner?.Dispose();
+            tempOwner?.Dispose();
         }
     }
 
@@ -70,10 +79,7 @@ public class ScreenLines : IDisposable
         for (int i = top; i < bottom; i++)
         {
             var line = _lines[i];
-            for (int j = left; j < right; j++)
-            {
-                line.ClearChar(j);
-            }
+            line.ClearChars(left, right);
         }
     }
 
@@ -87,10 +93,6 @@ public class ScreenLines : IDisposable
             }
         }
     }
-
-    public void RemoveChars(int row, int col, int count) =>
-        // TODO Check this boundary
-        _lines[row].RemoveChars(count);
 
     public string GetText(out List<FontChanges> changes) => GetTextToLine(Rows, out changes);
 

@@ -14,7 +14,7 @@ namespace WPFMachine.Absolute
             using var img = Image.FromStream(ms);
             using var bmp = new Bitmap(img.Width * scale, img.Height * scale);
 
-            var g = Graphics.FromImage(bmp);
+            using var g = Graphics.FromImage(bmp);
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
             g.DrawImage(img, new Rectangle(0, 0, bmp.Width, bmp.Height),
