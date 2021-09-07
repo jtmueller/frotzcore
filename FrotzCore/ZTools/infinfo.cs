@@ -67,7 +67,7 @@ internal static class InfInfo
             inform_version = 0;
         }
 
-        txio.TxPrintf("Inform Version: {0}\n", inform_version);
+        txio.TxPrintf($"Inform Version: {inform_version}\n");
     }
 
     internal static int PrintInformAttributeName(ulong attr_names_base, int attr_no)

@@ -176,7 +176,7 @@ internal static class Process
     private static void PrivateInvoke(ZInstruction instruction, string array, int index, int opcode)
     {
         DebugState.LastCallMade = instruction.Method.Name + ":" + opcode;
-        DebugState.Output(false, "Invoking: {0:X} -> {1} -> {2}", opcode, instruction.Method.Name, invokeCount);
+        DebugState.Output(false, $"Invoking: {opcode:X} -> {instruction.Method.Name} -> {invokeCount}");
         instruction.Invoke();
         invokeCount++;
     }
@@ -234,7 +234,7 @@ internal static class Process
 
         zargs[zargc++] = value;
 
-        DebugState.Output("  Storing operand: {0} -> {1}", zargc - 1, value);
+        DebugState.Output($"  Storing operand: {zargc - 1} -> {value}");
 
     }/* load_operand */
 
@@ -277,7 +277,7 @@ internal static class Process
         {
             FastMem.CodeByte(out zbyte opcode);
 
-            DebugState.Output("CODE: {0} -> {1:X}", FastMem.Pcp - 1, opcode);
+            DebugState.Output($"CODE: {FastMem.Pcp - 1} -> {opcode:X}");
 
             if (Main.AbortGameLoop)
             {
@@ -355,12 +355,7 @@ internal static class Process
         Main.fp = Main.sp;
         Main.frame_count++;
 
-        DebugState.Output("Added Frame: {0} -> {1}:{2}:{3}:{4}",
-            Main.frame_count,
-            Main.Stack[Main.sp + 0],
-            Main.Stack[Main.sp + 1],
-            Main.Stack[Main.sp + 2],
-            Main.Stack[Main.sp + 3]);
+        DebugState.Output($"Added Frame: {Main.frame_count} -> {Main.Stack[Main.sp + 0]}:{Main.Stack[Main.sp + 1]}:{Main.Stack[Main.sp + 2]}:{Main.Stack[Main.sp + 3]}");
 
         /* Calculate byte address of routine */
 
@@ -427,7 +422,7 @@ internal static class Process
 
         Main.sp = Main.fp;
 
-        DebugState.Output("Removing Frame: {0}", Main.frame_count);
+        DebugState.Output($"Removing Frame: {Main.frame_count}");
 
         ct = Main.Stack[Main.sp++] >> (Main.option_save_quetzal == true ? 12 : 8);
         Main.frame_count--;
@@ -519,18 +514,18 @@ internal static class Process
         if (variable == 0)
         {
             Main.Stack[--Main.sp] = value; // *--sp = value;
-            DebugState.Output("  Storing {0} on stack at {1}", value, Main.sp);
+            DebugState.Output($"  Storing {value} on stack at {Main.sp}");
         }
         else if (variable < 16)
         {
             Main.Stack[Main.fp - variable] = value;  // *(fp - variable) = value;
-            DebugState.Output("  Storing {0} on stack as Variable {1} at {2}", value, variable, Main.sp);
+            DebugState.Output($"  Storing {value} on stack as Variable {variable} at {Main.sp}");
         }
         else
         {
             zword addr = (zword)(Main.h_globals + 2 * (variable - 16));
             FastMem.SetWord(addr, value);
-            DebugState.Output("  Storing {0} at {1}", value, addr);
+            DebugState.Output($"  Storing {value} at {addr}");
         }
 
     }/* store */

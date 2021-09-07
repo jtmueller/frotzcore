@@ -9,36 +9,19 @@ namespace Frotz.Blorb;
 
 public class Blorb
 {
-    internal Blorb()
-    {
-        Pictures = new Dictionary<int, BlorbPicture>();
-        Sounds = new Dictionary<int, byte[]>();
-        AdaptivePalette = new List<int>();
-
-        ReleaseNumber = 0;
-
-        StandardSize = ZSize.Empty;
-        MinSize = ZSize.Empty;
-        MaxSize = ZSize.Empty;
-        ZCode = Array.Empty<byte>();
-        MetaData = string.Empty;
-        StoryName = string.Empty;
-        IFhd = Array.Empty<byte>();
-    }
-
-    public Dictionary<int, BlorbPicture> Pictures { get; }
-    public Dictionary<int, byte[]> Sounds { get; }
-    public byte[] ZCode { get; set; }
-    public string MetaData { get; set; }
-    public string StoryName { get; set; }
-    public byte[] IFhd { get; set; }
+    public Dictionary<int, BlorbPicture> Pictures { get; } = new();
+    public Dictionary<int, byte[]> Sounds { get; } = new();
+    public byte[] ZCode { get; set; } = Array.Empty<byte>();
+    public string MetaData { get; set; } = string.Empty;
+    public string StoryName { get; set; } = string.Empty;
+    public byte[] IFhd { get; set; } = Array.Empty<byte>();
     public int ReleaseNumber { get; set; }
 
-    public ZSize StandardSize { get; set; }
-    public ZSize MaxSize { get; set; }
-    public ZSize MinSize { get; set; }
+    public ZSize StandardSize { get; set; } = ZSize.Empty;
+    public ZSize MaxSize { get; set; } = ZSize.Empty;
+    public ZSize MinSize { get; set; } = ZSize.Empty;
 
-    public List<int> AdaptivePalette { get; }
+    public List<int> AdaptivePalette { get; } = new();
 }
 
 public class BlorbPicture

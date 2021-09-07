@@ -66,7 +66,7 @@ public static class InfoDump
     //static short OPTION_G = 4;
     //static short OPTION_D = 5;
     //static short OPTION_M = 6;
-    private static readonly short MAXOPT = 7;
+    private const short MAXOPT = 7;
 
     /*
      * main
@@ -75,17 +75,7 @@ public static class InfoDump
      */
 
     // TODO Make this internal and just pass it out from txd.main (which I should also rename)
-    public class ZToolInfo
-    {
-        public string Header { get; private set; }
-        public string Text { get; private set; }
-
-        public ZToolInfo(string Header, string Text)
-        {
-            this.Header = Header;
-            this.Text = Text;
-        }
-    }
+    public record ZToolInfo(string Header, string Text);
 
     public static List<ZToolInfo> Main(byte[] storyFile, string[] args)
     {
@@ -96,7 +86,7 @@ public static class InfoDump
         int symbolic;
 
         /* Clear all options */
-        Array.Clear(options, 0, MAXOPT);
+        Array.Clear(options);
 
         columns = 0;
         symbolic = 0;
@@ -178,7 +168,7 @@ public static class InfoDump
 
     private static void ShowHelp(string program)
     {
-        Console.Error.WriteLine("usage: %s [options...] story-file [story-file...]\n\n", program);
+        Console.Error.WriteLine($"usage: {program} [options...] story-file [story-file...]\n\n");
         Console.Error.WriteLine("INFODUMP version 7/3 - display Infocom story file information. By Mark Howell\n");
         Console.Error.WriteLine("Works with V1 to V8 Infocom games.\n\n");
         Console.Error.WriteLine("\t-i   show game information in header (default)\n");

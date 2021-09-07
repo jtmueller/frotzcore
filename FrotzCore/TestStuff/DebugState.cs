@@ -2,6 +2,8 @@
 
 using Frotz.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 public static class DebugState
 {
@@ -31,16 +33,16 @@ public static class DebugState
     internal static string LastCallMade = "";
 
     [Conditional("DEBUG")]
-    public static void Output(string s, params object[] data) => Output(true, s, data);
+    public static void Output(ref DefaultInterpolatedStringHandler handler) => Output(true, ref handler);
 
     [Conditional("DEBUG")]
-    public static void Output(bool log, string s, params object[] data)
+    public static void Output(bool log, ref DefaultInterpolatedStringHandler handler)
     {
         if (IsActive)
         {
-            string current = string.Format(s, data);
+            string current = string.Create(CultureInfo.InvariantCulture, ref handler);
 
-            if (log && CurrentState < StateLines.Count && !s.StartsWith("#"))
+            if (log && CurrentState < StateLines.Count && !current.StartsWith("#"))
             {
                 string expected = StateLines[CurrentState++];
 

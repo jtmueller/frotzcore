@@ -6,13 +6,13 @@
  *
  */
 
+namespace ZTools;
+
 using System.Buffers;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Globalization;
 using zbyte_t = System.Byte;
 using zword_t = System.UInt16;
-
-namespace ZTools;
 
 public static class txio
 {
@@ -786,7 +786,7 @@ public static class txio
             if (eol == -1) eol = tx_line_pos;
             var temp = tx_line.AsSpan(..eol);
             cp = temp.LastIndexOf(' ');
-            if (c == ' ' || c == '\n' || cp == -1)
+            if (c is ' ' or '\n' || cp == -1)
             {
                 sb.Append(temp);
                 sb.Append('\n');
@@ -822,10 +822,7 @@ public static class txio
 
     private static void ClearTxLine()
     {
-        for (int i = 0; i < tx_line.Length; i++)
-        {
-            tx_line[i] = ' ';
-        }
+        Array.Fill(tx_line, ' ');
     }
 
     internal static void TxFixMargin(int flag) => tx_margin = flag > 0 ? tx_col : 0; /* txio.tx_fix_margin */
