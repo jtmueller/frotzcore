@@ -16,7 +16,7 @@ public static class DebugState
             string? line;
             while ((line = good.ReadLine()) != null)
             {
-                if (!line.StartsWith("#"))
+                if (!line.StartsWith('#'))
                 {
                     StateLines.Add(line);
                 }

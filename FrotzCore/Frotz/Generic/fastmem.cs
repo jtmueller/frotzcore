@@ -23,6 +23,7 @@
  */
 namespace Frotz.Generic;
 
+using Microsoft.Toolkit.HighPerformance.Helpers;
 using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -113,7 +114,8 @@ internal static class FastMem
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void LowWord(int addr, out zword v) => v = BinaryPrimitives.ReadUInt16BigEndian(ZMData.AsSpan(addr, 2));
+    internal static void LowWord(int addr, out zword v) 
+        => v = BinaryPrimitives.ReadUInt16BigEndian(ZMData.AsSpan(addr, 2));
 
     // TODO I'm suprised that they return the same thing
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -535,7 +537,7 @@ internal static class FastMem
             unchecked { Main.h_flags &= (zword)(~(ZMachine.SCRIPTING_FLAG | ZMachine.FIXED_FONT_FLAG)); }
             Main.h_flags |= (zword)(value & (ZMachine.SCRIPTING_FLAG | ZMachine.FIXED_FONT_FLAG));
 
-            if ((value & ZMachine.SCRIPTING_FLAG) > 0)
+            if (BitHelper.HasFlag(value, ZMachine.SCRIPTING_FLAG))
             {
                 if (!Main.ostream_script)
                     Files.ScriptOpen();
@@ -589,7 +591,7 @@ internal static class FastMem
 
             StoryFp.Position = InitFpPos;
 
-            int read = StoryFp.Read(ZMData, 0, Main.h_dynamic_size);
+            int read = StoryFp.Read(ZMData.AsSpan(..Main.h_dynamic_size));
             if (read != Main.h_dynamic_size)
             {
                 OS.Fatal("Story file read error");
@@ -611,7 +613,7 @@ internal static class FastMem
         {
 
             zword pc = Main.h_start_pc;
-            FastMem.SetPc(pc);
+            SetPc(pc);
 
         }
         else
@@ -640,12 +642,12 @@ internal static class FastMem
 
             int i;
 
-            FastMem.LowByte(addr, out zbyte len);
+            LowByte(addr, out zbyte len);
             addr++;
 
             for (i = 0; i < len; i++)
             {
-                FastMem.LowByte(addr, out zbyte c);
+                LowByte(addr, out zbyte c);
                 addr++;
 
                 if (c is >= (zbyte)'A' and <= (zbyte)'Z')
@@ -1131,7 +1133,7 @@ internal static class FastMem
         UndoDiff.Span[..diff_size].CopyTo(undoData.Span);
 
         var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - Main.sp);
-        Main.Stack.AsSpan(Main.sp, Main.Stack.Length - Main.sp).CopyTo(stack.Span);
+        Main.Stack.AsSpan(Main.sp..Main.Stack.Length).CopyTo(stack.Span);
 
         //    p->frame_offset = fp - stack;
         UndoMem.Add(new(pc, diff_size, Main.frame_count, (zword)stack_size,

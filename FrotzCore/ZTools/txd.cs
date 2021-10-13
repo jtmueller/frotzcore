@@ -176,7 +176,7 @@ public static class Txd
 
     internal static string ProcessStory(byte[] storyData)
     {
-        routines_base = new System.Collections.Generic.List<TxH.CRefItemT>();
+        routines_base = new List<TxH.CRefItemT>();
 
         decode = new TxH.DecodeT();
         opcode = new TxH.OpcodeT();
@@ -202,18 +202,19 @@ public static class Txd
 
         if (option_grammar > 0)
         {
-            ShowVerb.ConfigureParseTables(out verb_count, out action_count, out parse_count, out parser_type, out prep_type,
-                        out verb_table_base, out verb_data_base,
-                        out action_table_base, out preact_table_base,
-                        out prep_table_base, out prep_table_end);
+            ShowVerb.ConfigureParseTables(out verb_count, out action_count, out parse_count, 
+                out parser_type, out prep_type,
+                out verb_table_base, out verb_data_base,
+                out action_table_base, out preact_table_base,
+                out prep_table_base, out prep_table_end);
         }
 
         if (option_symbols > 0 && (parser_type >= (int)TxH.ParserTypes.InformGV1))
         {
             ShowObj.ConfigureObjectTables(out obj_count, out obj_table_base, out obj_table_end,
-                              out obj_data_base, out obj_data_end);
+                out obj_data_base, out obj_data_end);
             InfInfo.ConfigureInformTables(obj_data_end, out inform_version, out class_numbers_base, out class_numbers_end,
-                            out property_names_base, out property_names_end, out attr_names_base, out attr_names_end);
+                out property_names_base, out property_names_end, out attr_names_base, out attr_names_end);
         }
 
         if (header.version != TxH.V6 && header.version != TxH.V7)
@@ -480,7 +481,7 @@ public static class Txd
 
                 start_of_routine = decode.Pc;
                 if (DecodeCode() == TxH.END_OF_ROUTINE)
-                    return (TxH.END_OF_ROUTINE);
+                    return TxH.END_OF_ROUTINE;
                 if (option_labels > 0)
                     current_routine = cref_item;
                 start_of_routine = old_start;
@@ -529,7 +530,7 @@ public static class Txd
                 {
                     txio.TxPrintf("{0}outine {1}{2:d4}, {3} local",
                                        (decode.Pc - 1 == decode.InitialPc) ? "\nMain r" : "\nR",
-                                       (txio.option_inform) ? 'r' : 'R',
+                                       txio.option_inform ? 'r' : 'R',
                            LookupRoutine(decode.Pc - 1, 1),
                                        vars);
                 }
@@ -567,7 +568,7 @@ public static class Txd
             status = DecodeCode();
         }
 
-        return (status);
+        return status;
 
     }/* decode_routine */
 
@@ -594,7 +595,7 @@ public static class Txd
                 {
                     label = LookupLabel(decode.Pc, 0);
                     if (label != 0)
-                        txio.TxPrintf("{0}{1:d4}: ", (txio.option_inform) ? 'l' : 'L', label);
+                        txio.TxPrintf("{0}{1:d4}: ", txio.option_inform ? 'l' : 'L', label);
                     else
                         txio.TxPrint("       ");
                 }
@@ -622,7 +623,7 @@ public static class Txd
             status = DecodeOpcode();
         } while (status == TxH.END_OF_INSTRUCTION);
 
-        return (status);
+        return status;
 
     }/* decode_code */
 
@@ -674,7 +675,7 @@ public static class Txd
                     0x1B => DecodeOperands("MAKE_MENU", TxH.NUMBER, TxH.LOW_ADDR, TxH.NIL, TxH.NIL, TxH.BRANCH, TxH.PLAIN),
                     0x1C => DecodeOperands("PICTURE_TABLE", TxH.LOW_ADDR, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.PLAIN),
 
-                    _ => (DecodeOperands("ILLEGAL", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.ILLEGAL)),
+                    _ => DecodeOperands("ILLEGAL", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.ILLEGAL),
                 };
             case TxH.TWO_OPERAND:
             case TxH.VARIABLE_OPERAND:
@@ -887,7 +888,7 @@ public static class Txd
                                 }
                                 break;
                         }
-                        return (DecodeOperands("ILLEGAL", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.ILLEGAL));
+                        return DecodeOperands("ILLEGAL", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.ILLEGAL);
                 }
 
             case TxH.ZERO_OPERAND:
@@ -952,7 +953,7 @@ public static class Txd
                                 }
                                 break;
                         }
-                        return (DecodeOperands("ILLEGAL", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.ILLEGAL));
+                        return DecodeOperands("ILLEGAL", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.ILLEGAL);
                 }
 
             default:
@@ -1034,7 +1035,7 @@ public static class Txd
             case TxH.ONE_OPERAND:
                 status = DecodeParameter((opcode.OpCode >> 4) & 0x03, 0);
                 if (status > 0)
-                    return (status);
+                    return status;
                 opers = 1;
                 break;
 
@@ -1047,11 +1048,11 @@ public static class Txd
                     if (!txio.option_inform && opcode.Type == TxH.CALL)
                         txio.TxPrint(" (");
                     else
-                        txio.TxPrintf("{0}", (txio.option_inform) ? ' ' : ',');
+                        txio.TxPrintf("{0}", txio.option_inform ? ' ' : ',');
                 }
                 status = DecodeParameter((opcode.OpCode & 0x20) > 0 ? TxH.VARIABLE : TxH.BYTE_IMMED, 1);
                 if (status > 0)
-                    return (status);
+                    return status;
                 opers = 2;
                 if (!txio.option_inform && !decode.FirstPass && opcode.Type == TxH.CALL && opers > 1)
                     txio.TxPrint(")");
@@ -1081,11 +1082,11 @@ public static class Txd
                             if (!txio.option_inform && opcode.Type == TxH.CALL && opers == 1)
                                 txio.TxPrint(" (");
                             else
-                                txio.TxPrintf("{0}", (txio.option_inform) ? ' ' : ',');
+                                txio.TxPrintf("{0}", txio.option_inform ? ' ' : ',');
                         }
                         status = DecodeParameter(addr_mode, opers);
                         if (status > 0)
-                            return (status);
+                            return status;
                         opers++;
                     }
                 }
@@ -1100,7 +1101,7 @@ public static class Txd
                 throw new ArgumentException($"\nFatal: bad class ({opcode.OpClass})\n");
         }
 
-        return (0);
+        return 0;
     }/* decode_parameters */
 
     /* decode_parameter - Decode one input parameter */
@@ -1172,13 +1173,13 @@ public static class Txd
                     addr = txio.code_scaler * value + txio.story_scaler * header.strings_offset;
                     s = LookupString(addr);
                     if (s > 0)
-                        txio.TxPrintf("{0}{1,3:d}", (txio.option_inform) ? 's' : 'S', s);
+                        txio.TxPrintf("{0}{1,3:d}", txio.option_inform ? 's' : 'S', s);
                     addr = value;
                     dictionary = InDictionary(addr);
                     if (dictionary > 0)
                     {
                         if (s > 0)
-                            txio.TxPrintf(" {0} ", (txio.option_inform) ? "or" : "OR");
+                            txio.TxPrintf(" {0} ", txio.option_inform ? "or" : "OR");
                         txio.TxPrint("\"");
                         txio.DecodeText(ref addr);
                         txio.TxPrint("\"");
@@ -1192,14 +1193,14 @@ public static class Txd
                 if (!decode.FirstPass)
                 {
                     if (value == 0)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "sp" : "(SP)+");
+                        txio.TxPrintf("{0}", txio.option_inform ? "sp" : "(SP)+");
                     else
                         PrintVariable(value);
                 }
                 else
                 {
                     if ((int)value > 0 && (int)value < 16 && (int)value > locals_count)
-                        return (1);
+                        return 1;
                 }
                 break;
 
@@ -1255,7 +1256,7 @@ public static class Txd
                             routine = LookupRoutine(addr, 0);
                             if (routine != 0)
                             {
-                                txio.TxPrintf("{0}{1,4:d}", (txio.option_inform) ? 'r' : 'R', routine);
+                                txio.TxPrintf("{0}{1,4:d}", txio.option_inform ? 'r' : 'R', routine);
                             }
                             else
                             {
@@ -1311,7 +1312,7 @@ public static class Txd
                     s = LookupString(addr);
                     if (s != 0)
                     {
-                        txio.TxPrintf("{0}{1,3:d}", (txio.option_inform) ? 's' : 'S', s);
+                        txio.TxPrintf("{0}{1,3:d}", txio.option_inform ? 's' : 'S', s);
                     }
                     else
                     {
@@ -1326,13 +1327,13 @@ public static class Txd
             case TxH.LABEL:
                 addr = decode.Pc + (ulong)(short)value - 2; // TODO Check this math somehow
                 if (decode.FirstPass && addr < decode.LowAddress)
-                    return (1);
+                    return 1;
                 if (option_labels > 0)
                 {
                     if (decode.FirstPass)
                         AddLabel(addr);
                     else
-                        txio.TxPrintf("{0}{1,4:d}", (txio.option_inform) ? 'l' : 'L', LookupLabel(addr, 1));
+                        txio.TxPrintf("{0}{1,4:d}", txio.option_inform ? 'l' : 'L', LookupLabel(addr, 1));
                 }
                 else
                 {
@@ -1358,15 +1359,15 @@ public static class Txd
                 if (!decode.FirstPass)
                 {
                     if (value == TxH.ROMAN)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "roman" : "ROMAN");
+                        txio.TxPrintf("{0}", txio.option_inform ? "roman" : "ROMAN");
                     else if (value == TxH.REVERSE)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "reverse" : "REVERSE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "reverse" : "REVERSE");
                     else if (value == TxH.BOLDFACE)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "boldface" : "BOLDFACE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "boldface" : "BOLDFACE");
                     else if (value == TxH.EMPHASIS)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "emphasis" : "EMPHASIS");
+                        txio.TxPrintf("{0}", txio.option_inform ? "emphasis" : "EMPHASIS");
                     else if (value == TxH.FIXED_FONT)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "fixed_font" : "FIXED_FONT");
+                        txio.TxPrintf("{0}", txio.option_inform ? "fixed_font" : "FIXED_FONT");
                     else
                         PrintInteger(value, addr_mode == TxH.BYTE_IMMED);
                 }
@@ -1376,21 +1377,21 @@ public static class Txd
                 if (!decode.FirstPass)
                 {
                     if ((int)value == 1)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "output_enable" : "OUTPUT_ENABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "output_enable" : "OUTPUT_ENABLE");
                     else if ((int)value == 2)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "scripting_enable" : "SCRIPTING_ENABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "scripting_enable" : "SCRIPTING_ENABLE");
                     else if ((int)value == 3)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "redirect_enable" : "REDIRECT_ENABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "redirect_enable" : "REDIRECT_ENABLE");
                     else if ((int)value == 4)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "record_enable" : "RECORD_ENABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "record_enable" : "RECORD_ENABLE");
                     else if ((int)value == -1)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "output_disable" : "OUTPUT_DISABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "output_disable" : "OUTPUT_DISABLE");
                     else if ((int)value == -2)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "scripting_disable" : "SCRIPTING_DISABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "scripting_disable" : "SCRIPTING_DISABLE");
                     else if ((int)value == -3)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "redirect_disable" : "REDIRECT_DISABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "redirect_disable" : "REDIRECT_DISABLE");
                     else if ((int)value == -4)
-                        txio.TxPrintf("{0}", (txio.option_inform) ? "record_disable" : "RECORD_DISABLE");
+                        txio.TxPrintf("{0}", txio.option_inform ? "record_disable" : "RECORD_DISABLE");
                     else
                         PrintInteger(value, addr_mode == TxH.BYTE_IMMED);
                 }
@@ -1401,7 +1402,7 @@ public static class Txd
                 {
                     if (value == 0)
                     {
-                        txio.TxPrintf("[{0}]", (txio.option_inform) ? "sp" : "(SP)+");
+                        txio.TxPrintf("[{0}]", txio.option_inform ? "sp" : "(SP)+");
                     }
                     else
                     {
@@ -1416,7 +1417,7 @@ public static class Txd
                 throw new ArgumentException($"\nFatal: bad operand type ({par})\n");
         }
 
-        return (0);
+        return 0;
     }/* decode_parameter */
 
     /* decode_extra - Decode branches, stores and text */
@@ -1437,7 +1438,7 @@ public static class Txd
                 if (!txio.option_inform) // || (txio.option_inform >= 6))
                     txio.TxPrint("-> ");
                 if (addr == 0)
-                    txio.TxPrintf("{0}", (txio.option_inform) ? "sp" : "-(SP)");
+                    txio.TxPrintf("{0}", txio.option_inform ? "sp" : "-(SP)");
                 else
                     PrintVariable((uint)addr);
 
@@ -1447,7 +1448,7 @@ public static class Txd
             else
             {
                 if (addr > 0 && addr < 16 && addr > (ulong)locals_count)
-                    return (TxH.BAD_OPCODE);
+                    return TxH.BAD_OPCODE;
             }
         }
 
@@ -1473,41 +1474,41 @@ public static class Txd
             }
             if (!decode.FirstPass)
             {
-                if ((addr > 1) && (firstbyte & 0x40) == 0 && (txio.option_inform) && (option_labels > 0)) // TODO Option_inform >= 6
+                if ((addr > 1) && (firstbyte & 0x40) == 0 && txio.option_inform && (option_labels > 0)) // TODO Option_inform >= 6
                 {
                     txio.TxPrint("?");  /* Inform 6 long branch */
                 }
                 if ((firstbyte & 0x80) > 0)
-                    txio.TxPrintf("{0}", (txio.option_inform) ? "" : "[TRUE]");
+                    txio.TxPrintf("{0}", txio.option_inform ? "" : "[TRUE]");
                 else
-                    txio.TxPrintf("{0}", (txio.option_inform) ? "~" : "[FALSE]");
+                    txio.TxPrintf("{0}", txio.option_inform ? "~" : "[FALSE]");
             }
             if (addr == 0)
             {
                 if (!decode.FirstPass)
-                    txio.TxPrintf("{0}", (txio.option_inform) ? "rfalse" : " RFALSE");
+                    txio.TxPrintf("{0}", txio.option_inform ? "rfalse" : " RFALSE");
             }
             else if (addr == 1)
             {
                 if (!decode.FirstPass)
-                    txio.TxPrintf("{0}", (txio.option_inform) ? "rtrue" : " RTRUE");
+                    txio.TxPrintf("{0}", txio.option_inform ? "rtrue" : " RTRUE");
             }
             else
             {
                 addr = decode.Pc + addr - 2;
                 if (decode.FirstPass && addr < start_of_routine)
-                    return (TxH.BAD_OPCODE);
+                    return TxH.BAD_OPCODE;
                 if (option_labels > 0)
                 {
                     if (decode.FirstPass)
                         AddLabel(addr);
                     else
-                        txio.TxPrintf("{0}{1:d4}", (txio.option_inform) ? "l" : " L", LookupLabel(addr, 1));
+                        txio.TxPrintf("{0}{1:d4}", txio.option_inform ? "l" : " L", LookupLabel(addr, 1));
                 }
                 else
                 {
                     if (!decode.FirstPass)
-                        txio.TxPrintf("{0}{1:X}", (txio.option_inform) ? "" : " ", addr);
+                        txio.TxPrintf("{0}{1:X}", txio.option_inform ? "" : " ", addr);
                 }
                 if (addr > decode.HighPc)
                     decode.HighPc = addr;
@@ -1529,10 +1530,10 @@ public static class Txd
         if (opcode.Type == TxH.RETURN)
         {
             if (decode.Pc > decode.HighPc)
-                return (TxH.END_OF_ROUTINE);
+                return TxH.END_OF_ROUTINE;
         }
 
-        return (TxH.END_OF_INSTRUCTION);
+        return TxH.END_OF_INSTRUCTION;
 
     }/* decode_outputs */
 
@@ -1550,7 +1551,7 @@ public static class Txd
         while (pc < (ulong)txio.file_size)
         {
             if (option_labels > 0)
-                txio.TxPrintf("{0}{1:d3}: ", (txio.option_inform) ? 's' : 'S', count++);
+                txio.TxPrintf("{0}{1:d3}: ", txio.option_inform ? 's' : 'S', count++);
             else
                 txio.TxPrintf("{0:X}: S{1:d3} ", pc, count++);
             PrintText(ref pc);
@@ -1571,7 +1572,7 @@ public static class Txd
         int count = 1;
         zword_t data;
 
-        strings_base = new System.Collections.Generic.List<TxH.CRefItemT>();
+        strings_base = new List<TxH.CRefItemT>();
 
         pc = RoundData(pc);
         ulong old_pc = pc;

@@ -710,6 +710,18 @@ public static class txio
         }
     }
 
+    internal static void TxPrintf(FormattableString format)
+    {
+        if (tx_screen_cols != 0)
+        {
+            TxPrint(format.ToString());
+        }
+        else
+        {
+            sb.AppendFormat(format.Format, format.GetArguments());
+        }
+    }
+
     internal static void TxPrint(ReadOnlySpan<char> chars)
     {
         if (tx_screen_cols != 0)

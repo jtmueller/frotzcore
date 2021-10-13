@@ -85,7 +85,7 @@ public static class ShowDict
             dict_address += word_size;
 
             if (columns == 1)
-                txio.TxPrintf("@ ${0:X2} ", (uint)word_address);
+                txio.TxPrintf($"@ ${(uint)word_address:X2} ");
 
             /* Display the text for the word */
 

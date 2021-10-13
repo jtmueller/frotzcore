@@ -35,46 +35,6 @@ public readonly record struct ScreenMetrics(ZSize FontSize, ZSize WindowSize, in
     public (int Rows, int Columnns) Dimensions => (Rows, Columns);
 }
 
-//public readonly struct ScreenMetrics : IEquatable<ScreenMetrics>
-//{
-//    public readonly ZSize FontSize;
-//    public readonly ZSize WindowSize;
-//    public readonly int Rows;
-//    public readonly int Columns;
-//    public readonly int Scale;
-
-//    public ScreenMetrics(ZSize fontSize, ZSize windowSize, int rows, int columns, int scale)
-//    {
-//        FontSize = fontSize;
-//        WindowSize = windowSize;
-//        Rows = rows;
-//        Columns = columns;
-//        Scale = scale;
-//    }
-
-//    public void Deconstruct(out int rows, out int cols)
-//    {
-//        rows = Rows;
-//        cols = Columns;
-//    }
-
-//    public bool Equals(ScreenMetrics other)
-//    {
-//        return other.Rows == Rows
-//            && other.Columns == Columns
-//            && other.Scale == Scale
-//            && other.FontSize == FontSize
-//            && other.WindowSize == WindowSize;
-//    }
-
-//    public override bool Equals(object? obj) => obj is ScreenMetrics m && Equals(m);
-//    public override int GetHashCode() => HashCode.Combine(Rows, Columns, Scale, FontSize, WindowSize);
-
-//    public static bool operator ==(ScreenMetrics left, ScreenMetrics right) => left.Equals(right);
-
-//    public static bool operator !=(ScreenMetrics left, ScreenMetrics right) => !left.Equals(right);
-//}
-
 public class FontChanges
 {
     public int Offset { get; set; }

@@ -248,12 +248,6 @@ public class BlorbReader
         return BlorbUsage.Unknown;
     }
 
-    internal static Blorb ReadBlorbFile(byte[] storyData)
-    {
-        using var stream = new MemoryStream(storyData);
-        return ReadBlorbFile(stream);
-    }
-
     internal static Blorb ReadBlorbFile(IMemoryOwner<byte> storyData)
     {
         using var stream = storyData.AsStream();

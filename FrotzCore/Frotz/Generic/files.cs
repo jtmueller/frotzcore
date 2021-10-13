@@ -26,7 +26,7 @@ internal static class Files
     internal static string ScriptName = General.DEFAULT_SCRIPT_NAME;
     internal static string CommandName = General.DEFAULT_COMMAND_NAME;
     private static int ScriptWidth = 0;
-    private static System.IO.StreamWriter? Sfp = null;
+    private static StreamWriter? Sfp = null;
     private static System.IO.StreamWriter? Rfp = null;
     private static System.IO.FileStream? Pfp = null;
 
@@ -59,7 +59,7 @@ internal static class Files
             ScriptName = new_name;
         }
 
-        if ((Sfp = new System.IO.StreamWriter(ScriptName, true)) != null)
+        if ((Sfp = new StreamWriter(ScriptName, true)) != null)
         {
             Main.h_flags |= ZMachine.SCRIPTING_FLAG;
 
@@ -420,7 +420,7 @@ internal static class Files
         {
             CommandName = new_name;
 
-            if ((Pfp = new System.IO.FileStream(new_name, System.IO.FileMode.Open)) != null)
+            if ((Pfp = new FileStream(new_name, FileMode.Open)) != null)
             {
                 Screen.SetMorePrompts(Input.ReadYesOrNo("Do you want MORE prompts"));
 
