@@ -6,9 +6,8 @@
  * Matthew T. Russotto 7 February 1998 russotto@pond.com
  *
  */
-namespace ZTools;
 
-using zword_t = System.UInt16;
+namespace ZTools;
 
 internal static class InfInfo
 {
@@ -23,7 +22,7 @@ internal static class InfInfo
         out ulong attr_names_end)
     {
         ulong address;
-        zword_t num_properties;
+        zword num_properties;
 
         attr_names_base = attr_names_end = 0;
         property_names_base = property_names_end = 0;
@@ -50,13 +49,13 @@ internal static class InfInfo
                 while (txio.ReadDataWord(ref address) > 0) /* do nothing */;
                 class_numbers_end = address - 1;
                 property_names_base = address;
-                num_properties = (zword_t)(txio.ReadDataWord(ref address) - 1);
-                address += (ulong)(num_properties * sizeof(zword_t));
+                num_properties = (zword)(txio.ReadDataWord(ref address) - 1);
+                address += (ulong)(num_properties * sizeof(zword));
                 property_names_end = address - 1;
                 if (inform_version >= TxH.INFORM_610)
                 {
                     attr_names_base = address;
-                    address += (48 * sizeof(zword_t));
+                    address += (48 * sizeof(zword));
                     attr_names_end = address - 1;
                     /* then come the action names, the individual property values, the dynamic arrays, etc */
                 }

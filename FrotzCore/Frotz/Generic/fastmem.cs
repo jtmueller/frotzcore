@@ -21,69 +21,67 @@
 /*
  * New undo mechanism added by Jim Dunleavy <jim.dunleavy@erha.ie>
  */
-namespace Frotz.Generic;
 
 using Microsoft.Toolkit.HighPerformance.Helpers;
 using System.Buffers.Binary;
-using System.IO;
 using System.Runtime.CompilerServices;
-using zbyte = System.Byte;
-using zword = System.UInt16;
+
+namespace Frotz.Generic;
 
 internal readonly record struct RecordStruct(Story StoryId, zword Release, string Serial);
 
 internal static class FastMem
 {
     private static readonly RecordStruct[] Records = {
-            new(Story.SHERLOCK,  97, "871026"),
-            new(Story.SHERLOCK,  21, "871214"),
-            new(Story.SHERLOCK,  22, "880112"),
-            new(Story.SHERLOCK,  26, "880127"),
-            new(Story.SHERLOCK,   4, "880324"),
-            new(Story.BEYOND_ZORK,   1, "870412"),
-            new(Story.BEYOND_ZORK,   1, "870715"),
-            new(Story.BEYOND_ZORK,  47, "870915"),
-            new(Story.BEYOND_ZORK,  49, "870917"),
-            new(Story.BEYOND_ZORK,  51, "870923"),
-            new(Story.BEYOND_ZORK,  57, "871221"),
-            new(Story.BEYOND_ZORK,  60, "880610"),
-            new(Story.ZORK_ZERO,   0, "870831"),
-            new(Story.ZORK_ZERO,  96, "880224"),
-            new(Story.ZORK_ZERO, 153, "880510"),
-            new(Story.ZORK_ZERO, 242, "880830"),
-            new(Story.ZORK_ZERO, 242, "880901"),
-            new(Story.ZORK_ZERO, 296, "881019"),
-            new(Story.ZORK_ZERO, 366, "890323"),
-            new(Story.ZORK_ZERO, 383, "890602"),
-            new(Story.ZORK_ZERO, 387, "890612"),
-            new(Story.ZORK_ZERO, 392, "890714"),
-            new(Story.ZORK_ZERO, 393, "890714"),
-            new(Story.SHOGUN, 295, "890321"),
-            new(Story.SHOGUN, 292, "890314"),
-            new(Story.SHOGUN, 311, "890510"),
-            new(Story.SHOGUN, 320, "890627"),
-            new(Story.SHOGUN, 321, "890629"),
-            new(Story.SHOGUN, 322, "890706"),
-            new(Story.ARTHUR,  40, "890502"),
-            new(Story.ARTHUR,  41, "890504"),
-            new(Story.ARTHUR,  54, "890606"),
-            new(Story.ARTHUR,  63, "890622"),
-            new(Story.ARTHUR,  74, "890714"),
-            new(Story.JOURNEY,  46, "880603"),
-            new(Story.JOURNEY,   2, "890303"),
-            new(Story.JOURNEY,  26, "890316"),
-            new(Story.JOURNEY,  30, "890322"),
-            new(Story.JOURNEY,  51, "890522"),
-            new(Story.JOURNEY,  54, "890526"),
-            new(Story.JOURNEY,  77, "890616"),
-            new(Story.JOURNEY,  79, "890627"),
-            new(Story.JOURNEY,  83, "890706"),
-            new(Story.LURKING_HORROR, 203, "870506"),
-            new(Story.LURKING_HORROR, 219, "870912"),
-            new(Story.LURKING_HORROR, 221, "870918"),
-            new(Story.AMFV,  47, "850313"),
-            new(Story.UNKNOWN,   0, "------")
-        };
+        new(Story.SHERLOCK,  97, "871026"),
+        new(Story.SHERLOCK,  21, "871214"),
+        new(Story.SHERLOCK,  22, "880112"),
+        new(Story.SHERLOCK,  26, "880127"),
+        new(Story.SHERLOCK,   4, "880324"),
+        new(Story.BEYOND_ZORK,   1, "870412"),
+        new(Story.BEYOND_ZORK,   1, "870715"),
+        new(Story.BEYOND_ZORK,  47, "870915"),
+        new(Story.BEYOND_ZORK,  49, "870917"),
+        new(Story.BEYOND_ZORK,  51, "870923"),
+        new(Story.BEYOND_ZORK,  57, "871221"),
+        new(Story.BEYOND_ZORK,  60, "880610"),
+        new(Story.ZORK_ZERO,   0, "870831"),
+        new(Story.ZORK_ZERO,  96, "880224"),
+        new(Story.ZORK_ZERO, 153, "880510"),
+        new(Story.ZORK_ZERO, 242, "880830"),
+        new(Story.ZORK_ZERO, 242, "880901"),
+        new(Story.ZORK_ZERO, 296, "881019"),
+        new(Story.ZORK_ZERO, 366, "890323"),
+        new(Story.ZORK_ZERO, 383, "890602"),
+        new(Story.ZORK_ZERO, 387, "890612"),
+        new(Story.ZORK_ZERO, 392, "890714"),
+        new(Story.ZORK_ZERO, 393, "890714"),
+        new(Story.SHOGUN, 295, "890321"),
+        new(Story.SHOGUN, 292, "890314"),
+        new(Story.SHOGUN, 311, "890510"),
+        new(Story.SHOGUN, 320, "890627"),
+        new(Story.SHOGUN, 321, "890629"),
+        new(Story.SHOGUN, 322, "890706"),
+        new(Story.ARTHUR,  40, "890502"),
+        new(Story.ARTHUR,  41, "890504"),
+        new(Story.ARTHUR,  54, "890606"),
+        new(Story.ARTHUR,  63, "890622"),
+        new(Story.ARTHUR,  74, "890714"),
+        new(Story.JOURNEY,  46, "880603"),
+        new(Story.JOURNEY,   2, "890303"),
+        new(Story.JOURNEY,  26, "890316"),
+        new(Story.JOURNEY,  30, "890322"),
+        new(Story.JOURNEY,  51, "890522"),
+        new(Story.JOURNEY,  54, "890526"),
+        new(Story.JOURNEY,  77, "890616"),
+        new(Story.JOURNEY,  79, "890627"),
+        new(Story.JOURNEY,  83, "890706"),
+        new(Story.LURKING_HORROR, 203, "870506"),
+        new(Story.LURKING_HORROR, 219, "870912"),
+        new(Story.LURKING_HORROR, 221, "870918"),
+        new(Story.AMFV,  47, "850313"),
+        new(Story.UNKNOWN,   0, "------")
+    };
 
     internal static string SaveName = General.DEFAULT_SAVE_NAME;
     internal static string AuxilaryName = General.DEFAULT_AUXILARY_NAME;

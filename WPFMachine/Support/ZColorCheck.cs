@@ -1,10 +1,10 @@
-﻿namespace WPFMachine;
-
-using Frotz.Constants;
+﻿using Frotz.Constants;
 using Frotz.Other;
 using System.Collections.Concurrent;
 using System.Windows.Media;
 using WPFMachine.Support;
+
+namespace WPFMachine;
 
 public class ZColorCheck
 {

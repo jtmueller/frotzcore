@@ -19,8 +19,6 @@
  */
 namespace Frotz.Generic;
 
-using zword = System.UInt16;
-
 internal static class Math
 {
     /*

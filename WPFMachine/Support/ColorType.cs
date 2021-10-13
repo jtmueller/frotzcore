@@ -1,7 +1,6 @@
-﻿namespace WPFMachine.Support
+﻿namespace WPFMachine.Support;
+
+public enum ColorType : byte
 {
-    public enum ColorType : byte
-    {
-        Foreground, Background
-    }
+    Foreground, Background
 }

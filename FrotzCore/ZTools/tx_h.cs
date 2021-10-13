@@ -6,12 +6,10 @@
  *
  */
 
-namespace ZTools;
-
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using zbyte_t = System.Byte;
-using zword_t = System.UInt16;
+
+namespace ZTools;
 
 public static class TxH
 {
@@ -21,39 +19,39 @@ public static class TxH
 
     internal class ZHeaderT
     {
-        internal zbyte_t version;
-        internal zbyte_t config;
-        internal zword_t release;
-        internal zword_t resident_size;
-        internal zword_t start_pc;
-        internal zword_t dictionary;
-        internal zword_t objects;
-        internal zword_t globals;
-        internal zword_t dynamic_size;
-        internal zword_t flags;
-        internal zbyte_t[] serial = new zbyte_t[6];
-        internal zword_t abbreviations;
-        internal zword_t file_size;
-        internal zword_t checksum;
-        internal zbyte_t interpreter_number;
-        internal zbyte_t interpreter_version;
-        internal zbyte_t screen_rows;
-        internal zbyte_t screen_columns;
-        internal zword_t screen_width;
-        internal zword_t screen_height;
-        internal zbyte_t font_width;
-        internal zbyte_t font_height;
-        internal zword_t routines_offset;
-        internal zword_t strings_offset;
-        internal zbyte_t default_background;
-        internal zbyte_t default_foreground;
-        internal zword_t terminating_keys;
-        internal zword_t line_width;
-        internal zbyte_t specification_hi;
-        internal zbyte_t specification_lo;
-        internal zword_t alphabet;
-        internal zword_t mouse_table;
-        internal zbyte_t[] name = new zbyte_t[8];
+        internal zbyte version;
+        internal zbyte config;
+        internal zword release;
+        internal zword resident_size;
+        internal zword start_pc;
+        internal zword dictionary;
+        internal zword objects;
+        internal zword globals;
+        internal zword dynamic_size;
+        internal zword flags;
+        internal zbyte[] serial = new zbyte[6];
+        internal zword abbreviations;
+        internal zword file_size;
+        internal zword checksum;
+        internal zbyte interpreter_number;
+        internal zbyte interpreter_version;
+        internal zbyte screen_rows;
+        internal zbyte screen_columns;
+        internal zword screen_width;
+        internal zword screen_height;
+        internal zbyte font_width;
+        internal zbyte font_height;
+        internal zword routines_offset;
+        internal zword strings_offset;
+        internal zbyte default_background;
+        internal zbyte default_foreground;
+        internal zword terminating_keys;
+        internal zword line_width;
+        internal zbyte specification_hi;
+        internal zbyte specification_lo;
+        internal zword alphabet;
+        internal zword mouse_table;
+        internal zbyte[] name = new zbyte[8];
     };
 
     internal static int H_VERSION = 0;
@@ -331,11 +329,11 @@ public static class TxH
         BinaryPrimitives.ReadUInt16BigEndian(Datap.AsSpan(offset, 2));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void SetByte(int offset, zbyte_t value) =>
+    internal static void SetByte(int offset, zbyte value) =>
         Datap[offset] = value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void SetWord(int offset, zword_t value) =>
+    internal static void SetWord(int offset, zword value) =>
         BinaryPrimitives.WriteUInt16BigEndian(Datap.AsSpan(offset, 2), value);
 
     ///* Inform version codes */

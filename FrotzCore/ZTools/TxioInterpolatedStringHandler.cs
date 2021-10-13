@@ -1,10 +1,12 @@
-﻿namespace ZTools;
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+
+namespace ZTools;
+
+// TODO: finish
 
 public delegate void TxPrint(ReadOnlySpan<char> chars);
 

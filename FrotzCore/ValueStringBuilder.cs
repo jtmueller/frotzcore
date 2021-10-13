@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Frotz;
-
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+namespace Frotz;
 
 /// <summary>
 /// This is an internal type in System.Text that could be useful in other situations.

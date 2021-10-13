@@ -1,6 +1,4 @@
-﻿using zword = System.UInt16;
-
-namespace Frotz.Other;
+﻿namespace Frotz.Other;
 
 public class ZWindow // TODO I'd like to make this private again
 { // Making this a class so pointers will work

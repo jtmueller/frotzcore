@@ -6,13 +6,10 @@
  *
  */
 
-namespace ZTools;
-
 using System.Buffers;
 using System.Diagnostics;
-using System.Globalization;
-using zbyte_t = System.Byte;
-using zword_t = System.UInt16;
+
+namespace ZTools;
 
 public static class txio
 {
@@ -98,7 +95,7 @@ public static class txio
 
     // static uint data_size;
 
-    private static zbyte_t[] buffer = Array.Empty<zbyte_t>();
+    private static zbyte[] buffer = Array.Empty<zbyte>();
 
     internal static void Configure(int min_version, int max_version)
     {
@@ -108,7 +105,7 @@ public static class txio
         // buffer = new zbyte_t[tx_h.PAGE_SIZE];
         int i;
 
-        buffer = new zbyte_t[gfp.Length];
+        buffer = new zbyte[gfp.Length];
         gfp.Read(buffer, 0, buffer.Length);
 
         //#if !defined(lint)
@@ -310,19 +307,19 @@ public static class txio
 
     //} /* load_cache */
 
-    internal static zword_t ReadDataWord(ref ulong addr)
+    internal static zword ReadDataWord(ref ulong addr)
     {
         uint w = (uint)ReadDataByte(ref addr) << 8;
         w |= ReadDataByte(ref addr);
 
-        return (zword_t)w;
+        return (zword)w;
 
     }/* txio.read_data_word */
 
-    internal static zbyte_t ReadDataByte(ref ulong addr)
+    internal static zbyte ReadDataByte(ref ulong addr)
     {
         // uint page_number, page_offset;
-        zbyte_t value;
+        zbyte value;
 
         //if (addr < (ulong)txio.data_size)
         //    value = buffer[addr];

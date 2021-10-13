@@ -1,16 +1,14 @@
 ﻿using Frotz.Screen;
-using System;
 
-namespace WPFMachine
+namespace WPFMachine;
+
+internal interface IZMachineScreen
 {
-    internal interface IZMachineScreen
-    {
-        void AddInput(char inputKeyPressed); // TODO This could be named better
-        void SetCharsAndLines();
-        ScreenMetrics Metrics { get; }
-        void SetFontInfo();
-        void Focus();
-        event EventHandler<GameSelectedEventArgs> GameSelected;
-        void Reset();
-    }
+    void AddInput(char inputKeyPressed); // TODO This could be named better
+    void SetCharsAndLines();
+    ScreenMetrics Metrics { get; }
+    void SetFontInfo();
+    void Focus();
+    event EventHandler<GameSelectedEventArgs> GameSelected;
+    void Reset();
 }

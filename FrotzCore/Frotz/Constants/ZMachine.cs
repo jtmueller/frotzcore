@@ -1,7 +1,5 @@
 ﻿namespace Frotz.Constants;
 
-using zword = System.UInt16;
-
 public enum FileTypes : byte
 {
     /*** File types ***/

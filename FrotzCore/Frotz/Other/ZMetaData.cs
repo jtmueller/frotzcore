@@ -1,6 +1,6 @@
-﻿namespace Frotz.Other;
+﻿using System.Xml;
 
-using System.Xml;
+namespace Frotz.Other;
 
 public class ZMetaData
 {

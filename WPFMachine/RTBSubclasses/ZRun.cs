@@ -1,88 +1,86 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace WPFMachine.RTBSubclasses
+namespace WPFMachine.RTBSubclasses;
+
+public class ZRun : Run
 {
-    public class ZRun : Run
+    public ZRun(FontFamily family) : this(family, "")
+    { }
+
+    public ZRun(FontFamily family, string text) : base(text)
     {
-        public ZRun(FontFamily family) : this(family, "")
-        { }
+        FontStyle = FontStyles.Normal;
+        FontWeight = FontWeights.Normal;
+        FontFamily = family;
+    }
 
-        public ZRun(FontFamily family, string text) : base(text)
-        {
-            FontStyle = FontStyles.Normal;
-            FontWeight = FontWeights.Normal;
-            FontFamily = family;
-        }
+    private double? _width;
 
-        private double? _width;
-
-        public double DetermineWidth(double pixelsPerDip)
-        {
-            if (_width.HasValue)
-                return _width.GetValueOrDefault();
-
-            _width = DetermineWidth(Text, pixelsPerDip);
+    public double DetermineWidth(double pixelsPerDip)
+    {
+        if (_width.HasValue)
             return _width.GetValueOrDefault();
-        }
 
-        private double DetermineWidth(string text, double pixelsPerDip)
+        _width = DetermineWidth(Text, pixelsPerDip);
+        return _width.GetValueOrDefault();
+    }
+
+    private double DetermineWidth(string text, double pixelsPerDip)
+    {
+        var ft = new FormattedText(text,
+            CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+            FontSize, Foreground, new NumberSubstitution(), TextFormattingMode.Display, pixelsPerDip);
+
+        return ft.Width;
+    }
+
+    internal event EventHandler WidthChanged;
+    protected void OnWidthChanged()
+    {
+        _width = null;
+        WidthChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public new FontStyle FontStyle
+    {
+        get => base.FontStyle;
+        set
         {
-            var ft = new FormattedText(text,
-                CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-                FontSize, Foreground, new NumberSubstitution(), TextFormattingMode.Display, pixelsPerDip);
-
-            return ft.Width;
-        }
-
-        internal event EventHandler WidthChanged;
-        protected void OnWidthChanged()
-        {
-            _width = null;
-            WidthChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        public new FontStyle FontStyle
-        {
-            get => base.FontStyle;
-            set
+            if (base.FontStyle != value)
             {
-                if (base.FontStyle != value)
-                {
-                    OnWidthChanged();
-                    base.FontStyle = value;
-                }
+                OnWidthChanged();
+                base.FontStyle = value;
             }
         }
+    }
 
-        public new FontWeight FontWeight
+    public new FontWeight FontWeight
+    {
+        get => base.FontWeight;
+        set
         {
-            get => base.FontWeight;
-            set
+            if (base.FontWeight != value)
             {
-                if (base.FontWeight != value)
-                {
-                    OnWidthChanged();
-                    base.FontWeight = value;
-                }
+                OnWidthChanged();
+                base.FontWeight = value;
             }
         }
+    }
 
-        public new string Text
+    public new string Text
+    {
+        get => base.Text;
+        set
         {
-            get => base.Text;
-            set
+            if (base.Text != value)
             {
-                if (base.Text != value)
-                {
-                    OnWidthChanged();
-                    base.Text = value;
-                }
+                OnWidthChanged();
+                base.Text = value;
             }
         }
     }

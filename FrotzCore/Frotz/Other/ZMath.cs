@@ -1,9 +1,9 @@
-﻿namespace Frotz.Other;
-
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+
+namespace Frotz.Other;
 
 public static class ZMath
 {

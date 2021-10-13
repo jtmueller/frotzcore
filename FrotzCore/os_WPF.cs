@@ -1,6 +1,4 @@
-﻿namespace Frotz;
-
-using Frotz.Generic;
+﻿using Frotz.Generic;
 using Frotz.Other;
 using Frotz.Screen;
 using Microsoft.IO;
@@ -9,8 +7,8 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using zbyte = System.Byte;
-using zword = System.UInt16;
+
+namespace Frotz;
 
 public static class OS
 {

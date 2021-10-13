@@ -1,10 +1,9 @@
-﻿namespace WPFMachine.Absolute
+﻿namespace WPFMachine.Absolute;
+
+internal class FrotzImage : System.Windows.Controls.Image
 {
-    internal class FrotzImage : System.Windows.Controls.Image
+    public FrotzImage()
     {
-        public FrotzImage()
-        {
-            VisualBitmapScalingMode = System.Windows.Media.BitmapScalingMode.Unspecified;
-        }
+        VisualBitmapScalingMode = System.Windows.Media.BitmapScalingMode.Unspecified;
     }
 }

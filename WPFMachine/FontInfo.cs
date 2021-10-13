@@ -41,6 +41,6 @@ namespace WPFMachine
 
 
         public double PointSize { get; private set; }
-        public Typeface Typeface { get; set; }
+        public Typeface Typeface { get; private init; }
     }
 }

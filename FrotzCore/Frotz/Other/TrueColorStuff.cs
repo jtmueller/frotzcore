@@ -1,7 +1,7 @@
-﻿namespace Frotz.Other;
-
+﻿
 using System.Runtime.CompilerServices;
-using zword = System.UInt16;
+
+namespace Frotz.Other;
 
 public static class TrueColorStuff
 {

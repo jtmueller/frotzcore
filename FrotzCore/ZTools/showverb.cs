@@ -3,9 +3,8 @@
  *
  * Verb and grammar display routines.
  */
-namespace ZTools;
 
-using zword_t = System.UInt16;
+namespace ZTools;
 
 internal enum gv2_tokentype { TT_ILLEGAL, TT_ELEMENTARY, TT_PREPOSITION, TT_NOUNR, TT_ATTRIBUTE, TT_SCOPER, TT_ROUTINE };
 
@@ -290,7 +289,7 @@ internal static class ShowVerb
         first_entry = txio.ReadDataWord(ref address);
         if (first_entry == 0) /* No verb entries at all */
             return;
-        verb_count = (uint)((first_entry - verb_table_base) / sizeof(zword_t));
+        verb_count = (uint)((first_entry - verb_table_base) / sizeof(zword));
 
         /*
          * Calculate the form of the verb parse table entries. Basically,
@@ -451,7 +450,7 @@ internal static class ShowVerb
          */
 
         action_table_base = verb_entry - 1;
-        preact_table_base = action_table_base + (action_count * sizeof(zword_t));
+        preact_table_base = action_table_base + (action_count * sizeof(zword));
 
         if (parser_type >= (int)TxH.ParserTypes.InformGV2)
         {
@@ -462,9 +461,9 @@ internal static class ShowVerb
         else
         {
             if (parser_type < (int)TxH.ParserTypes.InformGV1)
-                prep_table_base = preact_table_base + (action_count * sizeof(zword_t));
+                prep_table_base = preact_table_base + (action_count * sizeof(zword));
             else
-                prep_table_base = preact_table_base + (parse_count * sizeof(zword_t));
+                prep_table_base = preact_table_base + (parse_count * sizeof(zword));
 
             /*
              * Set the preposition table type by looking to see if the byte index

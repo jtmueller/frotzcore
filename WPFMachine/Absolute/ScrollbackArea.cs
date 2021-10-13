@@ -1,6 +1,4 @@
-﻿namespace WPFMachine.Absolute;
-
-using Frotz;
+﻿using Frotz;
 using Frotz.Constants;
 using Frotz.Screen;
 using Microsoft.Win32;
@@ -9,6 +7,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+
+namespace WPFMachine.Absolute;
 
 public class ScrollbackArea
 {

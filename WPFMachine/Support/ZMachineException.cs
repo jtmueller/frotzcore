@@ -1,13 +1,10 @@
-﻿using System;
+﻿namespace WPFMachine;
 
-namespace WPFMachine
+class ZMachineException : Exception
 {
-    class ZMachineException : Exception
-    {
-        public ZMachineException() { }
+    public ZMachineException() { }
 
-        public ZMachineException(string message) : base(message) { }
+    public ZMachineException(string message) : base(message) { }
 
-        public ZMachineException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public ZMachineException(string message, Exception innerException) : base(message, innerException) { }
 }

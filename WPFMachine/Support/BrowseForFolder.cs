@@ -1,7 +1,7 @@
-﻿namespace WPFMachine.Support;
-
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
+
+namespace WPFMachine.Support;
 
 internal class BrowseForFolder
 {

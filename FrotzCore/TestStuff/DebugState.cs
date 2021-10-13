@@ -1,9 +1,9 @@
-﻿namespace Frotz;
-
-using Frotz.Generic;
+﻿using Frotz.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+
+namespace Frotz;
 
 public static class DebugState
 {

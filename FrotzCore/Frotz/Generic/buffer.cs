@@ -19,8 +19,6 @@
  */
 namespace Frotz.Generic;
 
-using zword = System.UInt16;
-
 internal static class Buffer
 {
     internal static MemoryOwner<zword> buffer_var = MemoryOwner<zword>.Empty;

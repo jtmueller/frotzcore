@@ -26,9 +26,6 @@
  *
  */
 
-using zbyte = System.Byte;
-using zword = System.UInt16;
-
 namespace Frotz.Generic;
 
 public static class Main

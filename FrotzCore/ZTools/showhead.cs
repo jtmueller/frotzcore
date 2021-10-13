@@ -8,8 +8,6 @@
 
 namespace ZTools;
 
-using zword_t = System.UInt16;
-
 internal class ShowHead
 {
     private static readonly string[] interpreter_flags1 = {
@@ -372,7 +370,7 @@ internal class ShowHead
 
     private static void ShowHeaderExtension()
     {
-        zword_t tlen = 0;
+        zword tlen = 0;
 
         if (txio.header is null)
             throw new InvalidOperationException("txio header was not initialized");

@@ -123,7 +123,7 @@ internal static class Err
             }
             else
             {
-                Text.PrintString(" (occurence ");
+                Text.PrintString(" (occurrence ");
                 PrintLong(error_count[errnum - 1], 10);
                 Buffer.PrintChar(')');
             }
