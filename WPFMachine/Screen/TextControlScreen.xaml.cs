@@ -1,12 +1,8 @@
-﻿namespace WPFMachine.Screen;
-
-using Frotz;
+﻿using Frotz;
 using Frotz.Blorb;
 using Frotz.Constants;
 using Frotz.Screen;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -15,6 +11,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WPFMachine.Support;
+
+namespace WPFMachine.Screen;
 
 /// <summary>
 /// Interaction logic for WPFScreen.xaml
@@ -167,8 +165,8 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
     {
         Dispatcher.Invoke(() =>
         {
-                // TODO I'd like this to reference the root window for modality
-                MessageBox.Show(_parent, Message, "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            // TODO I'd like this to reference the root window for modality
+            MessageBox.Show(_parent, Message, "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         });
 
         throw new ZMachineException(Message);
@@ -203,8 +201,6 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
 
     public void SetCursorPosition(int x, int y)
     {
-        int prevY = _cursorY;
-
         _x = x.Tcw();
         _y = y.Tch();
 
@@ -339,7 +335,7 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
         }
         else
         {
-            System.Diagnostics.Debug.WriteLine("Clear area:" + top + ":" + left + ":" + bottom + ":" + right);
+            System.Diagnostics.Debug.WriteLine($"Clear area:{top}:{left}:{bottom}:{right}");
         }
     }
 
@@ -360,7 +356,7 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
                 name = ofd.FileName;
             }
             _parent.Focus(); // HACK For some reason, it won't always pick up text input after the dialog, so this refocuses
-            });
+        });
         return name;
     }
 
@@ -384,7 +380,7 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
             }
 
             _parent.Focus(); // HACK For some reason, it won't always pick up text input after the dialog, so this refocuses
-            });
+        });
         return name;
     }
 
@@ -403,7 +399,7 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
             var img = new Image();
             var bi = new BitmapImage();
             bi.BeginInit();
-            var ms = new MemoryStream(image);
+            using var ms = new MemoryStream(image);
             bi.StreamSource = ms;
             bi.EndInit();
             img.Source = bi;
@@ -411,11 +407,11 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
 
             int newX = x;
             int newY = y;
-                // TODO Ok, so when calculating the position of the graphics, it's causing a wrap
-                // TODO Find out why, and fix it...
+            // TODO Ok, so when calculating the position of the graphics, it's causing a wrap
+            // TODO Find out why, and fix it...
 
-                //
-                if (newY > short.MaxValue) newY -= ushort.MaxValue;
+            //
+            if (newY > short.MaxValue) newY -= ushort.MaxValue;
             if (newX > short.MaxValue) newX -= ushort.MaxValue;
 
             img.SetValue(Canvas.TopProperty, (double)newY);
@@ -472,8 +468,8 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
             else
             {
                 ztc.RemoveInputChars(count);
-                    // HandleFatalError("Need to handle case where RemoveChars is called outside of input mode");
-                }
+                // HandleFatalError("Need to handle case where RemoveChars is called outside of input mode");
+            }
         });
     }
 
@@ -528,12 +524,8 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
 
     private static string CreateFilterList(params string[] types)
     {
-        var temp = new List<string>(types)
-            {
-                "All Files (*.*)|*.*"
-            };
-
-        return string.Join('|', temp);
+        var allTypes = types.Append("All Files (*.*)|*.*");
+        return string.Join('|', allTypes);
     }
 
     private bool _inInputMode = false;
@@ -551,7 +543,7 @@ public partial class TextControlScreen : UserControl, IZScreen, IZMachineScreen
                     if (_cursorX <= 1 && x > -1)
                     {
                         _cursorX = x + 2; // Move the cursor over 2 pixels to account for margin
-                            _cursorCanvas.SetValue(Canvas.LeftProperty, (double)_cursorX);
+                        _cursorCanvas.SetValue(Canvas.LeftProperty, (double)_cursorX);
                     }
                 }
                 else

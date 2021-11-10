@@ -469,15 +469,14 @@ namespace Microsoft.Samples.CustomControls
 
         private void ColorDetailSizeChanged(object sender, SizeChangedEventArgs args)
         {
-            if (args.PreviousSize != Size.Empty &&
-                args.PreviousSize.Width != 0 && args.PreviousSize.Height != 0)
+            if (args is { PreviousSize.IsEmpty: false, PreviousSize.Width: > 0, PreviousSize.Height: > 0})
             {
                 double widthDifference = args.NewSize.Width / args.PreviousSize.Width;
                 double heightDifference = args.NewSize.Height / args.PreviousSize.Height;
                 _markerTransform.X *= widthDifference;
                 _markerTransform.Y *= heightDifference;
             }
-            else if (_colorPosition != null)
+            else if (_colorPosition is not null)
             {
                 _markerTransform.X = ((Point)_colorPosition).X * args.NewSize.Width;
                 _markerTransform.Y = ((Point)_colorPosition).Y * args.NewSize.Height;

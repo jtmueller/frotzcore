@@ -53,8 +53,9 @@ public class ZRun : Run
         {
             if (base.FontStyle != value)
             {
-                OnWidthChanged();
                 base.FontStyle = value;
+                OnWidthChanged();
+
             }
         }
     }
@@ -66,8 +67,8 @@ public class ZRun : Run
         {
             if (base.FontWeight != value)
             {
-                OnWidthChanged();
                 base.FontWeight = value;
+                OnWidthChanged();
             }
         }
     }
@@ -79,8 +80,8 @@ public class ZRun : Run
         {
             if (base.Text != value)
             {
-                OnWidthChanged();
                 base.Text = value;
+                OnWidthChanged();
             }
         }
     }

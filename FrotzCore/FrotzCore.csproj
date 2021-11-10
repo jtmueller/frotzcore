@@ -12,8 +12,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.1.2" />
-    <PackageReference Include="Microsoft.Toolkit.Diagnostics" Version="7.0.2" />
-    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.0.2" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Toolkit.Diagnostics" Version="7.1.1" />
+    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.1" />
   </ItemGroup>
 </Project>

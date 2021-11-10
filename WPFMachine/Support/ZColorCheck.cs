@@ -6,23 +6,12 @@ using WPFMachine.Support;
 
 namespace WPFMachine;
 
-public class ZColorCheck
+public record ZColorCheck(int ColorCode, ColorType Type)
 {
     private static readonly Color C64Blue = Color.FromRgb(0x42, 0x42, 0xE7);
 
-    public int ColorCode { get; set; }
-    public ColorType Type { get; set; }
-
-    public ZColorCheck(int color, ColorType colorType)
-    {
-        ColorCode = color;
-        Type = colorType;
-    }
-
     public bool AreSameColor(ZColorCheck colorToCompare)
     {
-        if (colorToCompare == null) return false;
-
         if (colorToCompare.ColorCode == 0 || ColorCode == 0 && Type == colorToCompare.Type) return true;
 
         return colorToCompare.ColorCode == ColorCode && colorToCompare.Type == Type;
