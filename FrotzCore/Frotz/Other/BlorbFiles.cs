@@ -67,19 +67,18 @@ public class BlorbReader
     private static void HandleForm(Blorb blorb, Stream stream, int start, int length, IDictionary<int, Chunk> chunks)
     {
         _level++;
-        Span<char> type = stackalloc char[4];
+        Span<byte> type = stackalloc byte[4];
         while (stream.Position < start + length)
         {
-            ReadChars(stream, type);
+            ReadBytes(stream, type);
             int len = ReadInt(stream);
-            // ReadBuffer(len);
 
             ReadChunk(blorb, stream, (int)stream.Position, len, type, chunks);
         }
         _level--;
     }
 
-    private static void ReadChunk(Blorb blorb, Stream stream, int start, int length, ReadOnlySpan<char> type, IDictionary<int, Chunk> chunks)
+    private static void ReadChunk(Blorb blorb, Stream stream, int start, int length, ReadOnlySpan<byte> type, IDictionary<int, Chunk> chunks)
     {
         byte[]? rentedFromPool = null;
         Span<byte> buffer = length > 0xff
@@ -89,9 +88,8 @@ public class BlorbReader
         {
             int bytesRead = stream.Read(buffer[..length]);
             buffer = buffer[..bytesRead];
-            if (chunks.ContainsKey(start - 8))
+            if (chunks.TryGetValue(start - 8, out var c))
             {
-                var c = chunks[start - 8];
                 switch (c.Usage)
                 {
                     case BlorbUsage.Exec:
@@ -102,7 +100,7 @@ public class BlorbReader
                         break;
                     case BlorbUsage.Snd:
                         {
-                            if (buffer[..4].Matches(stackalloc char[] { 'A', 'I', 'F', 'F' }))
+                            if (buffer[..4].SequenceEqual("AIFF"u8))
                             {
                                 byte[] temp = new byte[buffer.Length + 8];
 
@@ -127,27 +125,28 @@ public class BlorbReader
             }
             else
             {
-                if (type.SequenceEqual(stackalloc char[] { 'F', 'O', 'R', 'M' }))
+                if (type.SequenceEqual("FORM"u8))
                 {
-                    Span<char> chars = stackalloc char[4];
-                    ReadChars(stream, chars);
+                    stream.Seek(4, SeekOrigin.Current);
+                    //Span<char> chars = stackalloc char[4];
+                    //ReadChars(stream, chars);
                     HandleForm(blorb, stream, start, length, chunks);
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'R', 'I', 'd', 'x' }))
+                else if (type.SequenceEqual("RIdx"u8))
                 {
                     stream.Position = start;
                     int numResources = ReadInt(stream);
-                    Span<char> chars = stackalloc char[4];
+                    Span<byte> chars = stackalloc byte[4];
 
                     for (int i = 0; i < numResources; i++)
                     {
-                        ReadChars(stream, chars);
+                        ReadBytes(stream, chars);
                         var usage = GetBlorbUsage(chars);
-                        var c = new Chunk(usage, ReadInt(stream), ReadInt(stream));
-                        chunks.Add(c.Start, c);
+                        var chunk = new Chunk(usage, ReadInt(stream), ReadInt(stream));
+                        chunks.Add(c.Start, chunk);
                     }
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'I', 'F', 'm', 'd' })) // Metadata
+                else if (type.SequenceEqual("IFmd"u8)) // Metadata
                 {
                     blorb.MetaData = Encoding.UTF8.GetString(buffer);
                     if (blorb.MetaData[0] != '<')
@@ -157,18 +156,18 @@ public class BlorbReader
                         blorb.MetaData = blorb.MetaData[index..];
                     }
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'F', 's', 'p', 'c' }))
+                else if (type.SequenceEqual("Fspc"u8))
                 {
                     stream.Position = start;
                     ReadInt(stream);
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'S', 'N', 'a', 'm' }))
+                else if (type.SequenceEqual("SNam"u8))
                 {
                     // TODO It seems that when it gets the story name, it is actually stored as 2 byte words,
                     // not one byte chars
                     blorb.StoryName = Encoding.UTF8.GetString(buffer);
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'A', 'P', 'a', 'l' }))
+                else if (type.SequenceEqual("APal"u8))
                 {
                     int len = buffer.Length / 4;
                     for (int i = 0; i < len; i++)
@@ -179,15 +178,15 @@ public class BlorbReader
                         blorb.AdaptivePalette.Add((int)result);
                     }
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'I', 'F', 'h', 'd' }))
+                else if (type.SequenceEqual("IFhd"u8))
                 {
                     blorb.IFhd = buffer.ToArray();
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'R', 'e', 'l', 'N' }))
+                else if (type.SequenceEqual("RelN"u8))
                 {
                     blorb.ReleaseNumber = BinaryPrimitives.ReadInt16BigEndian(buffer);
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'R', 'e', 's', 'o' }))
+                else if (type.SequenceEqual("Reso"u8))
                 {
                     stream.Position = start;
                     int px = ReadInt(stream);
@@ -216,7 +215,7 @@ public class BlorbReader
                         if (maxden != 0) blorb.Pictures[number].MaxRatio = maxnum / maxden;
                     }
                 }
-                else if (type.SequenceEqual(stackalloc char[] { 'P', 'l', 't', 'e' }))
+                else if (type.SequenceEqual("Plte"u8))
                 {
                     Debug.WriteLine("Palette");
                 }
@@ -235,13 +234,13 @@ public class BlorbReader
         }
     }
 
-    private static BlorbUsage GetBlorbUsage(ReadOnlySpan<char> chars)
+    private static BlorbUsage GetBlorbUsage(ReadOnlySpan<byte> chars)
     {
-        if (chars.SequenceEqual(stackalloc char[] { 'E', 'x', 'e', 'c' }))
+        if (chars.SequenceEqual("Exec"u8))
             return BlorbUsage.Exec;
-        if (chars.SequenceEqual(stackalloc char[] { 'P', 'i', 'c', 't' }))
+        if (chars.SequenceEqual("Pict"u8))
             return BlorbUsage.Pict;
-        if (chars.SequenceEqual(stackalloc char[] { 'S', 'n', 'd', ' ' }))
+        if (chars.SequenceEqual("Snd "u8))
             return BlorbUsage.Snd;
 
         OS.Fatal("Unknown usage chunk in blorb file: " + chars.ToString());
@@ -260,18 +259,18 @@ public class BlorbReader
         using PooledDictionary<int, Chunk> chunks = new();
         //_resources.Clear();
 
-        Span<char> chars = stackalloc char[4];
+        Span<byte> chars = stackalloc byte[4];
 
-        ReadChars(stream, chars);
-        if (!chars.SequenceEqual(stackalloc char[] { 'F', 'O', 'R', 'M' }))
+        ReadBytes(stream, chars);
+        if (!chars.SequenceEqual("FORM"u8))
         {
             ThrowHelper.ThrowInvalidDataException("Not a FORM");
         }
 
         int len = ReadInt(stream);
-        ReadChars(stream, chars);
+        ReadBytes(stream, chars);
 
-        if (!chars.SequenceEqual(stackalloc char[] { 'I', 'F', 'R', 'S' }))
+        if (!chars.SequenceEqual("IFRS"u8))
         {
             ThrowHelper.ThrowInvalidDataException("Not an IFRS FORM");
         }
@@ -315,6 +314,14 @@ public class BlorbReader
             ThrowHelper.ThrowInvalidOperationException("Not enough bytes available in stream.");
 
         return Encoding.UTF8.GetChars(buffer, destination);
+    }
+
+    private static void ReadBytes(Stream stream, Span<byte> destination)
+    {
+        int read = stream.Read(destination);
+
+        if (read < destination.Length)
+            ThrowHelper.ThrowInvalidOperationException("Not enough bytes available in stream.");
     }
 
     private static int ReadInt(Stream stream)

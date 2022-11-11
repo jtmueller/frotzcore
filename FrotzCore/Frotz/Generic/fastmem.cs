@@ -22,7 +22,7 @@
  * New undo mechanism added by Jim Dunleavy <jim.dunleavy@erha.ie>
  */
 
-using Microsoft.Toolkit.HighPerformance.Helpers;
+using CommunityToolkit.HighPerformance.Helpers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 

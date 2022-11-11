@@ -194,7 +194,7 @@ public static class InfoDump
 
     private static List<ZToolInfo> ProcessStory(byte[] storyFile, int[] options, int columns, int symbolic)
     {
-        List<ZToolInfo> _areas = new();
+        List<ZToolInfo> areas = new();
 
         txio.OpenStory(storyFile);
 
@@ -206,29 +206,29 @@ public static class InfoDump
 
         txio.StartStringBuilder();
         ShowHead.ShowHeader();
-        _areas.Add(new ZToolInfo("Header", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Header", txio.GetTextFromStringBuilder()));
 
         ShowMap();
-        _areas.Add(new ZToolInfo("Map", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Map", txio.GetTextFromStringBuilder()));
 
         ShowDict.ShowAbbreviations();
-        _areas.Add(new ZToolInfo("Abbreviations", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Abbreviations", txio.GetTextFromStringBuilder()));
 
         ShowObj.show_objects(symbolic);
-        _areas.Add(new ZToolInfo("Objects", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Objects", txio.GetTextFromStringBuilder()));
 
         ShowObj.ShowTree();
-        _areas.Add(new ZToolInfo("Tree", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Tree", txio.GetTextFromStringBuilder()));
 
         ShowVerb.ShowVerbs(symbolic);
-        _areas.Add(new ZToolInfo("Verbs", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Verbs", txio.GetTextFromStringBuilder()));
 
         ShowDict.ShowDictionary(columns);
-        _areas.Add(new ZToolInfo("Dictionary", txio.GetTextFromStringBuilder()));
+        areas.Add(new ZToolInfo("Dictionary", txio.GetTextFromStringBuilder()));
 
         txio.CloseStory();
 
-        return _areas;
+        return areas;
 
     } /* process_story */
 
