@@ -32,7 +32,7 @@ internal readonly record struct RecordStruct(Story StoryId, zword Release, strin
 
 internal static class FastMem
 {
-    private static readonly RecordStruct[] Records = {
+    private static readonly RecordStruct[] Records = [
         new(Story.SHERLOCK,  97, "871026"),
         new(Story.SHERLOCK,  21, "871214"),
         new(Story.SHERLOCK,  22, "880112"),
@@ -81,12 +81,12 @@ internal static class FastMem
         new(Story.LURKING_HORROR, 221, "870918"),
         new(Story.AMFV,  47, "850313"),
         new(Story.UNKNOWN,   0, "------")
-    };
+    ];
 
     internal static string SaveName = General.DEFAULT_SAVE_NAME;
     internal static string AuxilaryName = General.DEFAULT_AUXILARY_NAME;
 
-    internal static zbyte[] ZMData = Array.Empty<zbyte>();
+    internal static zbyte[] ZMData = [];
     internal static zword ZMData_checksum = 0;
 
     internal static long Zmp = 0;
@@ -112,7 +112,7 @@ internal static class FastMem
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void LowWord(int addr, out zword v) 
+    internal static void LowWord(int addr, out zword v)
         => v = BinaryPrimitives.ReadUInt16BigEndian(ZMData.AsSpan(addr, 2));
 
     // TODO I'm suprised that they return the same thing

@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <LangVersion>preview</LangVersion>
     <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>Microsoft.Samples.CustomControls</RootNamespace>
     <AssemblyTitle>ColorPickerDialog</AssemblyTitle>
     <Product>ColorPickerDialog</Product>

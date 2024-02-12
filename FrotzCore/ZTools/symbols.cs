@@ -56,11 +56,11 @@ internal static class Symbols
         //internal symtab_entry_t globals;
     };
 
-    private static readonly symtab_entry_t[] attribute_names_table = Array.Empty<symtab_entry_t>();
+    private static readonly symtab_entry_t[] attribute_names_table = [];
     private static readonly int attribute_entries = 0;
-    private static readonly symtab_entry_t[] property_names_table = Array.Empty<symtab_entry_t>();
+    private static readonly symtab_entry_t[] property_names_table = [];
     private static readonly int property_entries = 0;
-    private static readonly symtab_entry_t[] global_names_table = Array.Empty<symtab_entry_t>();
+    private static readonly symtab_entry_t[] global_names_table = [];
     private static readonly int global_entries = 0;
 
     // static routine_entry_t[] routines_table;

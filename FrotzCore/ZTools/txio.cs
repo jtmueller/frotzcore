@@ -38,19 +38,19 @@ public static class txio
     {
         lookup_table = new char[3, 26];
 
-        v1_lookup_table = new string[] {
+        v1_lookup_table = [
             "abcdefghijklmnopqrstuvwxyz",
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             " 0123456789.,!?_#'\"/\\<-:()"
-        };
+        ];
 
-        v3_lookup_table = new string[] {
+        v3_lookup_table = [
             "abcdefghijklmnopqrstuvwxyz",
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             " \n0123456789.,!?_#'\"/\\-:()"
-        };
+        ];
 
-        euro_substitute = new string[] {
+        euro_substitute = [
             "ae", "oe", "ue", "Ae", "Oe", "Ue", "ss", ">>", "<<", "e",
             "i",  "y",  "E",  "I",  "a",  "e",  "i",  "o",  "u",  "y",
             "A",  "E",  "I",  "O",  "U",  "Y",  "a",  "e",  "i",  "o",
@@ -58,9 +58,9 @@ public static class txio
             "u",  "A",  "E",  "I",  "O",  "U",  "a",  "A",  "o",  "O",
             "a",  "n",  "o",  "A",  "N",  "O",  "ae", "AE", "c",  "C",
             "th", "th", "Th", "Th", "L",  "oe", "OE", "!",  "?"
-        };
+        ];
 
-        inform_euro_substitute = new string[] {
+        inform_euro_substitute = [
             "ae", "oe", "ue", "AE", "OE", "UE", "ss", ">>", "<<", ":e",
             ":i",  ":y",  ":E",  ":I",  "'a",  "'e",  "'i",  "'o",  "'u",  "'y",
             "'A",  "'E",  "'I",  "'O",  "'U",  "'Y",  "`a",  "`e",  "`i",  "`o",
@@ -68,7 +68,7 @@ public static class txio
             "^u",  "^A",  "^E",  "^I",  "^O",  "^U",  "oa",  "oA",  "\\o",  "\\O",
             "~a",  "~n",  "~o",  "~A",  "~N",  "~O",  "ae", "AE", "cc",  "cC",
             "th", "et", "Th", "Et", "LL",  "oe", "OE", "!!",  "??"
-        };
+        ];
     }
 
     private const int TX_SCREEN_COLS = 79;
@@ -95,7 +95,7 @@ public static class txio
 
     // static uint data_size;
 
-    private static zbyte[] buffer = Array.Empty<zbyte>();
+    private static zbyte[] buffer = [];
 
     internal static void Configure(int min_version, int max_version)
     {

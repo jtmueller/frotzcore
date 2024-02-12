@@ -9,19 +9,19 @@ namespace Frotz.Blorb;
 
 public class Blorb
 {
-    public Dictionary<int, BlorbPicture> Pictures { get; } = new();
-    public Dictionary<int, byte[]> Sounds { get; } = new();
-    public byte[] ZCode { get; set; } = Array.Empty<byte>();
+    public Dictionary<int, BlorbPicture> Pictures { get; } = [];
+    public Dictionary<int, byte[]> Sounds { get; } = [];
+    public byte[] ZCode { get; set; } = [];
     public string MetaData { get; set; } = string.Empty;
     public string StoryName { get; set; } = string.Empty;
-    public byte[] IFhd { get; set; } = Array.Empty<byte>();
+    public byte[] IFhd { get; set; } = [];
     public int ReleaseNumber { get; set; }
 
     public ZSize StandardSize { get; set; } = ZSize.Empty;
     public ZSize MaxSize { get; set; } = ZSize.Empty;
     public ZSize MinSize { get; set; } = ZSize.Empty;
 
-    public List<int> AdaptivePalette { get; } = new();
+    public List<int> AdaptivePalette { get; } = [];
 }
 
 public class BlorbPicture
@@ -256,7 +256,7 @@ public class BlorbReader
     internal static Blorb ReadBlorbFile(Stream stream)
     {
         Blorb blorb = new();
-        using PooledDictionary<int, Chunk> chunks = new();
+        using PooledDictionary<int, Chunk> chunks = [];
         //_resources.Clear();
 
         Span<byte> chars = stackalloc byte[4];

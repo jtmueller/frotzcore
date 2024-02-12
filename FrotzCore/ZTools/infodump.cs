@@ -194,7 +194,7 @@ public static class InfoDump
 
     private static List<ZToolInfo> ProcessStory(byte[] storyFile, int[] options, int columns, int symbolic)
     {
-        List<ZToolInfo> areas = new();
+        List<ZToolInfo> areas = [];
 
         txio.OpenStory(storyFile);
 
@@ -286,7 +286,7 @@ public static class InfoDump
      * for each area. Each area is then sorted in ascending order and displayed.
      */
 
-    private static readonly PooledList<AreaT> areas = new();
+    private static readonly PooledList<AreaT> areas = [];
 
     private static void ShowMap()
     {

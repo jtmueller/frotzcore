@@ -18,7 +18,7 @@ public static class OS
     private const int MaxStack = 0xff;
     private static int HistoryPos = 0;
     // TODO This really needs to get wired up when a new game is started
-    private static readonly List<string> History = new();
+    private static readonly List<string> History = [];
 
     private static long ReadLong(ReadOnlySpan<byte> buffer) => BinaryPrimitives.ReadInt64BigEndian(buffer);
 
@@ -1101,9 +1101,9 @@ public static class OS
      */
     public static void DrawPicture(int picture, int y, int x)
     {
-        if (BlorbFile != null && BlorbFile.Pictures.ContainsKey(picture))
+        if (BlorbFile != null && BlorbFile.Pictures.TryGetValue(picture, out var value))
         {
-            Screen?.DrawPicture(picture, BlorbFile.Pictures[picture].Image, y, x);
+            Screen?.DrawPicture(picture, value.Image, y, x);
         }
     }
 

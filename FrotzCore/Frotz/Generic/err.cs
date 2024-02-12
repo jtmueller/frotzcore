@@ -29,7 +29,7 @@ internal static class Err
 
     internal static int ErrorReportMode = ErrorCodes.ERR_DEFAULT_REPORT_MODE;
     private static readonly int[] error_count = new int[ErrorCodes.ERR_NUM_ERRORS];
-    private static readonly string[] err_messages = {
+    private static readonly string[] err_messages = [
         "Text buffer overflow",
         "Store out of dynamic memory",
         "Division by zero",
@@ -63,7 +63,7 @@ internal static class Err
         "@move_object called moving into object 0",
         "@remove_object called with object 0",
         "@get_next_prop called with object 0"
-    };
+    ];
 
     //static void print_long (unsigned long value, int base);
 

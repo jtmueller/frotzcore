@@ -2,14 +2,9 @@
 
 using System.Text;
 
-public sealed class ZKeyPressEventArgs : EventArgs
+public sealed class ZKeyPressEventArgs(char kp) : EventArgs
 {
-    public char KeyPressed { get; private set; }
-
-    public ZKeyPressEventArgs(char KeyPressed)
-    {
-        this.KeyPressed = KeyPressed;
-    }
+    public char KeyPressed { get; private set; } = kp;
 }
 
 public readonly record struct ZPoint(int X, int Y)
@@ -35,26 +30,20 @@ public readonly record struct ScreenMetrics(ZSize FontSize, ZSize WindowSize, in
     public (int Rows, int Columnns) Dimensions => (Rows, Columns);
 }
 
-public class FontChanges
+public class FontChanges(int startCol, int count, CharDisplayInfo FandS)
 {
+    private readonly StringBuilder _sb = new(count);
+
     public int Offset { get; set; }
-    public int StartCol { get; private set; }
+    public int StartCol { get; private set; } = startCol;
     public int Count => _sb.Length;
     public int Style => FontAndStyle.Style;
     public int Font => FontAndStyle.Font;
     public string Text => _sb.ToString();
     public int Line { get; set; }
 
-    public CharDisplayInfo FontAndStyle { get; set; }
+    public CharDisplayInfo FontAndStyle { get; set; } = FandS;
 
-    private readonly StringBuilder _sb;
 
     internal void AddChar(char c) => _sb.Append(c);
-
-    public FontChanges(int startCol, int count, CharDisplayInfo FandS)
-    {
-        StartCol = startCol;
-        FontAndStyle = FandS;
-        _sb = new(count);
-    }
 }

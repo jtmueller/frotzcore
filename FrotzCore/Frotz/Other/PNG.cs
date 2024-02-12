@@ -6,27 +6,20 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Text;
 
-public class PNGChunk
+public class PNGChunk(string type, ReadOnlyMemory<byte> data, uint crc)
 {
-    public PNGChunk(string type, ReadOnlyMemory<byte> data, uint crc)
-    {
-        Type = type;
-        Data = data;
-        CRC = crc;
-    }
-
-    public string Type { get; set; }
-    public ReadOnlyMemory<byte> Data { get; }
-    public uint CRC { get; set; }
+    public string Type { get; set; } = type;
+    public ReadOnlyMemory<byte> Data { get; } = data;
+    public uint CRC { get; set; } = crc;
 }
 
 
 public class PNG
 {
     // compiler optimizes this to much faster than static array field
-    private static ReadOnlySpan<byte> Header => new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-    private readonly List<string> _chunkOrder = new();
-    public Dictionary<string, PNGChunk> Chunks { get; } = new();
+    private static ReadOnlySpan<byte> Header => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+    private readonly List<string> _chunkOrder = [];
+    public Dictionary<string, PNGChunk> Chunks { get; } = [];
 
     public PNG(string fileName)
     {
@@ -121,15 +114,15 @@ public class PNG
     {
         stream.Write(Header);
 
+        Span<byte> bytes = stackalloc byte[4];
         foreach (string type in _chunkOrder)
         {
             var chunk = Chunks[type];
 
             WriteInt(stream, (uint)chunk.Data.Length);
-            stream.WriteByte((byte)type[0]);
-            stream.WriteByte((byte)type[1]);
-            stream.WriteByte((byte)type[2]);
-            stream.WriteByte((byte)type[3]);
+
+            Encoding.UTF8.GetBytes(type.AsSpan(..4), bytes);
+            stream.Write(bytes);
 
             stream.Write(chunk.Data.Span);
 

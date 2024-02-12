@@ -47,7 +47,7 @@ public ref struct TxioInterpolatedStringHandler
     /// <remarks>This is intended to be called only by compiler-generated code. Arguments are not validated as they'd otherwise be for members intended to be used directly.</remarks>
     public TxioInterpolatedStringHandler(int literalLength, int formattedCount, int tx_screen_cols, StringBuilder sb, TxPrint txPrint, out bool shouldAppend)
     {
-        if (sb is null) throw new ArgumentNullException(nameof(sb));
+        ArgumentNullException.ThrowIfNull(sb);
         _provider = null;
         _tx_screen_cols = tx_screen_cols;
         _sb = sb;
@@ -66,7 +66,7 @@ public ref struct TxioInterpolatedStringHandler
     /// <remarks>This is intended to be called only by compiler-generated code. Arguments are not validated as they'd otherwise be for members intended to be used directly.</remarks>
     public TxioInterpolatedStringHandler(int literalLength, int formattedCount, int tx_screen_cols, StringBuilder sb, TxPrint txPrint, IFormatProvider? provider, out bool shouldAppend)
     {
-        if (sb is null) throw new ArgumentNullException(nameof(sb));
+        ArgumentNullException.ThrowIfNull(sb);
         _provider = provider;
         _tx_screen_cols = tx_screen_cols;
         _sb = sb;
@@ -247,7 +247,7 @@ public ref struct TxioInterpolatedStringHandler
     public bool AppendFormatted(ReadOnlySpan<char> value, int alignment = 0, string? format = null)
     {
         throw new NotImplementedException("Alignment not currently supported");
-        
+
         //bool leftAlign = false;
         //if (alignment < 0)
         //{

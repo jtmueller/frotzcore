@@ -18,7 +18,7 @@ public class LineInfo : IDisposable
         _styles = MemoryOwner<CharDisplayInfo>.Allocate(lineWidth);
 
         _chars.Span.Fill(' ');
-        _styles.Span.Fill(default);
+        _styles.Span.Clear();
 
         Width = lineWidth;
 
@@ -82,7 +82,7 @@ public class LineInfo : IDisposable
         lock (_lockObj)
         {
             _chars.Span[left..right].Fill(' ');
-            _styles.Span[left..right].Fill(default);
+            _styles.Span[left..right].Clear();
             LastCharSet = Math.Max(left + right, Width);
 
             if (_changes is not null)

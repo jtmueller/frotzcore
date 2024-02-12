@@ -10,7 +10,7 @@ internal enum gv2_tokentype { TT_ILLEGAL, TT_ELEMENTARY, TT_PREPOSITION, TT_NOUN
 
 internal static class ShowVerb
 {
-    private static readonly int[] verb_sizes = new int[] { 2, 4, 7, 0 };
+    private static readonly int[] verb_sizes = [2, 4, 7, 0];
 
     /*
      * configure_parse_tables
@@ -731,7 +731,7 @@ internal static class ShowVerb
                     /* Show the verb grammar for this entry */
 
                     ShowVerbGrammar(parse_entry, TxH.VERB_NUM(i, parser_type), (int)parser_type, 0,
-                                       (int)prep_type, prep_table_base, attr_names_base);
+                                    (int)prep_type, prep_table_base, attr_names_base);
                     txio.TxPrint("\n");
                 }
             }
