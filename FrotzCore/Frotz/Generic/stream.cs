@@ -32,8 +32,8 @@ internal static class Stream
     internal static void ScrollBackChar(zword c)
     {
 
-        if (c == CharCodes.ZC_INDENT) { ScrollBackChar(' '); ScrollBackChar(' '); ScrollBackChar(' '); return; }
-        if (c == CharCodes.ZC_GAP) { ScrollBackChar(' '); ScrollBackChar(' '); return; }
+        if (c == CharCodes.ZC_INDENT) { OS.ScrollbackChar(' '); OS.ScrollbackChar(' '); OS.ScrollbackChar(' '); return; }
+        if (c == CharCodes.ZC_GAP) { OS.ScrollbackChar(' '); OS.ScrollbackChar(' '); return; }
 
         OS.ScrollbackChar(c);
     }/* scrollback_char */

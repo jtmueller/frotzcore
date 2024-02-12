@@ -1343,7 +1343,7 @@ public static class OS
     }
 }
 
-internal record struct BufferChar(zword Char, int Width)
+internal readonly record struct BufferChar(zword Char, int Width)
 {
     public static implicit operator char(BufferChar bc) => (char)bc.Char;
 }

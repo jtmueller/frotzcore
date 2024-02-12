@@ -77,10 +77,11 @@ public static class TrueColorStuff
     internal static zword GetColourIndex(int colour)
     {
         // Is this a standard colour?
-        for (int i = 0; i < 11; i++)
+        int idx = s_colours.AsSpan().IndexOf(colour);
+
+        if (idx >= 0)
         {
-            if (s_colours[i] == colour)
-                return (zword)(i + ZColor.BLACK_COLOUR);
+            return (zword)(idx + ZColor.BLACK_COLOUR);
         }
 
         // Is this a default colour?
@@ -90,50 +91,46 @@ public static class TrueColorStuff
             return 17;
 
         // Is this colour already in the table?
-        for (int i = 0; i < NON_STD_COLS; i++)
+        idx = s_nonStdColours.AsSpan().IndexOf(colour);
+        if (idx >= 0)
         {
-            if (s_nonStdColours[i] == colour)
-                return (zword)(i + 18);
+            return (zword)(idx + 18);
         }
 
         // Find a free colour index
-        int index = -1;
-        while (index == -1)
+        idx = -1;
+        while (idx == -1)
         {
             if (Generic.Screen.ColorInUse(
                 (zword)(s_nonStdIndex + 18)) == 0)
             {
                 s_nonStdColours[s_nonStdIndex] = colour;
-                index = s_nonStdIndex + 18;
+                idx = s_nonStdIndex + 18;
             }
 
             s_nonStdIndex++;
             if (s_nonStdIndex >= NON_STD_COLS)
                 s_nonStdIndex = 0;
         }
-        return (zword)index;
+        return (zword)idx;
     }
 
 
     // Get a color
-    public static int GetColor(int color)
+    public static int GetColor(int color) => color switch
     {
         // Standard colours
-        if (color is >= ZColor.BLACK_COLOUR and <= ZColor.DARKGREY_COLOUR)
-            return s_colours[color - ZColor.BLACK_COLOUR];
+        >= ZColor.BLACK_COLOUR and <= ZColor.DARKGREY_COLOUR
+            => s_colours[color - ZColor.BLACK_COLOUR],
 
         // Default colours
-        if (color == 16)
-            return s_defaultFore;
-        if (color == 17)
-            return s_defaultBack;
+        16 => s_defaultFore,
+        17 => s_defaultBack,
 
         // Non standard colours
-        if (color is >= 18 and < 256)
-        {
-            if (s_nonStdColours[color - 18] != 0xFFFFFF)
-                return s_nonStdColours[color - 18];
-        }
-        return s_colours[0];
-    }
+        >= 18 and < 256 when s_nonStdColours[color - 18] != 0xFFFFFF
+            => s_nonStdColours[color - 18],
+
+        _ => s_colours[0]
+    };
 }
